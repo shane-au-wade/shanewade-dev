@@ -1,17 +1,17 @@
-import { Mistral } from "@mistralai/mistralai";
-import { load } from "@std/dotenv";
+import { Mistral } from "@mistralai/mistralai"
+import { load } from "@std/dotenv"
 
 const env = await load({
   envPath: ".env",
   export: true,
-});
+})
 
-const apiKey = env.MISTRAL_API_KEY ?? "";
+const apiKey = env.MISTRAL_API_KEY ?? ""
 if (!apiKey) {
-  throw new Error("MISTRAL_API_KEY is not set");
+  throw new Error("MISTRAL_API_KEY is not set")
 }
 
-const mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY });
+const mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
 
 const batchResults = [
   {
@@ -19,8 +19,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 28788,
     createdAt: 1761628025,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:1aecf321_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:1aecf321_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -33,8 +32,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 27984,
     createdAt: 1761627855,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:6b7e1c12_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:6b7e1c12_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -47,8 +45,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 28801,
     createdAt: 1761627662,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:5f632b51_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:5f632b51_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -61,8 +58,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 27054,
     createdAt: 1761627612,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:53058f2d_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:53058f2d_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -75,8 +71,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 25354,
     createdAt: 1761627573,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:09a380e8_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:09a380e8_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -89,8 +84,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 26514,
     createdAt: 1761627544,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:cee3ae1e_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:cee3ae1e_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -103,8 +97,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 27832,
     createdAt: 1761627499,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:62e59399_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:62e59399_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -117,8 +110,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 26419,
     createdAt: 1761627419,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:4931ac96_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:4931ac96_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -131,8 +123,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 27703,
     createdAt: 1761627386,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:864fc531_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:864fc531_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -145,8 +136,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 28423,
     createdAt: 1761627343,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:370ef518_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:370ef518_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -159,8 +149,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 28651,
     createdAt: 1761627311,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:feb7f6e1_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:feb7f6e1_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -173,8 +162,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 30992,
     createdAt: 1761627259,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:152c04a8_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:152c04a8_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -187,8 +175,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 28878,
     createdAt: 1761627206,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:543a755f_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:543a755f_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -201,8 +188,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 25772,
     createdAt: 1761627157,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:2d3ac5a1_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:2d3ac5a1_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -215,8 +201,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 47859,
     createdAt: 1761627130,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:0e1c2351_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:0e1c2351_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -229,8 +214,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 29933,
     createdAt: 1761627080,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:a40a0854_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:a40a0854_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -243,8 +227,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 29590,
     createdAt: 1761627039,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:21298734_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:21298734_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -257,8 +240,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 26814,
     createdAt: 1761626992,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:4193988f_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:4193988f_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -271,8 +253,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 23418,
     createdAt: 1761626952,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:1e67761d_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:1e67761d_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -285,8 +266,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 27263,
     createdAt: 1761626909,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:499e05c6_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:499e05c6_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -299,8 +279,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 32228,
     createdAt: 1761626877,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:d0d718bd_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:d0d718bd_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -313,8 +292,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 25103,
     createdAt: 1761626831,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:be4da5b8_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:be4da5b8_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -327,8 +305,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 23457,
     createdAt: 1761626799,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:eb48b2a0_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:eb48b2a0_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -341,8 +318,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 22933,
     createdAt: 1761625562,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:1f891682_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:1f891682_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -355,8 +331,7 @@ const batchResults = [
     object: "file",
     sizeBytes: 22276,
     createdAt: 1761625434,
-    filename:
-      "batch:mistral-ocr-latest:fc6bfeba:20251028:cd42fdf5_results.jsonl",
+    filename: "batch:mistral-ocr-latest:fc6bfeba:20251028:cd42fdf5_results.jsonl",
     purpose: "batch",
     sampleType: "batch_result",
     numLines: 10,
@@ -364,18 +339,18 @@ const batchResults = [
     source: "mistral",
     signature: null,
   },
-];
+]
 
 // we have the mistral client and the batch result ids
 // lets download the results and pipe them into a single jsonl file
 
-const outputFile = "scripts/batch-ocr-results-recipes-1-to-25.jsonl";
+const outputFile = "scripts/batch-ocr-results-recipes-1-to-25.jsonl"
 
 for (const batchResult of batchResults) {
   // open the output file
-  const outputFileHandle = await Deno.open(outputFile, { append: true });
+  const outputFileHandle = await Deno.open(outputFile, { append: true })
   const result = await mistral.files.download({
     fileId: batchResult.id,
-  });
-  await result.pipeTo(outputFileHandle.writable);
+  })
+  await result.pipeTo(outputFileHandle.writable)
 }

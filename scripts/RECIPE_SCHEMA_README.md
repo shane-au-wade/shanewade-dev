@@ -44,13 +44,13 @@ The system uses a **hybrid storage approach**:
 
 ```javascript
 // Semantic similarity
-"Find recipes similar to chicken tacos with a creamy sauce";
+"Find recipes similar to chicken tacos with a creamy sauce"
 
 // Filtered search
-"Quick vegetarian dinners under 30 minutes with high protein";
+"Quick vegetarian dinners under 30 minutes with high protein"
 
 // Natural language
-"What can I make with pork that's spicy and Asian-inspired?";
+"What can I make with pork that's spicy and Asian-inspired?"
 ```
 
 #### PostgreSQL (Relational Database)
@@ -322,7 +322,7 @@ const results = await chromaCollection.query({
     cookTimeMinutes: { $lt: 45 },
     dietaryTags: { $contains: "GLUTEN_FREE" },
   },
-});
+})
 ```
 
 ### 2. Meal Planning Algorithm
@@ -330,13 +330,13 @@ const results = await chromaCollection.query({
 ```typescript
 // Example: Plan a week of dinners
 async function createWeeklyMealPlan(preferences: {
-  servings: number;
-  dietaryRestrictions: string[];
-  maxCookTime: number;
-  variety: boolean; // avoid same protein 2 days in a row
+  servings: number
+  dietaryRestrictions: string[]
+  maxCookTime: number
+  variety: boolean // avoid same protein 2 days in a row
 }) {
-  const meals: PlannedMeal[] = [];
-  const usedProteins: string[] = [];
+  const meals: PlannedMeal[] = []
+  const usedProteins: string[] = []
 
   for (let day = 0; day < 7; day++) {
     // Query ChromaDB for suitable recipes
@@ -344,10 +344,10 @@ async function createWeeklyMealPlan(preferences: {
       cookTimeMinutes: { $lt: preferences.maxCookTime },
       dietaryTags: { $contains: preferences.dietaryRestrictions },
       mainProtein: { $nin: preferences.variety ? usedProteins : [] },
-    });
+    })
 
     // Select recipe (could use AI/ML for better selection)
-    const selected = candidates[0];
+    const selected = candidates[0]
 
     meals.push({
       id: crypto.randomUUID(),
@@ -356,15 +356,15 @@ async function createWeeklyMealPlan(preferences: {
       mealType: "DINNER",
       servings: preferences.servings,
       completed: false,
-    });
+    })
 
     if (preferences.variety) {
-      usedProteins.push(selected.mainProtein);
-      if (usedProteins.length > 2) usedProteins.shift();
+      usedProteins.push(selected.mainProtein)
+      if (usedProteins.length > 2) usedProteins.shift()
     }
   }
 
-  return meals;
+  return meals
 }
 ```
 
@@ -377,35 +377,35 @@ async function generateShoppingList(
   // Get all meals in the plan
   const meals = await db.plannedMeals
     .where({ meal_plan_id: mealPlanId })
-    .with("recipe.ingredients");
+    .with("recipe.ingredients")
 
   // Aggregate ingredients
   const aggregated = new Map<string, {
-    ingredient: Ingredient;
-    totalQuantity: number;
-    recipes: string[];
-  }>();
+    ingredient: Ingredient
+    totalQuantity: number
+    recipes: string[]
+  }>()
 
   for (const meal of meals) {
     for (const ingredient of meal.recipe.ingredients) {
       // Scale quantity for servings
-      const scaleFactor = meal.servings / ingredient.servings;
-      const scaledQty = ingredient.quantity * scaleFactor;
+      const scaleFactor = meal.servings / ingredient.servings
+      const scaledQty = ingredient.quantity * scaleFactor
 
       // Aggregate by normalized name
-      const key = ingredient.normalizedName;
+      const key = ingredient.normalizedName
 
       if (aggregated.has(key)) {
-        const existing = aggregated.get(key)!;
+        const existing = aggregated.get(key)!
         // Convert to same unit if needed (TODO: unit conversion)
-        existing.totalQuantity += scaledQty;
-        existing.recipes.push(meal.recipeId);
+        existing.totalQuantity += scaledQty
+        existing.recipes.push(meal.recipeId)
       } else {
         aggregated.set(key, {
           ingredient,
           totalQuantity: scaledQty,
           recipes: [meal.recipeId],
-        });
+        })
       }
     }
   }
@@ -432,10 +432,10 @@ async function generateShoppingList(
         "GRAINS",
         "PANTRY",
         "SPICES",
-      ];
+      ]
       return categoryOrder.indexOf(a.category) -
-        categoryOrder.indexOf(b.category);
-    });
+        categoryOrder.indexOf(b.category)
+    })
 
   return {
     id: crypto.randomUUID(),
@@ -445,12 +445,12 @@ async function generateShoppingList(
     createdAt: new Date(),
     updatedAt: new Date(),
     completed: false,
-  };
+  }
 }
 
 function roundQuantity(qty: number): number {
   // Round to sensible fractions (0.25, 0.5, 0.75)
-  return Math.round(qty * 4) / 4;
+  return Math.round(qty * 4) / 4
 }
 ```
 
@@ -459,19 +459,19 @@ function roundQuantity(qty: number): number {
 ```typescript
 // Using LLM to intelligently curate meals
 async function curateIntelligentMealPlan(params: {
-  duration: number; // days
-  preferences: string; // natural language
-  budget?: number;
+  duration: number // days
+  preferences: string // natural language
+  budget?: number
 }) {
   // Step 1: Use LLM to parse preferences
-  const parsed = await llm.parse(params.preferences);
+  const parsed = await llm.parse(params.preferences)
 
   // Step 2: Query ChromaDB with semantic search
   const recipePool = await chromaCollection.query({
     queryTexts: [params.preferences],
     nResults: 50,
     where: buildFilterFromParsed(parsed),
-  });
+  })
 
   // Step 3: Use LLM to select and sequence meals
   const prompt = `
@@ -486,14 +486,14 @@ async function curateIntelligentMealPlan(params: {
     - Stays within budget: $${params.budget}
     
     Return a JSON array of recipe IDs in order.
-  `;
+  `
 
-  const selection = await llm.generate(prompt);
+  const selection = await llm.generate(prompt)
 
   // Step 4: Generate shopping list
-  const shoppingList = await generateShoppingList(selection);
+  const shoppingList = await generateShoppingList(selection)
 
-  return { mealPlan: selection, shoppingList };
+  return { mealPlan: selection, shoppingList }
 }
 ```
 
@@ -510,7 +510,7 @@ const conversions = {
   "oz": { to: "lb", factor: 0.0625 },
   "tsp": { to: "tbsp", factor: 0.333 },
   "tbsp": { to: "cup", factor: 0.0625 },
-};
+}
 ```
 
 **Ingredient Substitutions:**
@@ -520,14 +520,14 @@ const substitutions = {
   "sour cream": ["greek yogurt", "creme fraiche"],
   "buttermilk": ["milk + vinegar", "yogurt"],
   "heavy cream": ["half and half", "milk + butter"],
-};
+}
 ```
 
 ### Recipe Scaling
 
 ```typescript
 function scaleRecipe(recipe: Recipe, newServings: number): Recipe {
-  const scaleFactor = newServings / recipe.defaultServings;
+  const scaleFactor = newServings / recipe.defaultServings
 
   return {
     ...recipe,
@@ -537,7 +537,7 @@ function scaleRecipe(recipe: Recipe, newServings: number): Recipe {
       servings: newServings,
     })),
     steps: recipe.steps, // steps stay the same, just note serving change
-  };
+  }
 }
 ```
 
@@ -550,9 +550,7 @@ function findRecipesUsingIngredient(
   ingredient: string,
   recipes: Recipe[],
 ): Recipe[] {
-  return recipes.filter((r) =>
-    r.ingredients.some((ing) => ing.normalizedName.includes(ingredient))
-  );
+  return recipes.filter((r) => r.ingredients.some((ing) => ing.normalizedName.includes(ingredient)))
 }
 ```
 
@@ -569,13 +567,13 @@ deno run --allow-read --allow-write recipe-parser-example.ts
 ### 2. Setup ChromaDB
 
 ```typescript
-import { ChromaClient } from "chromadb";
+import { ChromaClient } from "chromadb"
 
-const client = new ChromaClient();
+const client = new ChromaClient()
 const collection = await client.createCollection({
   name: "recipes",
   metadata: { "hnsw:space": "cosine" },
-});
+})
 
 // Add recipes
 for (const recipe of recipes) {
@@ -583,7 +581,7 @@ for (const recipe of recipes) {
     ids: [recipe.id],
     documents: [formatForEmbedding(recipe)],
     metadatas: [extractMetadata(recipe)],
-  });
+  })
 }
 ```
 

@@ -111,18 +111,18 @@ Create a simple loader script:
 
 ```typescript
 // load-recipes.ts
-import { parseRecipeJSONL } from "./recipe-parser-example.ts";
-import postgres from "postgres";
+import { parseRecipeJSONL } from "./recipe-parser-example.ts"
+import postgres from "postgres"
 
-const sql = postgres("postgresql://localhost/recipes");
+const sql = postgres("postgresql://localhost/recipes")
 
 async function loadRecipes() {
   // Parse recipes
   const results = await parseRecipeJSONL(
     "./batch-ocr-results-recipes-1-to-25.jsonl",
-  );
+  )
 
-  console.log(`Parsed ${results.length} recipes`);
+  console.log(`Parsed ${results.length} recipes`)
 
   // Insert into PostgreSQL
   for (const { recipe, confidenceScore, warnings } of results) {
@@ -139,9 +139,9 @@ async function loadRecipes() {
         ${recipe.allergens}, ${JSON.stringify(recipe)}
       )
       RETURNING id
-    `;
+    `
 
-    console.log(`✓ Loaded: ${recipe.title} (${confidenceScore * 100}%)`);
+    console.log(`✓ Loaded: ${recipe.title} (${confidenceScore * 100}%)`)
 
     // Insert ingredients
     for (const ingredient of recipe.ingredients) {
@@ -152,7 +152,7 @@ async function loadRecipes() {
         ON CONFLICT (normalized_name) DO UPDATE
         SET name = EXCLUDED.name
         RETURNING id
-      `;
+      `
 
       // Then link to recipe
       await sql`
@@ -163,7 +163,7 @@ async function loadRecipes() {
           ${recipe.id}, ${ing.id}, ${ingredient.rawQuantity},
           ${ingredient.quantity}, ${ingredient.unit}, ${ingredient.servings}
         )
-      `;
+      `
     }
 
     // Insert steps
@@ -177,11 +177,11 @@ async function loadRecipes() {
           ${step.instruction}, ${step.estimatedTime},
           ${step.temperature}, ${step.temperatureUnit}
         )
-      `;
+      `
     }
   }
 
-  console.log("\n✅ All recipes loaded into PostgreSQL!");
+  console.log("\n✅ All recipes loaded into PostgreSQL!")
 
   // Show stats
   const [stats] = await sql`
@@ -190,16 +190,16 @@ async function loadRecipes() {
       COUNT(DISTINCT ri.ingredient_id) as unique_ingredients
     FROM recipes r
     LEFT JOIN recipe_ingredients ri ON r.id = ri.recipe_id
-  `;
+  `
 
-  console.log(`\nDatabase Stats:`);
-  console.log(`  Recipes: ${stats.recipe_count}`);
-  console.log(`  Unique Ingredients: ${stats.unique_ingredients}`);
+  console.log(`\nDatabase Stats:`)
+  console.log(`  Recipes: ${stats.recipe_count}`)
+  console.log(`  Unique Ingredients: ${stats.unique_ingredients}`)
 
-  await sql.end();
+  await sql.end()
 }
 
-loadRecipes();
+loadRecipes()
 ```
 
 Run it:
@@ -233,41 +233,38 @@ chroma run --path ./chroma-data
 
 ```typescript
 // load-chroma.ts
-import { ChromaClient } from "chromadb";
-import { parseRecipeJSONL } from "./recipe-parser-example.ts";
-import {
-  addRecipesToChroma,
-  setupRecipeCollection,
-} from "./chromadb-integration-example.ts";
+import { ChromaClient } from "chromadb"
+import { parseRecipeJSONL } from "./recipe-parser-example.ts"
+import { addRecipesToChroma, setupRecipeCollection } from "./chromadb-integration-example.ts"
 
 async function loadChromaDB() {
-  const client = new ChromaClient({ path: "http://localhost:8000" });
-  const collection = await setupRecipeCollection(client);
+  const client = new ChromaClient({ path: "http://localhost:8000" })
+  const collection = await setupRecipeCollection(client)
 
   // Parse recipes
   const results = await parseRecipeJSONL(
     "./batch-ocr-results-recipes-1-to-25.jsonl",
-  );
-  const recipes = results.map((r) => r.recipe);
+  )
+  const recipes = results.map((r) => r.recipe)
 
   // Add to ChromaDB
-  await addRecipesToChroma(collection, recipes);
+  await addRecipesToChroma(collection, recipes)
 
-  console.log(`✅ Loaded ${recipes.length} recipes into ChromaDB!`);
+  console.log(`✅ Loaded ${recipes.length} recipes into ChromaDB!`)
 
   // Test a search
   const searchResults = await collection.query({
     queryTexts: ["spicy chicken dinner"],
     nResults: 3,
-  });
+  })
 
-  console.log('\nTest Search Results for "spicy chicken dinner":');
+  console.log('\nTest Search Results for "spicy chicken dinner":')
   searchResults.documents[0].forEach((doc, i) => {
-    console.log(`${i + 1}. ${doc.substring(0, 100)}...`);
-  });
+    console.log(`${i + 1}. ${doc.substring(0, 100)}...`)
+  })
 }
 
-loadChromaDB();
+loadChromaDB()
 ```
 
 Run it:
@@ -284,28 +281,28 @@ Test your setup with some basic queries:
 
 ```typescript
 // query-recipes.ts
-import { ChromaClient } from "chromadb";
-import postgres from "postgres";
+import { ChromaClient } from "chromadb"
+import postgres from "postgres"
 
-const client = new ChromaClient({ path: "http://localhost:8000" });
-const collection = await client.getCollection({ name: "recipes" });
-const sql = postgres("postgresql://localhost/recipes");
+const client = new ChromaClient({ path: "http://localhost:8000" })
+const collection = await client.getCollection({ name: "recipes" })
+const sql = postgres("postgresql://localhost/recipes")
 
 // Semantic search in ChromaDB
 const results = await collection.query({
   queryTexts: ["quick weeknight dinner"],
   nResults: 5,
   where: { cookTimeMinutes: { $lt: 30 } },
-});
+})
 
-console.log("Quick Dinners:");
+console.log("Quick Dinners:")
 for (const id of results.ids[0]) {
   const [recipe] = await sql`
     SELECT title, cook_time_minutes, difficulty_level
     FROM recipes
     WHERE id = ${id}
-  `;
-  console.log(`- ${recipe.title} (${recipe.cook_time_minutes} min)`);
+  `
+  console.log(`- ${recipe.title} (${recipe.cook_time_minutes} min)`)
 }
 ```
 
@@ -316,12 +313,12 @@ Create a basic meal planning function:
 ```typescript
 // meal-planner.ts
 async function createWeeklyMealPlan(preferences: {
-  servings: number;
-  maxCookTime: number;
-  avoidAllergens?: string[];
+  servings: number
+  maxCookTime: number
+  avoidAllergens?: string[]
 }) {
-  const days = 7;
-  const meals = [];
+  const days = 7
+  const meals = []
 
   for (let day = 0; day < days; day++) {
     // Search for a suitable recipe
@@ -334,27 +331,27 @@ async function createWeeklyMealPlan(preferences: {
           { mealTypes: { $contains: "DINNER" } },
         ],
       },
-    });
+    })
 
     // Pick a random recipe from results
     const selectedId = results.ids[0][
       Math.floor(Math.random() * results.ids[0].length)
-    ];
+    ]
 
     // Fetch full recipe from PostgreSQL
     const [recipe] = await sql`
       SELECT * FROM recipes WHERE id = ${selectedId}
-    `;
+    `
 
     meals.push({
       day: day + 1,
       date: new Date(Date.now() + day * 24 * 60 * 60 * 1000),
       recipe: recipe.title,
       recipeId: recipe.id,
-    });
+    })
   }
 
-  return meals;
+  return meals
 }
 ```
 
@@ -371,28 +368,28 @@ async function generateShoppingList(mealPlanId: string) {
     FROM planned_meals pm
     JOIN recipes r ON pm.recipe_id = r.id
     WHERE pm.meal_plan_id = ${mealPlanId}
-  `;
+  `
 
   // Aggregate ingredients
-  const ingredients = new Map();
+  const ingredients = new Map()
 
   for (const meal of meals) {
-    const recipe = meal.raw_data;
-    const scaleFactor = meal.servings / recipe.defaultServings;
+    const recipe = meal.raw_data
+    const scaleFactor = meal.servings / recipe.defaultServings
 
     for (const ing of recipe.ingredients) {
-      const key = ing.normalizedName;
-      const scaled = ing.quantity * scaleFactor;
+      const key = ing.normalizedName
+      const scaled = ing.quantity * scaleFactor
 
       if (ingredients.has(key)) {
-        ingredients.get(key).quantity += scaled;
+        ingredients.get(key).quantity += scaled
       } else {
         ingredients.set(key, {
           name: ing.name,
           quantity: scaled,
           unit: ing.unit,
           category: ing.category || "OTHER",
-        });
+        })
       }
     }
   }
@@ -402,7 +399,7 @@ async function generateShoppingList(mealPlanId: string) {
     INSERT INTO shopping_lists (meal_plan_id, name)
     VALUES (${mealPlanId}, 'Shopping List - ' || CURRENT_DATE)
     RETURNING id
-  `;
+  `
 
   // Insert items
   for (const [key, item] of ingredients.entries()) {
@@ -414,10 +411,10 @@ async function generateShoppingList(mealPlanId: string) {
         ${list.id}, ${key}, ${item.name},
         ${item.quantity}, ${item.unit}, ${item.category}
       )
-    `;
+    `
   }
 
-  return list.id;
+  return list.id
 }
 ```
 
@@ -427,15 +424,15 @@ Use an LLM to intelligently select meals:
 
 ```typescript
 // ai-meal-curator.ts
-import Anthropic from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk"
 
 async function curateWithAI(preferences: {
-  days: number;
-  dietaryRestrictions: string[];
-  budget?: number;
-  familySize: number;
+  days: number
+  dietaryRestrictions: string[]
+  budget?: number
+  familySize: number
 }) {
-  const anthropic = new Anthropic();
+  const anthropic = new Anthropic()
 
   // Get candidate recipes from ChromaDB
   const candidates = await collection.query({
@@ -445,7 +442,7 @@ async function curateWithAI(preferences: {
     ],
     nResults: 50,
     where: buildFilterFromPreferences(preferences),
-  });
+  })
 
   // Fetch full recipe details
   const recipeDetails = await sql`
@@ -453,7 +450,7 @@ async function curateWithAI(preferences: {
            main_protein, ingredients, nutrition
     FROM recipes_with_stats
     WHERE id = ANY(${candidates.ids[0]})
-  `;
+  `
 
   // Ask Claude to curate the meal plan
   const response = await anthropic.messages.create({
@@ -481,9 +478,9 @@ async function curateWithAI(preferences: {
         Return a JSON array of recipe IDs in the recommended order.
       `,
     }],
-  });
+  })
 
-  const selectedIds = JSON.parse(response.content[0].text);
+  const selectedIds = JSON.parse(response.content[0].text)
 
   // Create meal plan in database
   const [plan] = await sql`
@@ -494,7 +491,7 @@ async function curateWithAI(preferences: {
       CURRENT_DATE + ${preferences.days}
     )
     RETURNING id
-  `;
+  `
 
   // Add planned meals
   for (let i = 0; i < selectedIds.length; i++) {
@@ -507,10 +504,10 @@ async function curateWithAI(preferences: {
         CURRENT_DATE + ${i},
         'DINNER', ${preferences.familySize}
       )
-    `;
+    `
   }
 
-  return plan.id;
+  return plan.id
 }
 ```
 
@@ -596,7 +593,7 @@ curl http://localhost:8000/api/v1/heartbeat
 All types are exported from `recipe-schema.ts`. Import them:
 
 ```typescript
-import type { Ingredient, MealPlan, Recipe } from "./recipe-schema.ts";
+import type { Ingredient, MealPlan, Recipe } from "./recipe-schema.ts"
 ```
 
 ### SQL Functions

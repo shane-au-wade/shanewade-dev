@@ -1,20 +1,13 @@
-import * as React from "react";
+import * as React from "react"
 
 // <Setup Blueprint>
-import "@blueprintjs/core/lib/css/blueprint.css";
-import "@blueprintjs/icons/lib/css/blueprint-icons.css";
+import "@blueprintjs/core/lib/css/blueprint.css"
+import "@blueprintjs/icons/lib/css/blueprint-icons.css"
 
-import {
-  Button,
-  Card,
-  ControlGroup,
-  FormGroup,
-  Icon,
-  InputGroup,
-} from "@blueprintjs/core";
+import { Button, Card, ControlGroup, FormGroup, Icon, InputGroup } from "@blueprintjs/core"
 
 export default function FormCard(props: {}) {
-  const [isPasswordHidden, setIsPasswordHidden] = React.useState(true);
+  const [isPasswordHidden, setIsPasswordHidden] = React.useState(true)
 
   return (
     <Card style={{ maxWidth: "300px", margin: "0 auto" }}>
@@ -22,7 +15,7 @@ export default function FormCard(props: {}) {
         <InputGroup
           leftIcon={"envelope"}
           onValueChange={(value) => {
-            console.log("email", value);
+            console.log("email", value)
           }}
         />
       </FormGroup>
@@ -35,7 +28,7 @@ export default function FormCard(props: {}) {
               <Icon
                 icon="lock"
                 onClick={() => {
-                  setIsPasswordHidden(false);
+                  setIsPasswordHidden(false)
                 }}
               >
               </Icon>
@@ -44,7 +37,7 @@ export default function FormCard(props: {}) {
               <Icon
                 icon="unlock"
                 onClick={() => {
-                  setIsPasswordHidden(true);
+                  setIsPasswordHidden(true)
                 }}
               >
               </Icon>
@@ -61,7 +54,7 @@ export default function FormCard(props: {}) {
         <Button
           intent="primary"
           onClick={() => {
-            console.log("testing");
+            console.log("testing")
           }}
         >
           Submit
@@ -69,5 +62,5 @@ export default function FormCard(props: {}) {
         <Button intent="none">Cancel</Button>
       </ControlGroup>
     </Card>
-  );
+  )
 }

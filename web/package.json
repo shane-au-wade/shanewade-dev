@@ -2,12 +2,6 @@
   "name": "astro-app",
   "type": "module",
   "version": "0.0.1",
-  "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "astro": "astro"
-  },
   "dependencies": {
     "@astrojs/react": "^4.4.0",
     "@blueprintjs/core": "^6.3.2",

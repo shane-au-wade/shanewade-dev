@@ -1,10 +1,12 @@
 {
   "workspace": ["./web", "./api"],
   "fmt": {
+    "useTabs": false,
     "lineWidth": 120,
-    "semicolons": false,
-    "singleQuote": true,
-    "useTabs": false
+    "indentWidth": 2,
+    "semiColons": false,
+    "singleQuote": false,
+    "proseWrap": "preserve"
   },
   "tasks": {
     "web": "deno task --cwd web dev",

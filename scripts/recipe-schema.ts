@@ -21,20 +21,20 @@ export type RecipeProvider =
   | "GOBBLE"
   | "EVERYPLATE"
   | "BLUE_APRON"
-  | "OTHER";
+  | "OTHER"
 
 export type DifficultyLevel =
   | "EASY"
   | "INTERMEDIATE"
   | "ADVANCED"
-  | "QUICK";
+  | "QUICK"
 
 export type SpiceLevel =
   | "NOT_SPICY"
   | "MILD"
   | "MEDIUM"
   | "SPICY"
-  | "VERY_SPICY";
+  | "VERY_SPICY"
 
 export type MealType =
   | "BREAKFAST"
@@ -42,7 +42,7 @@ export type MealType =
   | "DINNER"
   | "SNACK"
   | "DESSERT"
-  | "APPETIZER";
+  | "APPETIZER"
 
 export type DietaryTag =
   | "VEGETARIAN"
@@ -54,7 +54,7 @@ export type DietaryTag =
   | "HIGH_PROTEIN"
   | "ORGANIC"
   | "PESCATARIAN"
-  | "PALEO";
+  | "PALEO"
 
 // ============================================================================
 // Ingredient Types
@@ -77,44 +77,44 @@ export type IngredientUnit =
   | "pinch"
   | "dash" // Approximate
   | "to taste" // Variable
-  | ""; // No unit (like "salt and pepper")
+  | "" // No unit (like "salt and pepper")
 
 export interface Ingredient {
   /** Unique identifier for the ingredient */
-  id: string;
+  id: string
 
   /** Name of the ingredient (e.g., "Kale", "Pork filet", "Garlic") */
-  name: string;
+  name: string
 
   /** Normalized/cleaned name for matching (lowercase, singular) */
-  normalizedName: string;
+  normalizedName: string
 
   /** Raw quantity as string (e.g., "3 1/2", "1-2", "1/4") */
-  rawQuantity: string;
+  rawQuantity: string
 
   /** Parsed numeric quantity (convert fractions to decimals) */
-  quantity: number;
+  quantity: number
 
   /** Unit of measurement */
-  unit: IngredientUnit;
+  unit: IngredientUnit
 
   /** Number of servings this quantity is for */
-  servings: number;
+  servings: number
 
   /** Preparation instructions (e.g., "diced", "chopped", "cooked") */
-  preparation?: string;
+  preparation?: string
 
   /** Optional notes (e.g., "(1)" for allergen markers) */
-  notes?: string;
+  notes?: string
 
   /** Whether this is an optional ingredient */
-  optional: boolean;
+  optional: boolean
 
   /** Category for grouping (produce, protein, dairy, pantry, etc.) */
-  category?: IngredientCategory;
+  category?: IngredientCategory
 
   /** Allergen markers referenced in the recipe */
-  allergenMarkers?: string[];
+  allergenMarkers?: string[]
 }
 
 export type IngredientCategory =
@@ -126,7 +126,7 @@ export type IngredientCategory =
   | "SPICES"
   | "CONDIMENTS"
   | "FROZEN"
-  | "OTHER";
+  | "OTHER"
 
 // ============================================================================
 // Instruction/Step Types
@@ -134,34 +134,34 @@ export type IngredientCategory =
 
 export interface RecipeStep {
   /** Step number/order */
-  stepNumber: number;
+  stepNumber: number
 
   /** Title/heading of the step (e.g., "PREP", "SEASON & COOK PORK") */
-  title?: string;
+  title?: string
 
   /** Full instruction text */
-  instruction: string;
+  instruction: string
 
   /** Cooking time for this step (in minutes) */
-  estimatedTime?: number;
+  estimatedTime?: number
 
   /** Temperature if specified (e.g., 400 for 400°F) */
-  temperature?: number;
+  temperature?: number
 
   /** Temperature unit (F or C) */
-  temperatureUnit?: "F" | "C";
+  temperatureUnit?: "F" | "C"
 
   /** Equipment needed for this step */
-  equipment?: string[];
+  equipment?: string[]
 
   /** Ingredients primarily used in this step (references to ingredient IDs) */
-  ingredientIds?: string[];
+  ingredientIds?: string[]
 
   /** Visual cues mentioned (e.g., "until lightly browned", "fully cooked") */
-  visualCues?: string[];
+  visualCues?: string[]
 
   /** Pro tips or notes for this step */
-  tips?: string[];
+  tips?: string[]
 }
 
 // ============================================================================
@@ -170,23 +170,23 @@ export interface RecipeStep {
 
 export interface NutritionalInfo {
   /** Calories per serving */
-  caloriesPerServing?: number;
+  caloriesPerServing?: number
 
   /** Serving size */
-  servingSize?: string;
+  servingSize?: string
 
   /** Macronutrients */
-  protein?: string;
-  fat?: string;
-  carbohydrates?: string;
-  fiber?: string;
-  sugar?: string;
-  sodium?: string;
+  protein?: string
+  fat?: string
+  carbohydrates?: string
+  fiber?: string
+  sugar?: string
+  sodium?: string
 
   /** Additional nutritional details */
-  cholesterol?: string;
-  saturatedFat?: string;
-  transFat?: string;
+  cholesterol?: string
+  saturatedFat?: string
+  transFat?: string
 }
 
 // ============================================================================
@@ -196,172 +196,172 @@ export interface NutritionalInfo {
 export interface Recipe {
   // -------------------- Identity --------------------
   /** Unique identifier for the recipe */
-  id: string;
+  id: string
 
   /** Recipe title */
-  title: string;
+  title: string
 
   /** Recipe provider/source */
-  provider: RecipeProvider;
+  provider: RecipeProvider
 
   /** Date the recipe was added to the system */
-  createdAt: Date;
+  createdAt: Date
 
   /** Date the recipe was last updated */
-  updatedAt: Date;
+  updatedAt: Date
 
   // -------------------- OCR Metadata --------------------
   /** Reference to the original OCR batch ID */
-  ocrBatchId?: string;
+  ocrBatchId?: string
 
   /** Reference to the original custom ID */
-  ocrCustomId?: string;
+  ocrCustomId?: string
 
   /** Path to original scanned image(s) */
-  originalImagePaths: string[];
+  originalImagePaths: string[]
 
   /** Full OCR markdown text (for reference) */
-  rawOcrText?: string;
+  rawOcrText?: string
 
   // -------------------- Description & Content --------------------
   /** Short description of the recipe */
-  description: string;
+  description: string
 
   /** Subtitle or tagline (e.g., "with Dark Meat Chicken, Carrots & Celery") */
-  subtitle?: string;
+  subtitle?: string
 
   /** Extended description or story */
-  extendedDescription?: string;
+  extendedDescription?: string
 
   // -------------------- Classification --------------------
   /** Meal type(s) */
-  mealTypes: MealType[];
+  mealTypes: MealType[]
 
   /** Dietary tags */
-  dietaryTags: DietaryTag[];
+  dietaryTags: DietaryTag[]
 
   /** Cuisine type (e.g., "Mexican", "Italian", "Asian Fusion") */
-  cuisineType?: string;
+  cuisineType?: string
 
   /** Main protein (e.g., "Pork", "Chicken", "Beef", "Vegetarian") */
-  mainProtein?: string;
+  mainProtein?: string
 
   // -------------------- Cooking Details --------------------
   /** Total cooking time in minutes */
-  cookTimeMinutes: number;
+  cookTimeMinutes: number
 
   /** Prep time in minutes (if specified separately) */
-  prepTimeMinutes?: number;
+  prepTimeMinutes?: number
 
   /** Active cooking time vs passive time */
-  activeTimeMinutes?: number;
+  activeTimeMinutes?: number
 
   /** Difficulty level */
-  difficultyLevel?: DifficultyLevel;
+  difficultyLevel?: DifficultyLevel
 
   /** Spice level */
-  spiceLevel?: SpiceLevel;
+  spiceLevel?: SpiceLevel
 
   /** Number of servings (common options: 2, 4, 6) */
-  defaultServings: number;
+  defaultServings: number
 
   /** Available serving size options */
-  availableServings: number[];
+  availableServings: number[]
 
   // -------------------- Ingredients --------------------
   /** List of ingredients */
-  ingredients: Ingredient[];
+  ingredients: Ingredient[]
 
   // -------------------- Instructions --------------------
   /** Cooking steps/instructions */
-  steps: RecipeStep[];
+  steps: RecipeStep[]
 
   // -------------------- Equipment & Requirements --------------------
   /** Required equipment */
-  equipment: string[];
+  equipment: string[]
 
   /** Common pantry items needed (salt, pepper, oil, etc.) */
-  pantryItems: string[];
+  pantryItems: string[]
 
   /** Prep time window (e.g., "Cook Within 3 DAYS") */
-  cookWithinDays?: number;
+  cookWithinDays?: number
 
   // -------------------- Allergens --------------------
   /** List of allergens (Milk, Wheat, Soy, etc.) */
-  allergens: string[];
+  allergens: string[]
 
   // -------------------- Nutrition --------------------
   /** Nutritional information */
-  nutrition: NutritionalInfo;
+  nutrition: NutritionalInfo
 
   // -------------------- Customization --------------------
   /** Available protein swaps/customizations */
-  proteinCustomizations?: string[];
+  proteinCustomizations?: string[]
 
   /** Other customization options */
-  otherCustomizations?: string[];
+  otherCustomizations?: string[]
 
   // -------------------- Images --------------------
   /** Extracted image references from OCR */
-  images: RecipeImage[];
+  images: RecipeImage[]
 
   // -------------------- Tips & Notes --------------------
   /** Pro tips mentioned in the recipe */
-  tips: string[];
+  tips: string[]
 
   /** Special notes or warnings */
-  notes: string[];
+  notes: string[]
 
   /** Temperature safety notes */
-  safetyNotes: string[];
+  safetyNotes: string[]
 
   // -------------------- Search & Tags --------------------
   /** Keywords for search (auto-generated from title, description, ingredients) */
-  searchKeywords: string[];
+  searchKeywords: string[]
 
   /** Custom tags added by user or system */
-  customTags: string[];
+  customTags: string[]
 
   // -------------------- User Data --------------------
   /** User rating (1-5) */
-  userRating?: number;
+  userRating?: number
 
   /** User notes */
-  userNotes?: string;
+  userNotes?: string
 
   /** Times this recipe has been cooked */
-  timesCooked: number;
+  timesCooked: number
 
   /** Last time this recipe was cooked */
-  lastCookedDate?: Date;
+  lastCookedDate?: Date
 
   /** Whether user has favorited this recipe */
-  isFavorite: boolean;
+  isFavorite: boolean
 }
 
 export interface RecipeImage {
   /** Image ID from OCR */
-  id: string;
+  id: string
 
   /** Path to the extracted/processed image */
-  imagePath?: string;
+  imagePath?: string
 
   /** Image URL if hosted */
-  imageUrl?: string;
+  imageUrl?: string
 
   /** Bounding box coordinates from OCR */
   boundingBox?: {
-    topLeftX: number;
-    topLeftY: number;
-    bottomRightX: number;
-    bottomRightY: number;
-  };
+    topLeftX: number
+    topLeftY: number
+    bottomRightX: number
+    bottomRightY: number
+  }
 
   /** Image type (hero, step, ingredient, etc.) */
-  imageType?: "HERO" | "STEP" | "INGREDIENT" | "OTHER";
+  imageType?: "HERO" | "STEP" | "INGREDIENT" | "OTHER"
 
   /** Alt text for accessibility */
-  altText?: string;
+  altText?: string
 }
 
 // ============================================================================
@@ -370,109 +370,109 @@ export interface RecipeImage {
 
 export interface MealPlan {
   /** Unique identifier */
-  id: string;
+  id: string
 
   /** Name of the meal plan (e.g., "Week of Oct 28, 2025") */
-  name: string;
+  name: string
 
   /** Start date */
-  startDate: Date;
+  startDate: Date
 
   /** End date */
-  endDate: Date;
+  endDate: Date
 
   /** Planned meals */
-  plannedMeals: PlannedMeal[];
+  plannedMeals: PlannedMeal[]
 
   /** Generated shopping list */
-  shoppingListId?: string;
+  shoppingListId?: string
 
   /** Total estimated calories for the plan */
-  totalCalories?: number;
+  totalCalories?: number
 
   /** User who created this plan */
-  userId?: string;
+  userId?: string
 
   /** Creation timestamp */
-  createdAt: Date;
+  createdAt: Date
 }
 
 export interface PlannedMeal {
   /** Unique identifier */
-  id: string;
+  id: string
 
   /** Recipe ID */
-  recipeId: string;
+  recipeId: string
 
   /** Date and time for this meal */
-  scheduledDate: Date;
+  scheduledDate: Date
 
   /** Meal type */
-  mealType: MealType;
+  mealType: MealType
 
   /** Number of servings to make */
-  servings: number;
+  servings: number
 
   /** Notes for this meal */
-  notes?: string;
+  notes?: string
 
   /** Whether this meal has been completed */
-  completed: boolean;
+  completed: boolean
 }
 
 export interface ShoppingList {
   /** Unique identifier */
-  id: string;
+  id: string
 
   /** Associated meal plan ID */
-  mealPlanId: string;
+  mealPlanId: string
 
   /** Name of the shopping list */
-  name: string;
+  name: string
 
   /** Shopping list items */
-  items: ShoppingListItem[];
+  items: ShoppingListItem[]
 
   /** Creation timestamp */
-  createdAt: Date;
+  createdAt: Date
 
   /** Last updated timestamp */
-  updatedAt: Date;
+  updatedAt: Date
 
   /** Whether the shopping trip is complete */
-  completed: boolean;
+  completed: boolean
 }
 
 export interface ShoppingListItem {
   /** Unique identifier */
-  id: string;
+  id: string
 
   /** Normalized ingredient name */
-  ingredientName: string;
+  ingredientName: string
 
   /** Display name */
-  displayName: string;
+  displayName: string
 
   /** Total quantity needed (aggregated across recipes) */
-  totalQuantity: number;
+  totalQuantity: number
 
   /** Unit */
-  unit: IngredientUnit;
+  unit: IngredientUnit
 
   /** Category for store organization */
-  category: IngredientCategory;
+  category: IngredientCategory
 
   /** Which recipes need this ingredient */
-  recipeIds: string[];
+  recipeIds: string[]
 
   /** Whether this item has been checked off */
-  checked: boolean;
+  checked: boolean
 
   /** Estimated cost (if available) */
-  estimatedCost?: number;
+  estimatedCost?: number
 
   /** Notes */
-  notes?: string;
+  notes?: string
 }
 
 // ============================================================================
@@ -538,30 +538,30 @@ export interface ShoppingListItem {
 
 export interface ParsedRecipeData {
   /** The structured recipe */
-  recipe: Recipe;
+  recipe: Recipe
 
   /** Any parsing warnings or issues */
-  warnings: string[];
+  warnings: string[]
 
   /** Confidence score (0-1) for the parsing quality */
-  confidenceScore: number;
+  confidenceScore: number
 
   /** Fields that couldn't be parsed */
-  unparsedFields: string[];
+  unparsedFields: string[]
 }
 
 export interface IngredientParsingRules {
   /** Common abbreviations */
-  abbreviations: Record<string, string>;
+  abbreviations: Record<string, string>
 
   /** Unit conversions */
-  unitConversions: Record<string, { to: string; factor: number }>;
+  unitConversions: Record<string, { to: string; factor: number }>
 
   /** Common preparation verbs */
-  preparationVerbs: string[];
+  preparationVerbs: string[]
 
   /** Ingredient category mappings */
-  categoryMappings: Record<string, IngredientCategory>;
+  categoryMappings: Record<string, IngredientCategory>
 }
 
 // ============================================================================
@@ -580,4 +580,4 @@ export type {
   RecipeStep,
   ShoppingList,
   ShoppingListItem,
-};
+}

@@ -1,18 +1,18 @@
-import { Mistral } from "@mistralai/mistralai";
-import { encodeBase64 } from "@std/encoding/base64";
-import { load } from "@std/dotenv";
+import { Mistral } from "@mistralai/mistralai"
+import { encodeBase64 } from "@std/encoding/base64"
+import { load } from "@std/dotenv"
 
 const env = await load({
   envPath: ".env",
   export: true,
-});
+})
 
-const apiKey = env.MISTRAL_API_KEY ?? "";
+const apiKey = env.MISTRAL_API_KEY ?? ""
 if (!apiKey) {
-  throw new Error("MISTRAL_API_KEY is not set");
+  throw new Error("MISTRAL_API_KEY is not set")
 }
 
-let mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY });
+let mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
 
 async function createBatch(batchFile: string) {
   const file = await mistral.files.upload({
@@ -21,16 +21,16 @@ async function createBatch(batchFile: string) {
       content: Deno.readFileSync(batchFile),
     },
     purpose: "batch",
-  });
+  })
 
   const job = await mistral.batch.jobs.create({
     inputFiles: [file.id],
     model: "mistral-ocr-latest",
     endpoint: "/v1/ocr",
     metadata: { description: "recipe ocr batch", batch_id: batchFile },
-  });
+  })
 
-  return job.id;
+  return job.id
 }
 
 async function createJob(fileId: string) {
@@ -39,74 +39,70 @@ async function createJob(fileId: string) {
     model: "mistral-ocr-latest",
     endpoint: "/v1/ocr",
     metadata: { description: "recipe ocr batch", batch_id: "recipes-1.jsonl" },
-  });
-  return job.id;
+  })
+  return job.id
 }
 
 async function encodeImage(imagePath: string) {
-  const imageBuffer = await Deno.readFile(imagePath);
-  const base64Image = encodeBase64(imageBuffer);
-  return base64Image;
+  const imageBuffer = await Deno.readFile(imagePath)
+  const base64Image = encodeBase64(imageBuffer)
+  return base64Image
 }
 
-const recipeDirectory = "./local_data/recipes";
+const recipeDirectory = "./local_data/recipes"
 function getImagePath(imageName: string) {
-  return `${recipeDirectory}/${imageName}`;
+  return `${recipeDirectory}/${imageName}`
 }
 
 // list all of the images in the recipe directory
 // ensure that the images are sorted by name
-const images = Array.from(Deno.readDirSync(recipeDirectory)).sort((a, b) =>
-  a.name.localeCompare(b.name)
-);
-const recipes: Recipe[] = [];
+const images = Array.from(Deno.readDirSync(recipeDirectory)).sort((a, b) => a.name.localeCompare(b.name))
+const recipes: Recipe[] = []
 
 type Recipe = {
-  id: string;
-  pages: string[];
-  name?: string;
-  markdown?: string;
-};
+  id: string
+  pages: string[]
+  name?: string
+  markdown?: string
+}
 
 // each recipe consists of 2 png images
 // loop over the images and process them into recipes which consist
 for (let i = 0; i < images.length; i += 2) {
-  const image1 = images[i];
-  const image2 = images[i + 1];
+  const image1 = images[i]
+  const image2 = images[i + 1]
   const recipe: Recipe = {
     id: crypto.randomUUID(),
     pages: [image1.name, image2.name],
-  };
-  recipes.push(recipe);
+  }
+  recipes.push(recipe)
 }
 
 Deno.writeTextFileSync(
   "scripts/recipes.json",
   JSON.stringify(recipes, null, 2),
-);
+)
 
 // create batches of size 10 due to large image sizes
-const batchSize = 5;
-const batches = [];
+const batchSize = 5
+const batches = []
 for (let i = 0; i < recipes.length; i += batchSize) {
-  batches.push(recipes.slice(i, i + batchSize));
+  batches.push(recipes.slice(i, i + batchSize))
 }
 
 for (const [index, batch] of batches.entries()) {
-  console.log(`Processing batch ${index + 1} of ${batches.length}`);
+  console.log(`Processing batch ${index + 1} of ${batches.length}`)
 
-  const batchFile = `./local_data/batch-ocr/recipes-${index + 1}.jsonl`;
+  const batchFile = `./local_data/batch-ocr/recipes-${index + 1}.jsonl`
 
   for (const recipe of batch) {
     for (const page of recipe.pages) {
-      console.log(`Processing ${page}`);
+      console.log(`Processing ${page}`)
 
-      const base64Image = await encodeImage(getImagePath(page));
-      const url = `data:image/png;base64,${base64Image}`;
+      const base64Image = await encodeImage(getImagePath(page))
+      const url = `data:image/png;base64,${base64Image}`
       const batchEntry = {
-        "custom_id": `${recipe.id}-${
-          page.replace(".png", "").replace(" ", "-")
-        }`.toLowerCase(),
+        "custom_id": `${recipe.id}-${page.replace(".png", "").replace(" ", "-")}`.toLowerCase(),
         "body": {
           "model": "mistral-ocr-latest",
           "document": {
@@ -115,14 +111,14 @@ for (const [index, batch] of batches.entries()) {
           },
           "include_image_base64": false,
         },
-      };
+      }
       Deno.writeTextFileSync(
         batchFile,
         JSON.stringify(batchEntry) + "\n",
         {
           append: true,
         },
-      );
+      )
     }
   }
 }

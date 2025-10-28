@@ -8,7 +8,7 @@
  * 4. Filter by metadata
  */
 
-import type { MealType, Recipe, RecipeProvider } from "./recipe-schema.ts";
+import type { MealType, Recipe, RecipeProvider } from "./recipe-schema.ts"
 
 // ============================================================================
 // ChromaDB Setup
@@ -24,42 +24,42 @@ import type { MealType, Recipe, RecipeProvider } from "./recipe-schema.ts";
  */
 
 interface ChromaClient {
-  createCollection(options: any): Promise<ChromaCollection>;
-  getCollection(options: any): Promise<ChromaCollection>;
+  createCollection(options: any): Promise<ChromaCollection>
+  getCollection(options: any): Promise<ChromaCollection>
 }
 
 interface ChromaCollection {
   add(data: {
-    ids: string[];
-    documents: string[];
-    metadatas?: Record<string, any>[];
-    embeddings?: number[][];
-  }): Promise<void>;
+    ids: string[]
+    documents: string[]
+    metadatas?: Record<string, any>[]
+    embeddings?: number[][]
+  }): Promise<void>
 
   query(params: {
-    queryTexts?: string[];
-    queryEmbeddings?: number[][];
-    nResults?: number;
-    where?: Record<string, any>;
-    whereDocument?: Record<string, any>;
+    queryTexts?: string[]
+    queryEmbeddings?: number[][]
+    nResults?: number
+    where?: Record<string, any>
+    whereDocument?: Record<string, any>
   }): Promise<{
-    ids: string[][];
-    documents: string[][];
-    metadatas: Record<string, any>[][];
-    distances: number[][];
-  }>;
+    ids: string[][]
+    documents: string[][]
+    metadatas: Record<string, any>[][]
+    distances: number[][]
+  }>
 
   update(data: {
-    ids: string[];
-    documents?: string[];
-    metadatas?: Record<string, any>[];
-  }): Promise<void>;
+    ids: string[]
+    documents?: string[]
+    metadatas?: Record<string, any>[]
+  }): Promise<void>
 
   delete(
     params: { ids?: string[]; where?: Record<string, any> },
-  ): Promise<void>;
+  ): Promise<void>
 
-  count(): Promise<number>;
+  count(): Promise<number>
 }
 
 /**
@@ -71,7 +71,7 @@ export async function setupRecipeCollection(
 ): Promise<ChromaCollection> {
   try {
     // Try to get existing collection
-    return await client.getCollection({ name: collectionName });
+    return await client.getCollection({ name: collectionName })
   } catch {
     // Create new collection if it doesn't exist
     return await client.createCollection({
@@ -80,7 +80,7 @@ export async function setupRecipeCollection(
         "hnsw:space": "cosine", // Use cosine similarity
         description: "Recipe collection for semantic search",
       },
-    });
+    })
   }
 }
 
@@ -98,59 +98,59 @@ export async function setupRecipeCollection(
  * - Flavor profile
  */
 export function formatRecipeForEmbedding(recipe: Recipe): string {
-  const parts: string[] = [];
+  const parts: string[] = []
 
   // Title and subtitle
-  parts.push(`Recipe: ${recipe.title}`);
+  parts.push(`Recipe: ${recipe.title}`)
   if (recipe.subtitle) {
-    parts.push(recipe.subtitle);
+    parts.push(recipe.subtitle)
   }
 
   // Description
   if (recipe.description) {
-    parts.push(`\nDescription: ${recipe.description}`);
+    parts.push(`\nDescription: ${recipe.description}`)
   }
 
   // Main protein and cuisine
   if (recipe.mainProtein) {
-    parts.push(`\nMain Protein: ${recipe.mainProtein}`);
+    parts.push(`\nMain Protein: ${recipe.mainProtein}`)
   }
   if (recipe.cuisineType) {
-    parts.push(`Cuisine: ${recipe.cuisineType}`);
+    parts.push(`Cuisine: ${recipe.cuisineType}`)
   }
 
   // Dietary tags
   if (recipe.dietaryTags.length > 0) {
-    parts.push(`\nDiet: ${recipe.dietaryTags.join(", ")}`);
+    parts.push(`\nDiet: ${recipe.dietaryTags.join(", ")}`)
   }
 
   // Key ingredients (top 10)
   const topIngredients = recipe.ingredients
     .slice(0, 10)
     .map((ing) => ing.name)
-    .join(", ");
-  parts.push(`\nKey Ingredients: ${topIngredients}`);
+    .join(", ")
+  parts.push(`\nKey Ingredients: ${topIngredients}`)
 
   // Cooking style/methods (extracted from steps)
-  const cookingMethods = extractCookingMethods(recipe.steps);
+  const cookingMethods = extractCookingMethods(recipe.steps)
   if (cookingMethods.length > 0) {
-    parts.push(`\nCooking Methods: ${cookingMethods.join(", ")}`);
+    parts.push(`\nCooking Methods: ${cookingMethods.join(", ")}`)
   }
 
   // Brief instruction summary (first 200 chars of first step)
   if (recipe.steps.length > 0) {
-    const firstStep = recipe.steps[0].instruction.slice(0, 200);
-    parts.push(`\nPreparation: ${firstStep}...`);
+    const firstStep = recipe.steps[0].instruction.slice(0, 200)
+    parts.push(`\nPreparation: ${firstStep}...`)
   }
 
-  return parts.join(" ");
+  return parts.join(" ")
 }
 
 /**
  * Extract cooking methods from recipe steps
  */
 function extractCookingMethods(steps: any[]): string[] {
-  const methods = new Set<string>();
+  const methods = new Set<string>()
   const methodKeywords = [
     "bake",
     "roast",
@@ -164,18 +164,18 @@ function extractCookingMethods(steps: any[]): string[] {
     "toast",
     "blend",
     "mix",
-  ];
+  ]
 
   for (const step of steps) {
-    const instruction = step.instruction.toLowerCase();
+    const instruction = step.instruction.toLowerCase()
     for (const method of methodKeywords) {
       if (instruction.includes(method)) {
-        methods.add(method);
+        methods.add(method)
       }
     }
   }
 
-  return Array.from(methods);
+  return Array.from(methods)
 }
 
 /**
@@ -222,7 +222,7 @@ export function extractRecipeMetadata(recipe: Recipe): Record<string, any> {
     // Timestamps (as Unix timestamp for ChromaDB)
     createdAt: Math.floor(recipe.createdAt.getTime() / 1000),
     updatedAt: Math.floor(recipe.updatedAt.getTime() / 1000),
-  };
+  }
 }
 
 // ============================================================================
@@ -236,25 +236,25 @@ export async function addRecipesToChroma(
   collection: ChromaCollection,
   recipes: Recipe[],
 ): Promise<void> {
-  if (recipes.length === 0) return;
+  if (recipes.length === 0) return
 
-  const ids = recipes.map((r) => r.id);
-  const documents = recipes.map((r) => formatRecipeForEmbedding(r));
-  const metadatas = recipes.map((r) => extractRecipeMetadata(r));
+  const ids = recipes.map((r) => r.id)
+  const documents = recipes.map((r) => formatRecipeForEmbedding(r))
+  const metadatas = recipes.map((r) => extractRecipeMetadata(r))
 
   // Add in batches of 100 (ChromaDB recommendation)
-  const batchSize = 100;
+  const batchSize = 100
   for (let i = 0; i < recipes.length; i += batchSize) {
     const batch = {
       ids: ids.slice(i, i + batchSize),
       documents: documents.slice(i, i + batchSize),
       metadatas: metadatas.slice(i, i + batchSize),
-    };
+    }
 
-    await collection.add(batch);
+    await collection.add(batch)
     console.log(
       `Added recipes ${i + 1} to ${Math.min(i + batchSize, recipes.length)}`,
-    );
+    )
   }
 }
 
@@ -269,7 +269,7 @@ export async function updateRecipeInChroma(
     ids: [recipe.id],
     documents: [formatRecipeForEmbedding(recipe)],
     metadatas: [extractRecipeMetadata(recipe)],
-  });
+  })
 }
 
 /**
@@ -279,7 +279,7 @@ export async function deleteRecipesFromChroma(
   collection: ChromaCollection,
   recipeIds: string[],
 ): Promise<void> {
-  await collection.delete({ ids: recipeIds });
+  await collection.delete({ ids: recipeIds })
 }
 
 // ============================================================================
@@ -293,27 +293,27 @@ export async function searchRecipes(
   collection: ChromaCollection,
   query: string,
   options: {
-    limit?: number;
-    filters?: Record<string, any>;
+    limit?: number
+    filters?: Record<string, any>
   } = {},
 ): Promise<{
-  ids: string[];
-  documents: string[];
-  metadatas: Record<string, any>[];
-  distances: number[];
+  ids: string[]
+  documents: string[]
+  metadatas: Record<string, any>[]
+  distances: number[]
 }> {
   const result = await collection.query({
     queryTexts: [query],
     nResults: options.limit || 10,
     where: options.filters,
-  });
+  })
 
   return {
     ids: result.ids[0] || [],
     documents: result.documents[0] || [],
     metadatas: result.metadatas[0] || [],
     distances: result.distances[0] || [],
-  };
+  }
 }
 
 /**
@@ -335,7 +335,7 @@ export async function findQuickChickenDinners(
         ],
       },
     },
-  );
+  )
 }
 
 /**
@@ -354,7 +354,7 @@ export async function findVegetarianWithIngredients(
         isVegetarian: true,
       },
     },
-  );
+  )
 }
 
 /**
@@ -375,7 +375,7 @@ export async function findByCuisineAndSpice(
         spiceLevel: { $in: ["NOT_SPICY", "MILD"] },
       },
     },
-  );
+  )
 }
 
 /**
@@ -393,7 +393,7 @@ export async function findWithoutAllergens(
         allergens: { $nin: [allergen] },
       })),
     },
-  });
+  })
 }
 
 /**
@@ -404,7 +404,7 @@ export async function findSimilarRecipes(
   recipe: Recipe,
   limit = 5,
 ): Promise<any> {
-  const document = formatRecipeForEmbedding(recipe);
+  const document = formatRecipeForEmbedding(recipe)
 
   const result = await collection.query({
     queryTexts: [document],
@@ -412,14 +412,14 @@ export async function findSimilarRecipes(
     where: {
       recipeId: { $ne: recipe.id }, // Exclude the original recipe
     },
-  });
+  })
 
   return {
     ids: result.ids[0]?.slice(0, limit) || [],
     documents: result.documents[0]?.slice(0, limit) || [],
     metadatas: result.metadatas[0]?.slice(0, limit) || [],
     distances: result.distances[0]?.slice(0, limit) || [],
-  };
+  }
 }
 
 // ============================================================================
@@ -430,33 +430,33 @@ export async function findSimilarRecipes(
  * Build a complex filter from user preferences
  */
 export interface SearchPreferences {
-  maxCookTime?: number;
-  minCookTime?: number;
-  difficulty?: string[];
-  mealTypes?: MealType[];
-  dietaryTags?: string[];
-  avoidAllergens?: string[];
-  providers?: RecipeProvider[];
-  maxCalories?: number;
-  minCalories?: number;
+  maxCookTime?: number
+  minCookTime?: number
+  difficulty?: string[]
+  mealTypes?: MealType[]
+  dietaryTags?: string[]
+  avoidAllergens?: string[]
+  providers?: RecipeProvider[]
+  maxCalories?: number
+  minCalories?: number
 }
 
 export function buildFilterFromPreferences(
   prefs: SearchPreferences,
 ): Record<string, any> {
-  const filters: any[] = [];
+  const filters: any[] = []
 
   // Cook time filters
   if (prefs.maxCookTime !== undefined) {
-    filters.push({ cookTimeMinutes: { $lte: prefs.maxCookTime } });
+    filters.push({ cookTimeMinutes: { $lte: prefs.maxCookTime } })
   }
   if (prefs.minCookTime !== undefined) {
-    filters.push({ cookTimeMinutes: { $gte: prefs.minCookTime } });
+    filters.push({ cookTimeMinutes: { $gte: prefs.minCookTime } })
   }
 
   // Difficulty filter
   if (prefs.difficulty && prefs.difficulty.length > 0) {
-    filters.push({ difficultyLevel: { $in: prefs.difficulty } });
+    filters.push({ difficultyLevel: { $in: prefs.difficulty } })
   }
 
   // Meal types filter
@@ -465,38 +465,38 @@ export function buildFilterFromPreferences(
       $or: prefs.mealTypes.map((mt) => ({
         mealTypes: { $contains: mt },
       })),
-    });
+    })
   }
 
   // Dietary tags filter
   if (prefs.dietaryTags && prefs.dietaryTags.length > 0) {
     for (const tag of prefs.dietaryTags) {
-      filters.push({ dietaryTags: { $contains: tag } });
+      filters.push({ dietaryTags: { $contains: tag } })
     }
   }
 
   // Allergen exclusions
   if (prefs.avoidAllergens && prefs.avoidAllergens.length > 0) {
     for (const allergen of prefs.avoidAllergens) {
-      filters.push({ allergens: { $nin: [allergen] } });
+      filters.push({ allergens: { $nin: [allergen] } })
     }
   }
 
   // Provider filter
   if (prefs.providers && prefs.providers.length > 0) {
-    filters.push({ provider: { $in: prefs.providers } });
+    filters.push({ provider: { $in: prefs.providers } })
   }
 
   // Calorie filters
   if (prefs.maxCalories !== undefined) {
-    filters.push({ caloriesPerServing: { $lte: prefs.maxCalories } });
+    filters.push({ caloriesPerServing: { $lte: prefs.maxCalories } })
   }
   if (prefs.minCalories !== undefined) {
-    filters.push({ caloriesPerServing: { $gte: prefs.minCalories } });
+    filters.push({ caloriesPerServing: { $gte: prefs.minCalories } })
   }
 
   // Combine all filters with $and
-  return filters.length > 0 ? { $and: filters } : {};
+  return filters.length > 0 ? { $and: filters } : {}
 }
 
 /**
@@ -508,12 +508,12 @@ export async function advancedSearch(
   preferences: SearchPreferences,
   limit = 10,
 ): Promise<any> {
-  const filters = buildFilterFromPreferences(preferences);
+  const filters = buildFilterFromPreferences(preferences)
 
   return await searchRecipes(collection, query, {
     limit,
     filters,
-  });
+  })
 }
 
 // ============================================================================
@@ -529,15 +529,15 @@ export async function findDiverseRecipes(
   daysNeeded: number,
   preferences: SearchPreferences,
 ): Promise<Recipe[]> {
-  const recipes: Recipe[] = [];
-  const usedProteins = new Set<string>();
-  const usedCuisines = new Set<string>();
+  const recipes: Recipe[] = []
+  const usedProteins = new Set<string>()
+  const usedCuisines = new Set<string>()
 
-  let attempts = 0;
-  const maxAttempts = daysNeeded * 3; // Try up to 3x the needed recipes
+  let attempts = 0
+  const maxAttempts = daysNeeded * 3 // Try up to 3x the needed recipes
 
   while (recipes.length < daysNeeded && attempts < maxAttempts) {
-    attempts++;
+    attempts++
 
     // Search for recipes
     const result = await advancedSearch(
@@ -548,13 +548,13 @@ export async function findDiverseRecipes(
         // Could add filters to exclude already selected recipes
       },
       20, // Get more results to choose from
-    );
+    )
 
     // Select recipes with diversity
     for (let i = 0; i < result.metadatas.length; i++) {
-      const metadata = result.metadatas[i];
-      const protein = metadata.mainProtein;
-      const cuisine = metadata.cuisineType;
+      const metadata = result.metadatas[i]
+      const protein = metadata.mainProtein
+      const cuisine = metadata.cuisineType
 
       // Prioritize new proteins and cuisines
       if (
@@ -563,23 +563,23 @@ export async function findDiverseRecipes(
       ) {
         // Would normally fetch full recipe from Postgres here
         // For now, just track the selection
-        usedProteins.add(protein);
-        usedCuisines.add(cuisine);
+        usedProteins.add(protein)
+        usedCuisines.add(cuisine)
 
-        if (recipes.length >= daysNeeded) break;
+        if (recipes.length >= daysNeeded) break
       }
     }
 
-    if (recipes.length >= daysNeeded) break;
+    if (recipes.length >= daysNeeded) break
 
     // If we're stuck, relax the diversity requirement
     if (attempts > daysNeeded * 2) {
-      usedProteins.clear();
-      usedCuisines.clear();
+      usedProteins.clear()
+      usedCuisines.clear()
     }
   }
 
-  return recipes;
+  return recipes
 }
 
 // ============================================================================
@@ -592,14 +592,14 @@ export async function findDiverseRecipes(
 export async function getRecipeStatistics(
   collection: ChromaCollection,
 ): Promise<{
-  totalRecipes: number;
+  totalRecipes: number
   // Add more stats as needed
 }> {
-  const totalRecipes = await collection.count();
+  const totalRecipes = await collection.count()
 
   return {
     totalRecipes,
-  };
+  }
 }
 
 /**
@@ -607,44 +607,44 @@ export async function getRecipeStatistics(
  */
 export async function exampleUsage() {
   // Note: This is pseudo-code as ChromaDB client setup varies by environment
-  console.log("ChromaDB Recipe Integration Example");
-  console.log("=====================================");
+  console.log("ChromaDB Recipe Integration Example")
+  console.log("=====================================")
 
   // 1. Setup
-  console.log("\n1. Setting up ChromaDB collection...");
+  console.log("\n1. Setting up ChromaDB collection...")
   // const client = new ChromaClient();
   // const collection = await setupRecipeCollection(client);
 
   // 2. Add recipes
-  console.log("\n2. Adding recipes to ChromaDB...");
+  console.log("\n2. Adding recipes to ChromaDB...")
   // const recipes = await loadRecipesFromParser();
   // await addRecipesToChroma(collection, recipes);
 
   // 3. Search examples
-  console.log("\n3. Example searches:");
-  console.log('   - "Quick chicken dinners"');
-  console.log('   - "Vegetarian meals with pasta"');
-  console.log('   - "Spicy Asian-inspired recipes"');
+  console.log("\n3. Example searches:")
+  console.log('   - "Quick chicken dinners"')
+  console.log('   - "Vegetarian meals with pasta"')
+  console.log('   - "Spicy Asian-inspired recipes"')
 
   // 4. Advanced search with preferences
-  console.log("\n4. Advanced search with preferences:");
+  console.log("\n4. Advanced search with preferences:")
   const preferences: SearchPreferences = {
     maxCookTime: 40,
     difficulty: ["EASY", "INTERMEDIATE"],
     dietaryTags: ["VEGETARIAN"],
     avoidAllergens: ["MILK", "WHEAT"],
     maxCalories: 600,
-  };
-  console.log("   Preferences:", JSON.stringify(preferences, null, 2));
+  }
+  console.log("   Preferences:", JSON.stringify(preferences, null, 2))
 
   // 5. Meal planning
-  console.log("\n5. Generate diverse meal plan for 7 days...");
+  console.log("\n5. Generate diverse meal plan for 7 days...")
   // const mealPlan = await findDiverseRecipes(collection, 7, preferences);
 
-  console.log("\n✅ Integration complete!");
+  console.log("\n✅ Integration complete!")
 }
 
 // Run example if this is the main module
 if (import.meta.main) {
-  exampleUsage();
+  exampleUsage()
 }
