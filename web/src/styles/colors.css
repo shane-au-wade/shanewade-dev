@@ -1,0 +1,47 @@
+/**
+ * Color Palette
+ * 
+ * Centralized color system for consistent styling across components
+ */
+
+:root {
+  /* Brand Colors */
+  --color-brand-primary: #c44536;
+  --color-brand-primary-hover: #a83a2e;
+  --color-brand-primary-dark: #8b2f23;
+  
+  /* Neutral Colors */
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-gray-100: #fafafa;
+  --color-gray-200: #e5e5e5;
+  --color-gray-300: #e0e0e0;
+  --color-gray-400: #666666;
+  --color-gray-500: #555555;
+  --color-gray-600: #333333;
+  
+  /* Text Colors */
+  --color-text-primary: var(--color-black);
+  --color-text-secondary: var(--color-gray-500);
+  --color-text-muted: var(--color-gray-400);
+  
+  /* Background Colors */
+  --color-bg-primary: var(--color-white);
+  --color-bg-secondary: var(--color-gray-100);
+  
+  /* Border Colors */
+  --color-border-light: rgba(0, 0, 0, 0.08);
+  --color-border-medium: var(--color-gray-200);
+  
+  /* Interactive Colors */
+  --color-hover-primary: var(--color-brand-primary);
+  --color-hover-bg: rgba(196, 69, 54, 0.08);
+  
+  /* Shadow Colors */
+  --shadow-sm: 0 4px 12px rgba(196, 69, 54, 0.3);
+  --shadow-md: 0 8px 16px rgba(0, 0, 0, 0.1);
+  
+  /* Overlay Colors */
+  --color-overlay-white: rgba(255, 255, 255, 0.95);
+}
+

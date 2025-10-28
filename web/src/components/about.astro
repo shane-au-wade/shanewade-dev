@@ -1,0 +1,179 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+---
+
+<style>
+    .about-section {
+        flex-direction: column;
+        background-color: var(--color-bg-secondary);
+        padding: 8rem 2rem;
+    }
+
+    .about-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .about-header {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+    }
+
+    .about-title {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--color-text-primary);
+        margin: 0 0 2rem 0;
+    }
+
+    .about-content {
+        max-width: 900px;
+        margin-bottom: 3rem;
+    }
+
+    .about-content p {
+        font-size: 1.125rem;
+        line-height: 1.8;
+        color: var(--color-text-secondary);
+        margin: 0 0 1.5rem 0;
+    }
+
+    .about-content p:last-child {
+        margin-bottom: 0;
+    }
+
+    .about-callouts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+    }
+
+    .about-callouts .card {
+        padding: 2rem;
+        background-color: var(--color-bg-primary);
+        border: 1px solid var(--color-border-medium);
+        border-radius: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .about-callouts .card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+        border-color: var(--color-brand-primary);
+    }
+
+    .card-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--color-brand-primary);
+        margin-bottom: 1rem;
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin: 0 0 0.75rem 0;
+    }
+
+    .card-description {
+        font-size: 0.9375rem;
+        line-height: 1.6;
+        color: var(--color-text-muted);
+        margin: 0;
+    }
+
+    @media (max-width: 968px) {
+        .about-section {
+            padding: 4rem 1.5rem;
+        }
+
+        .about-title {
+            font-size: 2.25rem;
+        }
+
+        .about-content p {
+            font-size: 1rem;
+        }
+
+        .about-callouts {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+    }
+</style>
+
+<section id="about-section" class="full-page-section about-section">
+    <div class="about-container">
+        <p class="about-header">About Me</p>
+        <h2 class="about-title">Engineer. Cyclist. Problem Solver.</h2>
+
+        <div class="about-content">
+            <p>
+                With over 4 years of experience in software engineering, I
+                specialize in building high-performance web applications that
+                scale. My work spans fintech, autonomous vehicles, and drone
+                control systems, always with a focus on clean code and
+                exceptional user experiences.
+            </p>
+            <p>
+                At Embark Trucks, I certified 500+ miles of US highway data for
+                autonomous vehicle systems, contributing to zero on-road
+                incidents. I designed and delivered a multi-UAV control system
+                10 days before Threshold UAV's debut at AgSmart 2023. I'm
+                adaptable, self-motivated, and have a strong track record of
+                delivering projects on time while exceeding expectations.
+            </p>
+            <p>
+                When I'm not coding, you'll find me on my bike—whether it's
+                grinding up mountain passes, exploring gravel roads, or
+                commuting through San Francisco. Cycling has taught me patience,
+                persistence, and the value of steady progress—principles I bring
+                to every project.
+            </p>
+        </div>
+
+        <div class="about-callouts">
+            <div class="card">
+                <div class="card-icon">&lt;/&gt;</div>
+                <h3 class="card-title">Full-Stack Development</h3>
+                <p class="card-description">
+                    React, Next.js, Node.js, TypeScript, PostgreSQL
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-icon">⚡</div>
+                <h3 class="card-title">Performance Optimization</h3>
+                <p class="card-description">
+                    Building fast, scalable applications with modern tooling
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-icon">☕</div>
+                <h3 class="card-title">Problem Solving</h3>
+                <p class="card-description">
+                    Turning complex challenges into elegant solutions
+                </p>
+            </div>
+            <div class="card">
+                <div class="card-icon">🚴</div>
+                <h3 class="card-title">Endurance Mindset</h3>
+                <p class="card-description">
+                    Lessons from cycling applied to software engineering
+                </p>
+            </div>
+        </div>
+    </div>
+</section>

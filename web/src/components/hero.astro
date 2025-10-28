@@ -1,0 +1,189 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+
+import Image from "astro/components/Image.astro";
+import hero_photo from "../../public/profile_pic.jpeg";
+---
+
+<style>
+    .hero-section-content {
+        flex: 1;
+        padding: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        max-width: 600px;
+    }
+
+    .hero-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        background-color: transparent;
+        backdrop-filter: blur(7px);
+        padding: 2rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--color-border-light);
+    }
+
+    .greeting {
+        font-size: 1.5rem;
+        font-weight: 500;
+        color: var(--color-gray-600);
+    }
+
+    .tagline {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        margin-bottom: -0.5rem;
+    }
+
+    h1 {
+        font-size: 4rem;
+        font-weight: 700;
+        line-height: 1.1;
+        color: var(--color-text-primary);
+        margin: 0;
+    }
+
+    .description {
+        font-size: 1.125rem;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+        margin: 0;
+    }
+
+    .cta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .cta button {
+        padding: 0.875rem 1.75rem;
+        font-size: 1rem;
+        font-weight: 500;
+        border: none;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .cta .primary {
+        background-color: var(--color-brand-primary);
+        color: var(--color-white);
+    }
+
+    .cta .primary:hover {
+        background-color: var(--color-brand-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .cta .secondary {
+        background-color: transparent;
+        color: var(--color-gray-600);
+        border: 2px solid var(--color-gray-300);
+    }
+
+    .cta .secondary:hover {
+        border-color: var(--color-brand-primary);
+        color: var(--color-hover-primary);
+        transform: translateY(-2px);
+    }
+
+    .hero-section-image {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+    }
+
+    .image-wrapper {
+        max-width: 500px;
+        width: 100%;
+        position: relative;
+    }
+
+    .image-wrapper::before {
+        content: "";
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 150px;
+        height: 150px;
+        background-color: var(--color-brand-primary);
+        z-index: -1;
+    }
+
+    .image-wrapper::after {
+        content: "";
+        position: absolute;
+        bottom: -20px;
+        left: -20px;
+        width: 100px;
+        height: 100px;
+        background-color: var(--color-brand-primary-dark);
+        z-index: -1;
+    }
+
+    .hero-section-image img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 0.5rem;
+    }
+
+    @media (max-width: 968px) {
+        #hero-section {
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 3rem;
+        }
+
+        .hero-section-content {
+            max-width: 100%;
+        }
+
+        .cta {
+            flex-direction: column;
+        }
+
+        .cta button {
+            width: 100%;
+        }
+    }
+</style>
+
+<section id="hero-section" class="full-page-section">
+    <div class="hero-section-content">
+        <div class="hero-text">
+            <p class="greeting">Hello 👋</p>
+            <div>
+                <span class="tagline">Software Engineer & Cyclist</span>
+                <h1>Shane Wade</h1>
+            </div>
+            <p class="description">
+                I'm a software engineer and AI mechanic 🔧 🤖<br />
+                I love bicycles and building products.
+            </p>
+            <div class="cta">
+                <button class="primary">View My Work</button>
+                <button class="secondary">Get In Touch</button>
+            </div>
+        </div>
+    </div>
+    <div class="hero-section-image">
+        <div class="image-wrapper">
+            <Image alt="Picture of Shane Wade with a bike" src={hero_photo} />
+        </div>
+    </div>
+</section>

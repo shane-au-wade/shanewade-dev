@@ -1,0 +1,117 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+---
+
+<style>
+    .nav-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        /* background-color: var(--color-overlay-white); */
+        background-color: transparent;
+        backdrop-filter: blur(7px);
+        border-bottom: 1px solid var(--color-border-light);
+        z-index: 1000;
+        padding: 1.5rem 2rem;
+    }
+
+    .nav-content {
+        margin: 0 auto;
+        max-width: 1400px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        text-decoration: none;
+        color: var(--color-text-primary);
+        font-size: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        transition: opacity 0.2s ease;
+    }
+
+    .logo:hover {
+        opacity: 0.7;
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .nav-buttons a {
+        text-decoration: none;
+    }
+
+    .nav-buttons button {
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.625rem 1.25rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-radius: 0.25rem;
+    }
+
+    .nav-buttons button:hover {
+        color: var(--color-hover-primary);
+        background-color: var(--color-hover-bg);
+    }
+
+    @media (max-width: 768px) {
+        .nav-container {
+            padding: 1rem 1.5rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+        }
+
+        .nav-buttons {
+            gap: 0.25rem;
+        }
+
+        .nav-buttons button {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+        }
+    }
+
+    @media (max-width: 580px) {
+        .nav-buttons button {
+            padding: 0.5rem 0.5rem;
+            font-size: 0.7rem;
+        }
+    }
+</style>
+
+<nav class="nav-container">
+    <div class="nav-content">
+        <a href="#hero-section" class="logo"> SW </a>
+
+        <div class="nav-buttons">
+            <a href="#about-section">
+                <button>About</button>
+            </a>
+            <a href="#projects-section">
+                <button>Projects</button>
+            </a>
+            <a href="#bikes-section">
+                <button>Bikes</button>
+            </a>
+            <a href="#contact-section">
+                <button>Contact</button>
+            </a>
+        </div>
+    </div>
+</nav>

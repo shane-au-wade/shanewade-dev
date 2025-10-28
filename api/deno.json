@@ -1,0 +1,15 @@
+{
+  "name": "@api/hono",
+  "version": "0.1.0",
+  "exports": {},
+  "imports": {
+    "hono": "jsr:@hono/hono@^4.10.2"
+  },
+  "tasks": {
+    "dev": "deno run --allow-net main.ts"
+  },
+  "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "hono/jsx"
+  }
+}

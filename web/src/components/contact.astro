@@ -1,0 +1,223 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+---
+
+<style>
+    .contact-section {
+        flex-direction: column;
+        background-color: var(--color-bg-primary);
+        padding: 8rem 2rem;
+        text-align: center;
+    }
+
+    .contact-container {
+        max-width: 800px;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .contact-header {
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-size: 0.875rem;
+        color: var(--color-text-muted);
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-title {
+        font-size: 3rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: var(--color-text-primary);
+        margin: 0 0 1.5rem 0;
+    }
+
+    .contact-subtitle {
+        font-size: 1.125rem;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+        margin: 0 0 3rem 0;
+    }
+
+    .email-card {
+        background-color: var(--color-gray-100);
+        border: 1px solid var(--color-border-medium);
+        border-radius: 0.5rem;
+        padding: 3rem 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .email-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .email-icon svg {
+        width: 48px;
+        height: 48px;
+        stroke: var(--color-brand-primary);
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+    .email-card h3 {
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        margin: 0 0 1rem 0;
+    }
+
+    .email-card p {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--color-text-secondary);
+        margin: 0 0 2rem 0;
+    }
+
+    .email-button {
+        display: inline-block;
+        background-color: var(--color-brand-primary);
+        color: var(--color-white);
+        padding: 1rem 2.5rem;
+        font-size: 1rem;
+        font-weight: 500;
+        text-decoration: none;
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+    }
+
+    .email-button:hover {
+        background-color: var(--color-brand-primary-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .social-links {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .social-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border: 1px solid var(--color-border-medium);
+        border-radius: 0.375rem;
+        transition: all 0.2s ease;
+        background-color: var(--color-white);
+    }
+
+    .social-link:hover {
+        border-color: var(--color-brand-primary);
+        background-color: var(--color-hover-bg);
+        transform: translateY(-2px);
+    }
+
+    .social-link img {
+        width: 24px;
+        height: 24px;
+    }
+
+    .social-link svg {
+        width: 24px;
+        height: 24px;
+        fill: var(--color-text-primary);
+    }
+
+    @media (max-width: 968px) {
+        .contact-section {
+            padding: 4rem 1.5rem;
+        }
+
+        .contact-title {
+            font-size: 2.25rem;
+        }
+
+        .contact-subtitle {
+            font-size: 1rem;
+        }
+
+        .email-card {
+            padding: 2rem 1.5rem;
+        }
+
+        .email-button {
+            width: 100%;
+            padding: 1rem;
+        }
+    }
+</style>
+
+<section id="contact-section" class="full-page-section contact-section">
+    <div class="contact-container">
+        <p class="contact-header">Get In Touch</p>
+        <h2 class="contact-title">Let's Build Something Together</h2>
+        <p class="contact-subtitle">
+            Whether you have a project in mind, want to discuss cycling routes,
+            or just want to connect—I'd love to hear from you.
+        </p>
+
+        <div class="email-card">
+            <div class="email-icon">
+                <svg viewBox="0 0 24 24">
+                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                    <path d="m2 7 10 7 10-7"></path>
+                </svg>
+            </div>
+            <h3>Email Me</h3>
+            <p>
+                The best way to reach me is via email. I typically respond
+                within 24 hours.
+            </p>
+            <a href="mailto:shane.au.wade@gmail.com" class="email-button">
+                shane.au.wade@gmail.com
+            </a>
+        </div>
+
+        <div class="social-links">
+            <a
+                href="https://github.com/shane-au-wade"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="GitHub"
+            >
+                <img src="/github-mark.svg" alt="GitHub" />
+            </a>
+            <a
+                href="https://www.linkedin.com/in/shane-au-wade"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="LinkedIn"
+            >
+                <img src="/linkedin.svg" alt="LinkedIn" />
+            </a>
+            <a
+                href="https://twitter.com/shane-au-wade"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link"
+                aria-label="Twitter"
+            >
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                    ></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+</section>

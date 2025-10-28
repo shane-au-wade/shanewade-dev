@@ -1,0 +1,13 @@
+/* basic card style */
+.card {
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background-color: var(--color-bg-primary);
+}
+
+.full-page-section {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  padding-top: 3rem;
+}

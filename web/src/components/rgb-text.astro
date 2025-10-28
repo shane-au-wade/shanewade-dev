@@ -1,0 +1,129 @@
+---
+export interface Props {
+    height?: string;
+    text?: string;
+}
+
+const { height = "fit-content", text = "<EMPTY TEXT>" } = Astro.props;
+const COMPONENT_ID = `rgb-text-${crypto.randomUUID()}`;
+---
+
+<style>
+    .rgb-fig {
+        /* margin: 0 auto; */
+        width: fit-content;
+        /* font-size: clamp(4px, 1.8vw, 16px); */
+        white-space: pre;
+        /* background-color: #000; */
+    }
+
+    @media (max-width: 1100px) {
+        .rgb-fig {
+            font-size: clamp(4px, 1.4vw, 14px);
+        }
+    }
+    @media (max-width: 800px) {
+        .rgb-fig {
+            font-size: clamp(4px, 1.2vw, 12px);
+        }
+    }
+    @media (max-width: 600px) {
+        .rgb-fig {
+            font-size: clamp(4px, 1vw, 10px);
+        }
+    }
+    @media (max-width: 500px) {
+        .rgb-fig {
+            font-size: 5px;
+        }
+    }
+    @media (max-width: 450px) {
+        .rgb-fig {
+            font-size: 4px;
+        }
+    }
+    @media (max-width: 300px) {
+        .rgb-fig {
+            font-size: 3px;
+        }
+    }
+    rgb-text {
+        display: inline-block
+    }
+</style>
+
+<rgb-text data-message={COMPONENT_ID}>
+    <pre
+        class="rgb-fig"
+        id={COMPONENT_ID}
+        style={`height: ${height}; color: rgb(0,0,0);`}>
+{text}
+</pre>
+</rgb-text>
+
+<script>
+    // RGB animation logic
+    const lerp = (a: number, b: number, u: number) => (1 - u) * a + u * b;
+
+    function randRGB() {
+        return {
+            red: Math.floor(Math.random() * 256),
+            green: Math.floor(Math.random() * 256),
+            blue: Math.floor(Math.random() * 256),
+        };
+    }
+
+    function initRGBAnimation(parent_element: HTMLElement) {
+        const INIT = { red: 0, green: 0, blue: 0 };
+        const INIT_END = { red: 70, green: 217, blue: 227 };
+        const DURATION_MS = 5000;
+
+        let color = INIT;
+        let from = INIT;
+        let to = INIT_END;
+        let startTime: number | null = null;
+        let rafId: number | null = null;
+
+        const element = parent_element.querySelector("pre.rgb-fig");
+
+        if (element === null) return;
+
+        const tick = (t: number) => {
+            if (startTime === null) startTime = t;
+            const elapsed = t - startTime;
+            const u = Math.min(1, elapsed / DURATION_MS);
+
+            const next = {
+                red: Math.round(lerp(from.red, to.red, u)),
+                green: Math.round(lerp(from.green, to.green, u)),
+                blue: Math.round(lerp(from.blue, to.blue, u)),
+            };
+
+            element.style.color = `rgb(${next.red},${next.green},${next.blue})`;
+            color = next;
+
+            if (u >= 1) {
+                // start next leg
+                from = to;
+                to = randRGB();
+                startTime = t;
+            }
+            rafId = requestAnimationFrame(tick);
+        };
+
+        rafId = requestAnimationFrame(tick);
+
+        // Cleanup function
+        return () => {
+            if (rafId) cancelAnimationFrame(rafId);
+        };
+    }
+
+    class RgbText extends HTMLElement {
+        connectedCallback() {
+            initRGBAnimation(this);
+        }
+    }
+
+    customElements.define("rgb-text", RgbText);
+</script>

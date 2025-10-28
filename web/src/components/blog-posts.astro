@@ -1,0 +1,164 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+
+const blog_posts = [
+    {
+        title: "AI After Hours - #TechWeek write up",
+        href: "https://www.linkedin.com/pulse/ai-after-hours-techweek-write-up-shane-wade/?trackingId=wwUFNJyIQKOOqVr962xrfA%3D%3D",
+        image: "https://lh3.googleusercontent.com/pw/AJFCJaX5AqAaDsHt6PbfvwnzVgE8Ws3pU1S-AD46L75iESErpurGNpNGFRovvUrBK646D1a4NkrqLg9tYXpZ1ePHyHD04mgrMO3eS0trRkgC9JAwNBg9ZLhl1pSgzTwoUrzLsOoEXhjXxOmNPnCv3Md7Yfup=w1300-h1296-s-no?authuser=1",
+        description:
+            "Yesterday, Bloomberg Beta hosted their AI After Hours event. The venue was Bloomberg's high rise office space, complete with light snacks and some delicious kombucha floats: sorbet with kombucha, like the original rootbeer float.",
+    },
+    {
+        title: "Side Hustle Sunday Part 1",
+        href: "https://www.linkedin.com/pulse/side-hustle-sunday-part-1-shane-wade/",
+        image: "https://lh3.googleusercontent.com/pw/AJFCJaXvELKJXoU4hfTu_2QnU49WDMxCszgomTEg1EssruJJzr17LjVK_IgE_y5bskqxqZ1yNr0uxS4hV44RJcvQuvXDCVYfAE-oGjDGg7VbHJ6OopvO0yjJJdfFnk3UYII6rOQhsk4X2VUTApyFk-fbbpn-=w1296-h1296-s-no?authuser=1",
+        description:
+            "Selling digital seamless patterns If you haven't see the copious 'AI Side Hustles' on the internet then..",
+    },
+    {
+        title: "Creative Space That's all you",
+        href: "https://www.linkedin.com/pulse/creative-space-thats-all-you-shane-wade/",
+        image: "https://lh3.googleusercontent.com/pw/AJFCJaWBEb-wDIVQzFFOVdAmudIXCj8qOrjaWPkAxZB4OZE94oqVaqVZucP-A3IXz92ymOaf93pucXdZuD--FKps__2Tr42WdULHOewlBMpija8h1uQNNiGo3cWsmytYE5HjdjgFVHi2TtIhFC0dnqZZd1g_=w1024-h1024-s-no?authuser=1",
+        description:
+            "Unleash Your Digital Identity: Crafting a Personal Website that Tells Your Unique Story",
+    },
+    {
+        title: "The Power of Structured Thinking",
+        href: "https://www.linkedin.com/pulse/power-structured-thinking-shane-wade",
+        image: "https://lh3.googleusercontent.com/pw/AJFCJaXAu-r690ZcPAMLxJ0flbCGHjkbwnp73wFL7F2KGkm8qrPaTLJLf9N8BUSdqTK6OvQlhvp_3Jc4S7p_hHq9WfmI4VxeRCRncM8RAgVxUKn9-RssbxOz6Z5Gf69hC7YNijtreOdtRq8YeWzEHsRiQ-Xs=w512-h512-s-no?authuser=1",
+        description:
+            "Senior vs Junior? In the workforce, the distinction between a Senior and Junior employee often lies in their experience and the way they approach problem-solving. Senior employees have developed structured thinking patterns that help them navigate complex situations with ease.",
+    },
+    {
+        title: "I Nuked Our Production Database... And Lived to Tell the Tale",
+        href: "https://www.linkedin.com/pulse/i-nuked-our-production-database-lived-tell-tale-shane-wade",
+        image: "https://lh3.googleusercontent.com/pw/AJFCJaUfGE7arrMw321hyLPjxb0CCLxwh_0na-dge1L3PzqaklF6sF_NUQ5_rBRI2ckpyjYAsEOrsPrpndiMXesITN_rUhbijHBKYt1SySw44w09mi8boqvIQsPFDjzfPwVIkQKwMZWqEXhnT8QVpD61kgE2=w512-h512-s-no?authuser=1",
+        description: "It was a dark and stormy night..",
+    },
+];
+---
+
+<style>
+    .blog-posts-container {
+        padding: 0;
+        max-width: 80rem;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .blog-posts-container h2 {
+        margin-top: 0;
+        padding: 0 2rem;
+    }
+
+    .blog-posts-scroll {
+        display: flex;
+        gap: 1rem;
+        overflow-x: auto;
+        padding: 2rem;
+        scroll-behavior: smooth;
+    }
+
+    .blog-post-card {
+        max-width: 25rem;
+        min-width: 20rem;
+        text-align: center;
+        cursor: pointer;
+        transition:
+            transform 0.2s ease,
+            box-shadow 0.2s ease;
+    }
+
+    .blog-post-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .blog-post-image {
+        height: 15rem;
+        border-radius: 7px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .blog-post-summary {
+        text-align: left;
+        padding: 1rem 0;
+    }
+
+    .blog-post-summary h3 {
+        margin: 0 0 1rem 0;
+    }
+
+    .blog-post-summary p {
+        margin: 0;
+        line-height: 1.5;
+    }
+</style>
+
+<div id="blog-posts-section" class="blog-posts-container">
+    <h2>Blog Posts</h2>
+    <section class="blog-posts-scroll" id="blog-posts-scroll">
+        {
+            blog_posts.map((post) => (
+                <article class="blog-post-card card">
+                    <a
+                        href={post.href}
+                        target="_blank"
+                        style="text-decoration: none; color: inherit;"
+                    >
+                        <img
+                            src={post.image}
+                            alt={`${post.title}, main image`}
+                            class="blog-post-image"
+                        />
+                        <div class="blog-post-summary">
+                            <h3>{post.title}</h3>
+                            <p>{post.description}</p>
+                        </div>
+                    </a>
+                </article>
+            ))
+        }
+    </section>
+</div>
+
+<script>
+    // Add scroll animation when section comes into view
+    const blogPostsScroll = document.getElementById("blog-posts-scroll");
+
+    if (blogPostsScroll) {
+        let hasAnimated = false;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && !hasAnimated) {
+                        // Small animation to indicate scrollability
+                        setTimeout(() => {
+                            blogPostsScroll.scrollTo({
+                                left: 150,
+                                behavior: "smooth",
+                            });
+                            setTimeout(() => {
+                                blogPostsScroll.scrollTo({
+                                    left: 0,
+                                    behavior: "smooth",
+                                });
+                                hasAnimated = true;
+                            }, 500);
+                        }, 100);
+                    }
+                });
+            },
+            {
+                threshold: 0.75,
+            },
+        );
+
+        observer.observe(blogPostsScroll);
+    }
+</script>

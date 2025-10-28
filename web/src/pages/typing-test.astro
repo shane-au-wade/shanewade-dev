@@ -1,0 +1,924 @@
+---
+// Word list from the original implementation
+const baseWords = [
+  "live",
+  "after",
+  "went",
+  "great",
+  "from",
+  "story",
+  "up",
+  "until",
+  "change",
+  "she",
+  "face",
+  "over",
+  "paper",
+  "got",
+  "land",
+  "make",
+  "here",
+  "near",
+  "picture",
+  "could",
+  "need",
+  "work",
+  "are",
+  "three",
+  "while",
+  "stop",
+  "we",
+  "earth",
+  "any",
+  "move",
+  "just",
+  "keep",
+  "still",
+  "sentence",
+  "has",
+  "but",
+  "eye",
+  "than",
+  "hand",
+  "along",
+  "down",
+  "young",
+  "air",
+  "two",
+  "leave",
+  "has",
+  "had",
+  "he",
+  "men",
+  "far",
+  "food",
+  "see",
+  "last",
+  "hard",
+  "want",
+  "different",
+  "must",
+  "begin",
+  "line",
+  "spell",
+  "should",
+  "it's",
+  "year",
+  "food",
+  "soon",
+  "sometimes",
+  "his",
+  "were",
+  "are",
+  "three",
+  "does",
+  "man",
+  "these",
+  "point",
+  "second",
+  "run",
+  "boy",
+  "no",
+  "more",
+  "life",
+  "little",
+  "time",
+  "on",
+  "tell",
+  "point",
+  "family",
+  "sometimes",
+  "change",
+  "together",
+  "get",
+  "miss",
+  "before",
+  "well",
+  "of",
+  "way",
+  "cut",
+  "every",
+  "the",
+  "small",
+  "animal",
+  "father",
+  "group",
+  "way",
+  "could",
+  "me",
+  "sentence",
+  "keep",
+  "follow",
+  "say",
+  "both",
+  "those",
+  "sound",
+  "find",
+  "book",
+  "some",
+  "earth",
+  "often",
+  "even",
+  "quickly",
+  "open",
+  "out",
+  "good",
+  "very",
+  "follow",
+  "study",
+  "off",
+  "try",
+  "grow",
+  "always",
+  "back",
+  "do",
+  "white",
+  "mountain",
+  "people",
+  "earth",
+  "home",
+  "his",
+  "it's",
+  "each",
+  "all",
+  "give",
+  "many",
+  "America",
+  "know",
+  "run",
+  "him",
+  "been",
+  "read",
+  "air",
+  "it",
+  "left",
+  "begin",
+  "call",
+  "to",
+  "give",
+  "near",
+  "are",
+  "high",
+  "white",
+  "carry",
+  "walk",
+  "been",
+  "light",
+  "word",
+  "off",
+  "go",
+  "such",
+  "right",
+  "miss",
+  "really",
+  "all",
+  "boy",
+  "part",
+  "don't",
+  "quick",
+  "why",
+  "young",
+  "next",
+  "miss",
+  "add",
+  "city",
+  "begin",
+  "important",
+  "way",
+  "thought",
+  "try",
+  "they",
+  "book",
+  "big",
+  "give",
+  "need",
+  "say",
+  "thing",
+  "name",
+  "come",
+  "under",
+  "few",
+  "sea",
+  "book",
+  "make",
+  "set",
+  "own",
+  "car",
+  "try",
+  "only",
+  "every",
+  "different",
+  "first",
+  "is",
+  "below",
+  "must",
+  "new",
+  "through",
+  "new",
+  "also",
+  "important",
+  "your",
+  "long",
+  "close",
+  "world",
+  "thing",
+  "we",
+  "thought",
+  "know",
+  "then",
+  "come",
+  "over",
+  "once",
+  "keep",
+  "around",
+  "form",
+  "two",
+  "end",
+  "like",
+  "but",
+  "these",
+  "may",
+  "watch",
+  "end",
+  "city",
+  "to",
+  "really",
+  "long",
+  "play",
+  "almost",
+  "more",
+  "add",
+  "after",
+  "for",
+  "open",
+  "away",
+  "feet",
+  "number",
+  "some",
+  "list",
+  "America",
+  "car",
+  "be",
+  "letter",
+  "every",
+  "go",
+  "paper",
+  "might",
+  "he",
+  "those",
+  "before",
+  "which",
+  "help",
+  "mother",
+  "girl",
+  "there",
+  "do",
+  "live",
+  "you",
+  "use",
+  "water",
+  "list",
+  "ask",
+  "got",
+  "think",
+  "them",
+  "into",
+  "point",
+  "page",
+  "have",
+  "about",
+  "time",
+  "or",
+  "often",
+  "how",
+  "away",
+  "different",
+  "near",
+  "she",
+  "her",
+  "spell",
+  "only",
+  "state",
+  "never",
+  "children",
+  "think",
+  "night",
+  "start",
+  "people",
+  "seem",
+  "cut",
+  "city",
+  "Indian",
+  "in",
+  "we",
+  "let",
+  "through",
+  "next",
+  "change",
+  "tree",
+  "will",
+  "idea",
+  "around",
+  "not",
+  "took",
+  "show",
+  "back",
+  "much",
+  "want",
+  "good",
+  "before",
+  "read",
+  "year",
+  "mean",
+  "day",
+  "back",
+  "she",
+  "made",
+  "between",
+  "where",
+  "turn",
+  "other",
+  "began",
+  "mile",
+  "life",
+  "good",
+  "made",
+  "between",
+  "along",
+  "so",
+  "own",
+  "tree",
+  "had",
+  "country",
+  "mile",
+  "grow",
+  "hard",
+  "her",
+  "about",
+  "by",
+  "each",
+  "small",
+  "sound",
+  "see",
+  "example",
+  "often",
+  "something",
+  "many",
+  "house",
+  "off",
+  "close",
+  "both",
+  "talk",
+  "put",
+  "form",
+  "mother",
+  "three",
+  "any",
+  "still",
+  "Indian",
+  "her",
+  "soon",
+  "found",
+  "sch",
+];
+
+// Fisher-Yates shuffle algorithm for randomizing words
+function shuffleArray(array: string[]): string[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Randomize words on each page load
+const words = shuffleArray(baseWords);
+---
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+    background-color: #f5f5f5;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .typing-test-container {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .top-bar {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: white;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .back-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .back-button:hover {
+    background-color: #0056b3;
+  }
+
+  .words-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 900px;
+    height: 180px;
+    margin: 0 auto;
+    overflow: hidden;
+    margin-top: 10%;
+    padding: 20px;
+  }
+
+  .word {
+    font-size: 28px;
+    padding: 10px;
+    display: inline-flex;
+    margin: 2px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .word.default {
+    color: #333;
+  }
+
+  .word.selected {
+    background-color: #e9ecef;
+    border-radius: 4px;
+  }
+
+  .word.correct {
+    color: #28a745;
+  }
+
+  .word.incorrect {
+    color: #dc3545;
+  }
+
+  .controls-container {
+    width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+  }
+
+  .text-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 18px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .text-input:focus {
+    border-color: #007bff;
+  }
+
+  .text-input:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+  }
+
+  .reset-button {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    padding: 12px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 70px;
+    justify-content: center;
+  }
+
+  .reset-button:hover {
+    background-color: #545b62;
+  }
+
+  .stats-container {
+    width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .stat-button {
+    padding: 12px 20px;
+    border: 2px solid;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: bold;
+    pointer-events: none;
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .stat-correct {
+    color: #28a745;
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+  }
+
+  .stat-incorrect {
+    color: #dc3545;
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+  }
+
+  .timer-container {
+    width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .timer-button {
+    padding: 12px 20px;
+    background-color: transparent;
+    border: none;
+    font-size: 16px;
+    color: #6c757d;
+    font-weight: bold;
+  }
+
+  .results-container {
+    width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .results-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .time-selector-container {
+    width: 400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+  }
+
+  .time-selector-label {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+  }
+
+  .time-selector {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    background-color: white;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s ease;
+  }
+
+  .time-selector:focus {
+    border-color: #007bff;
+  }
+
+  .time-selector:disabled {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+</style>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Typing Test</title>
+  </head>
+  <body>
+    <div class="typing-test-container">
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <a href="/">
+          <button class="back-button"> ← home page </button>
+        </a>
+      </div>
+
+      <!-- Time Selector -->
+      <div class="time-selector-container">
+        <label for="timeSelector" class="time-selector-label"
+          >Test Duration:</label
+        >
+        <select id="timeSelector" class="time-selector">
+          <option value="15">15 seconds</option>
+          <option value="30" selected>30 seconds</option>
+          <option value="60">60 seconds</option>
+          <option value="120">2 minutes</option>
+        </select>
+      </div>
+
+      <div class="words-container" id="wordsContainer">
+        {
+          words.map((word, index) => (
+            <div
+              class="word default"
+              id={`word-${index}`}
+              data-word={word}
+              data-index={index}
+            >
+              {word}
+            </div>
+          ))
+        }
+      </div>
+
+      <!-- Controls -->
+      <div class="controls-container">
+        <input
+          type="text"
+          class="text-input"
+          id="textInput"
+          placeholder="Start typing..."
+          autocomplete="off"
+        />
+        <button id="resetButton" class="reset-button"> ↻ Reset </button>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-container">
+        <div class="stat-button stat-correct" id="correctCount">0</div>
+        <div class="stat-button stat-incorrect" id="incorrectCount">0</div>
+      </div>
+
+      <!-- Timer -->
+      <div class="timer-container">
+        <div class="timer-button" id="timer">0s</div>
+      </div>
+
+      <!-- Results -->
+      <div class="results-container hidden" id="resultsContainer">
+        <div class="results-text" id="resultsText"></div>
+      </div>
+    </div>
+  </body>
+</html>
+
+<script>
+  // Constants
+  const TOP_BAR_HEIGHT = 50;
+
+  // State
+  let appState = {
+    wordMap: new Map(),
+    currentWordIndex: 0,
+    correct: 0,
+    incorrect: 0,
+    firstWord: true,
+    testStarted: false,
+    testCompleted: false,
+  };
+
+  let timer = null;
+  let timeElapsed = 0;
+  let testTime = 60; // Default test time
+
+  // Initialize the app
+  function initApp() {
+    const words = document.querySelectorAll(".word");
+    words.forEach((wordEl, index) => {
+      const word = wordEl.dataset.word;
+      const wordKey = `word-${index}`;
+
+      appState.wordMap.set(wordKey, {
+        word: word,
+        status: index === 0 ? "selected" : "default",
+      });
+    });
+
+    // Set first word as selected
+    if (words.length > 0) {
+      words[0].classList.remove("default");
+      words[0].classList.add("selected");
+    }
+
+    // Update test time from selector
+    testTime = parseInt(document.getElementById("timeSelector").value);
+
+    // Focus input
+    document.getElementById("textInput").focus();
+  }
+
+  // Update word status
+  function updateWordStatus(index, status) {
+    const wordEl = document.getElementById(`word-${index}`);
+    if (!wordEl) return;
+
+    // Remove all status classes
+    wordEl.classList.remove("default", "selected", "correct", "incorrect");
+
+    // Add new status class
+    wordEl.classList.add(status);
+
+    // Update state
+    const wordKey = `word-${index}`;
+    if (appState.wordMap.has(wordKey)) {
+      appState.wordMap.get(wordKey).status = status;
+    }
+  }
+
+  // Move to next word
+  function moveToNextWord() {
+    const currentIndex = appState.currentWordIndex;
+    const nextIndex = currentIndex + 1;
+
+    // Mark current word as correct or incorrect
+    const currentWordEl = document.getElementById(`word-${currentIndex}`);
+    const input = document.getElementById("textInput").value.trim();
+    const currentWord = currentWordEl?.dataset.word;
+
+    if (input === currentWord) {
+      updateWordStatus(currentIndex, "correct");
+      appState.correct++;
+    } else {
+      updateWordStatus(currentIndex, "incorrect");
+      appState.incorrect++;
+    }
+
+    // Update counters
+    document.getElementById("correctCount").textContent = appState.correct;
+    document.getElementById("incorrectCount").textContent = appState.incorrect;
+
+    // Move to next word
+    if (nextIndex < appState.wordMap.size) {
+      updateWordStatus(nextIndex, "selected");
+      appState.currentWordIndex = nextIndex;
+
+      // Scroll to keep current word in view
+      const nextWordEl = document.getElementById(`word-${nextIndex}`);
+      if (nextWordEl) {
+        nextWordEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    } else {
+      // Test completed
+      completeTest();
+    }
+  }
+
+  // Start timer
+  function startTimer() {
+    if (timer) return;
+
+    // Disable time selector during test
+    document.getElementById("timeSelector").disabled = true;
+
+    timer = setInterval(() => {
+      timeElapsed++;
+      document.getElementById("timer").textContent = `${timeElapsed}s`;
+
+      if (timeElapsed >= testTime) {
+        completeTest();
+      }
+    }, 1000);
+  }
+
+  // Complete test
+  function completeTest() {
+    if (appState.testCompleted) return;
+
+    appState.testCompleted = true;
+    clearInterval(timer);
+    timer = null;
+
+    // Disable input
+    document.getElementById("textInput").disabled = true;
+
+    // Calculate WPM
+    const minutes = timeElapsed / 60;
+    const wpm = Math.round(appState.correct / minutes);
+
+    // Show results
+    document.getElementById("resultsText").textContent = `${wpm} WPM`;
+    document.getElementById("resultsContainer").classList.remove("hidden");
+  }
+
+  // Reset test
+  function resetTest() {
+    // Clear timer
+    clearInterval(timer);
+    timer = null;
+    timeElapsed = 0;
+
+    // Reset state
+    appState = {
+      wordMap: new Map(),
+      currentWordIndex: 0,
+      correct: 0,
+      incorrect: 0,
+      firstWord: true,
+      testStarted: false,
+      testCompleted: false,
+    };
+
+    // Reset UI
+    document.getElementById("textInput").value = "";
+    document.getElementById("textInput").disabled = false;
+    document.getElementById("correctCount").textContent = "0";
+    document.getElementById("incorrectCount").textContent = "0";
+    document.getElementById("timer").textContent = "0s";
+    document.getElementById("resultsContainer").classList.add("hidden");
+    document.getElementById("timeSelector").disabled = false;
+    document
+      .getElementById("wordsContainer")
+      ?.scrollTo({ top: 0, behavior: "smooth" });
+
+    // Reset all words
+    const words = document.querySelectorAll(".word");
+    words.forEach((wordEl, index) => {
+      wordEl.classList.remove("default", "selected", "correct", "incorrect");
+      wordEl.classList.add(index === 0 ? "selected" : "default");
+    });
+
+    // Reinitialize
+    initApp();
+    document.getElementById("textInput").focus();
+  }
+  document.getElementById("resetButton").addEventListener("click", resetTest);
+
+  // Handle input
+  document.getElementById("textInput").addEventListener("input", function (e) {
+    if (appState.testCompleted) return;
+
+    const input = e.target.value;
+
+    // Start timer on first input
+    if (appState.firstWord && input.length > 0) {
+      startTimer();
+      appState.firstWord = false;
+    }
+
+    // Check for space to complete word
+    if (input.includes(" ")) {
+      moveToNextWord();
+      e.target.value = "";
+    }
+  });
+
+  // Handle time selector change
+  document
+    .getElementById("timeSelector")
+    .addEventListener("change", function (e) {
+      if (!appState.testStarted && !appState.testCompleted) {
+        testTime = parseInt(e.target.value);
+      }
+    });
+
+  // Initialize on load
+  document.addEventListener("DOMContentLoaded", initApp);
+</script>

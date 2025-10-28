@@ -1,0 +1,39 @@
+---
+import "@styles/pages.css";
+
+import Navigation from "@components/navigation.astro";
+import Hero from "@components/hero.astro";
+import About from "@components/about.astro";
+import BlogPosts from "@components/blog-posts.astro";
+import Projects from "@components/projects.astro";
+import Contact from "@components/contact.astro";
+---
+
+<style>
+	.page-background {
+		background-color: #faf9f6;
+		background-image: url(/public/noise.svg);
+	}
+</style>
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Shane Wade</title>
+	</head>
+	<body class="page-background">
+		<main>
+			<Navigation />
+			<Hero />
+			<About />
+			<!-- <div class="spacer" style="height: 12rem;"></div> -->
+			<Projects />
+			<div class="spacer" style="height: 2rem;"></div>
+			<BlogPosts />
+			<div class="spacer" style="height: 4rem;"></div>
+			<Contact />
+		</main>
+	</body>
+</html>
+
+<script></script>

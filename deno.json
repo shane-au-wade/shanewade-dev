@@ -1,0 +1,26 @@
+{
+  "workspace": ["./web", "./api"],
+  "fmt": {
+    "lineWidth": 120,
+    "semicolons": false,
+    "singleQuote": true,
+    "useTabs": false
+  },
+  "tasks": {
+    "web": "deno task --cwd web dev",
+    "api": "deno task --cwd api dev",
+    "build": "deno task --cwd web build",
+    "chroma": "docker run -v ./chroma-data:/data -p 8000:8000 chromadb/chroma",
+    "postgres": "docker run -d --name postgres18 -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:18.0"
+  },
+  "nodeModulesDir": "auto",
+  "imports": {
+    "@astrojs/vercel": "npm:@astrojs/vercel@^9.0.0",
+    "@mistralai/mistralai": "npm:@mistralai/mistralai@^1.10.0",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
+    "@std/path": "jsr:@std/path@^1.1.2",
+    "astro": "npm:astro@^5.15.1",
+    "sharp": "npm:sharp@^0.34.4"
+  }
+}
