@@ -3,7 +3,8 @@
     "supabase/functions",
     "web",
     "api",
-    "scripts"
+    "scripts",
+    "repl-env.ts"
   ],
   "deno.lint": true,
   "deno.unstable": [

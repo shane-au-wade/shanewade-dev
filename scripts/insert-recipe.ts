@@ -12,13 +12,13 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 interface RecipeData {
   id: string
   title: string
-  subtitle?: string
-  servings?: string
-  company_name?: string
-  cook_time?: string
-  cooking_tips?: string
+  subtitle: string
+  servings: string
+  company_name: string | null
+  cook_time: string
+  cooking_tips: string | null
   ingredients: Array<{
-    name: string
+    display_name: string
     quantity: number
     unit: string | null
   }>
@@ -31,11 +31,11 @@ interface RecipeData {
     details: string
   }>
   cooking_tools: Array<{
-    name: string
+    display_name: string
   }>
-  ocr_markdown?: string
-  ocr_results?: unknown
-  pages?: string[]
+  ocr_markdown: string
+  ocr_results: unknown
+  pages: string[]
 }
 
 export async function insertRecipe(
@@ -68,7 +68,7 @@ export async function insertRecipe(
   if (recipeData.ingredients?.length > 0) {
     const ingredients = recipeData.ingredients.map((ing, index) => ({
       recipe_id: recipe.id,
-      name: ing.name,
+      display_name: ing.display_name,
       quantity: ing.quantity,
       unit: ing.unit,
       position: index,
@@ -127,7 +127,7 @@ export async function insertRecipe(
   if (recipeData.cooking_tools?.length > 0) {
     const tools = recipeData.cooking_tools.map((tool, index) => ({
       recipe_id: recipe.id,
-      name: tool.name,
+      display_name: tool.display_name,
       position: index,
     }))
 
@@ -143,22 +143,4 @@ export async function insertRecipe(
   }
 
   return recipe
-}
-
-// Example usage with Deno
-if (import.meta.main) {
-  const { createClient } = await import("npm:@supabase/supabase-js")
-
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? ""
-  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  // Load and insert your recipe
-  const recipeData = JSON.parse(
-    await Deno.readTextFile("./save-complete-recipe.json"),
-  )
-
-  const result = await insertRecipe(supabase, recipeData)
-  console.log("Recipe inserted successfully:", result.id)
 }

@@ -16,7 +16,7 @@ export async function getRecipe(supabase: SupabaseClient, recipeId: string) {
       *,
       ingredients (
         id,
-        name,
+        display_name,
         quantity,
         unit,
         position
@@ -35,7 +35,7 @@ export async function getRecipe(supabase: SupabaseClient, recipeId: string) {
       ),
       cooking_tools (
         id,
-        name,
+        display_name,
         position
       )
     `)

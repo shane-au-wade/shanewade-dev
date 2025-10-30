@@ -1,10 +1,9 @@
 import recipeJson from "../../local_data/recipes-saved.json" with { type: "json" }
-// import { zodTextFormat } from "@openai/openai/helpers/zod"
 import { z } from "@zod/zod"
-import * as deps from "../repl-env.ts"
-import { exit } from "node:process"
+import * as deps from "../../repl-env.ts"
+import { insertRecipe } from "../insert-recipe.ts"
 
-const { mistral, openai, anthropic } = deps
+const { mistral, openai, anthropic, supabase } = deps
 
 const BATCH_OCR_RESULTS_JSONL_FILE_PATH = "./local_data/batch-ocr-results-recipes-1-to-25.jsonl"
 
@@ -139,7 +138,7 @@ async function combineRecipesWithOcr(): Promise<RecipeWithOcr[]> {
 
 const ingredientSchema = z.object({
   type: z.literal("ingredient"),
-  name: z.string(),
+  display_name: z.string(),
   quantity: z.number(),
   unit: z.string().nullable(),
 })
@@ -174,7 +173,7 @@ const recipeInfoSchema = z.object({
 
 const cookingToolSchema = z.object({
   type: z.literal("cooking_tool"),
-  name: z.string(),
+  display_name: z.string(),
 })
 
 const cookingToolsSchema = z.object({
@@ -460,7 +459,7 @@ async function extractRecipeInfoOpenai(
 if (import.meta.main) {
   const recipesWithOcr = await combineRecipesWithOcr()
 
-  await Deno.writeTextFile("./save.json", JSON.stringify(recipesWithOcr, null, 2))
+  // await Deno.writeTextFile("./save.json", JSON.stringify(recipesWithOcr, null, 2))
 
   console.log(`Loaded ${recipesWithOcr.length} recipes`)
 
@@ -497,8 +496,11 @@ if (import.meta.main) {
     pages: firstRecipe.pages,
   }
 
-  await Deno.writeTextFile(
-    "./save-complete-recipe.json",
-    JSON.stringify(completeRecipe, null, 2),
-  )
+  // insert the complete recipe into the database
+  await insertRecipe(supabase, completeRecipe)
+
+  // await Deno.writeTextFile(
+  //   "./save-complete-recipe.json",
+  //   JSON.stringify(completeRecipe, null, 2),
+  // )
 }
