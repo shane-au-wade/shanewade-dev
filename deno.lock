@@ -2,15 +2,28 @@
   "version": "5",
   "specifiers": {
     "jsr:@hono/hono@^4.10.2": "4.10.2",
+    "jsr:@openai/openai@^6.7.0": "6.7.0",
+    "jsr:@std/assert@^1.0.15": "1.0.15",
+    "jsr:@std/cli@^1.0.23": "1.0.23",
     "jsr:@std/dotenv@~0.225.5": "0.225.5",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/internal@^1.0.10": "1.0.12",
+    "jsr:@std/internal@^1.0.12": "1.0.12",
     "jsr:@std/path@^1.1.2": "1.1.2",
+    "jsr:@supabase/supabase-js@^2.58.0": "2.58.0",
+    "jsr:@zod/zod@^4.1.12": "4.1.12",
+    "npm:@anthropic-ai/sdk@0.68": "0.68.0_zod@3.25.76",
     "npm:@astrojs/react@^4.4.0": "4.4.0_@types+react@19.2.2_@types+react-dom@19.2.2__@types+react@19.2.2_react@19.2.0_react-dom@19.2.0__react@19.2.0_vite@6.4.1__picomatch@4.0.3_@types+node@24.2.0",
     "npm:@astrojs/vercel@9": "9.0.0_astro@5.14.8__vite@6.4.1___picomatch@4.0.3__zod@3.25.76__@types+node@24.2.0_react@19.2.0_@vercel+functions@2.2.13_@types+node@24.2.0",
     "npm:@blueprintjs/core@^6.3.2": "6.3.2_@types+react@19.2.2_react@19.2.0_react-dom@19.2.0__react@19.2.0_@popperjs+core@2.11.8",
     "npm:@blueprintjs/icons@^6.2.0": "6.2.0_@types+react@19.2.2_react@19.2.0_react-dom@19.2.0__react@19.2.0",
     "npm:@mistralai/mistralai@^1.10.0": "1.10.0_zod@3.25.76",
+    "npm:@supabase/auth-js@2.72.0": "2.72.0",
+    "npm:@supabase/functions-js@2.5.0": "2.5.0",
+    "npm:@supabase/node-fetch@2.6.15": "2.6.15",
+    "npm:@supabase/postgrest-js@1.21.4": "1.21.4",
+    "npm:@supabase/realtime-js@2.15.5": "2.15.5",
+    "npm:@supabase/storage-js@2.12.2": "2.12.2",
     "npm:@types/node@*": "24.2.0",
     "npm:@types/react-dom@^19.2.2": "19.2.2_@types+react@19.2.2",
     "npm:@types/react@^19.2.2": "19.2.2",
@@ -21,11 +34,30 @@
     "npm:astro@latest": "5.14.8_vite@6.4.1__picomatch@4.0.3_zod@3.25.76_@types+node@24.2.0",
     "npm:react-dom@^19.2.0": "19.2.0_react@19.2.0",
     "npm:react@^19.2.0": "19.2.0",
-    "npm:sharp@~0.34.4": "0.34.4"
+    "npm:sharp@~0.34.4": "0.34.4",
+    "npm:zod@3": "3.25.76"
   },
   "jsr": {
     "@hono/hono@4.10.2": {
       "integrity": "9cdb32df3b1f8eba43b197035a90e0c3c543ddf99f75cebfa31a2414bc5633f8"
+    },
+    "@openai/openai@6.7.0": {
+      "integrity": "9a74feaf66daf233b02b639b256e81fabc542b63ae7ea76e033cc7e71a910f5b",
+      "dependencies": [
+        "npm:zod"
+      ]
+    },
+    "@std/assert@1.0.15": {
+      "integrity": "d64018e951dbdfab9777335ecdb000c0b4e3df036984083be219ce5941e4703b",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.12"
+      ]
+    },
+    "@std/cli@1.0.23": {
+      "integrity": "bf95b7a9425ba2af1ae5a6359daf58c508f2decf711a76ed2993cd352498ccca",
+      "dependencies": [
+        "jsr:@std/internal@^1.0.12"
+      ]
     },
     "@std/dotenv@0.225.5": {
       "integrity": "9ce6f9d0ec3311f74a32535aa1b8c62ed88b1ab91b7f0815797d77a6f60c922f"
@@ -39,11 +71,36 @@
     "@std/path@1.1.2": {
       "integrity": "c0b13b97dfe06546d5e16bf3966b1cadf92e1cc83e56ba5476ad8b498d9e3038",
       "dependencies": [
-        "jsr:@std/internal"
+        "jsr:@std/internal@^1.0.10"
       ]
+    },
+    "@supabase/supabase-js@2.58.0": {
+      "integrity": "4d04e72e9f632b451ac7d1a84de0b85249c0097fdf06253f371c1f0a23e62c87",
+      "dependencies": [
+        "npm:@supabase/auth-js",
+        "npm:@supabase/functions-js",
+        "npm:@supabase/node-fetch",
+        "npm:@supabase/postgrest-js",
+        "npm:@supabase/realtime-js",
+        "npm:@supabase/storage-js"
+      ]
+    },
+    "@zod/zod@4.1.12": {
+      "integrity": "5876ed4c6d44673faf5120f0a461a2ada2eb6c735329d3ebaf5ba1fc08387695"
     }
   },
   "npm": {
+    "@anthropic-ai/sdk@0.68.0_zod@3.25.76": {
+      "integrity": "sha512-SMYAmbbiprG8k1EjEPMTwaTqssDT7Ae+jxcR5kWXiqTlbwMR2AthXtscEVWOHkRfyAV5+y3PFYTJRNa3OJWIEw==",
+      "dependencies": [
+        "json-schema-to-ts",
+        "zod"
+      ],
+      "optionalPeers": [
+        "zod"
+      ],
+      "bin": true
+    },
     "@astrojs/compiler@2.13.0": {
       "integrity": "sha512-mqVORhUJViA28fwHYaWmsXSzLO9osbdZ5ImUfxBarqsYdMlPbqAqGJCxsNzvppp1BEzc1mJNjOVvQqeDN8Vspw=="
     },
@@ -836,6 +893,45 @@
     "@shikijs/vscode-textmate@10.0.2": {
       "integrity": "sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg=="
     },
+    "@supabase/auth-js@2.72.0": {
+      "integrity": "sha512-4+bnUrtTDK1YD0/FCx2YtMiQH5FGu9Jlf4IQi5kcqRwRwqp2ey39V61nHNdH86jm3DIzz0aZKiWfTW8qXk1swQ==",
+      "dependencies": [
+        "@supabase/node-fetch"
+      ]
+    },
+    "@supabase/functions-js@2.5.0": {
+      "integrity": "sha512-SXBx6Jvp+MOBekeKFu+G11YLYPeVeGQl23eYyAG9+Ro0pQ1aIP0UZNIBxHKNHqxzR0L0n6gysNr2KT3841NATw==",
+      "dependencies": [
+        "@supabase/node-fetch"
+      ]
+    },
+    "@supabase/node-fetch@2.6.15": {
+      "integrity": "sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==",
+      "dependencies": [
+        "whatwg-url"
+      ]
+    },
+    "@supabase/postgrest-js@1.21.4": {
+      "integrity": "sha512-TxZCIjxk6/dP9abAi89VQbWWMBbybpGWyvmIzTd79OeravM13OjR/YEYeyUOPcM1C3QyvXkvPZhUfItvmhY1IQ==",
+      "dependencies": [
+        "@supabase/node-fetch"
+      ]
+    },
+    "@supabase/realtime-js@2.15.5": {
+      "integrity": "sha512-/Rs5Vqu9jejRD8ZeuaWXebdkH+J7V6VySbCZ/zQM93Ta5y3mAmocjioa/nzlB6qvFmyylUgKVS1KpE212t30OA==",
+      "dependencies": [
+        "@supabase/node-fetch",
+        "@types/phoenix",
+        "@types/ws",
+        "ws"
+      ]
+    },
+    "@supabase/storage-js@2.12.2": {
+      "integrity": "sha512-SiySHxi3q7gia7NBYpsYRu8gyI0NhFwSORMxbZIxJ/zAVkN6QpwDRan158CJ+UdzD4WB/rQMAGRqIJQP+7ccAQ==",
+      "dependencies": [
+        "@supabase/node-fetch"
+      ]
+    },
     "@swc/helpers@0.5.17": {
       "integrity": "sha512-5IKx/Y13RsYd+sauPb2x+U/xZikHjolzfuDgTAl/Tdf3Q8rslRvC19NKDLgAJQ6wsqADk10ntlv08nPFw/gO/A==",
       "dependencies": [
@@ -913,6 +1009,9 @@
         "undici-types"
       ]
     },
+    "@types/phoenix@1.6.6": {
+      "integrity": "sha512-PIzZZlEppgrpoT2QgbnDU+MMzuR6BbCjllj0bM70lWoejMeNJAxCchxnv7J3XFkI8MpygtRpzXrIlmWUBclP5A=="
+    },
     "@types/react-dom@19.2.2_@types+react@19.2.2": {
       "integrity": "sha512-9KQPoO6mZCi7jcIStSnlOWn2nEF3mNmyr3rIAsGnAbQKYbRLyqmeSc39EVgtxXVia+LMT8j3knZLAZAh+xLmrw==",
       "dependencies": [
@@ -927,6 +1026,12 @@
     },
     "@types/unist@3.0.3": {
       "integrity": "sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q=="
+    },
+    "@types/ws@8.18.1": {
+      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
+      "dependencies": [
+        "@types/node"
+      ]
     },
     "@ungap/structured-clone@1.3.0": {
       "integrity": "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g=="
@@ -1972,6 +2077,13 @@
       "integrity": "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==",
       "bin": true
     },
+    "json-schema-to-ts@3.1.1": {
+      "integrity": "sha512-+DWg8jCJG2TEnpy7kOm/7/AxaYoaRbjVB4LFZLySZlWn8exGs3A4OLJR966cVvU26N7X9TWxl+Jsw7dzAqKT6g==",
+      "dependencies": [
+        "@babel/runtime",
+        "ts-algebra"
+      ]
+    },
     "json-schema-traverse@0.4.1": {
       "integrity": "sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg=="
     },
@@ -3009,6 +3121,9 @@
     "trough@2.2.0": {
       "integrity": "sha512-tmMpK00BjZiUyVyvrBK7knerNgmgvcV/KLVyuma/SC+TQN167GrMRciANTz09+k3zW8L8t60jWO1GpfkZdjTaw=="
     },
+    "ts-algebra@2.0.0": {
+      "integrity": "sha512-FPAhNPFMrkwz76P7cdjdmiShwMynZYN6SgOujD1urY4oNm80Ou9oMdmbR45LotcKOXoy7wSmHkRFE6Mxbrhefw=="
+    },
     "tsconfck@3.1.6": {
       "integrity": "sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==",
       "bin": true
@@ -3355,6 +3470,9 @@
         "strip-ansi@7.1.2"
       ]
     },
+    "ws@8.18.3": {
+      "integrity": "sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg=="
+    },
     "xxhash-wasm@1.1.0": {
       "integrity": "sha512-147y/6YNh+tlp6nd/2pWq38i9h6mz/EuQ6njIrmW8D1BS5nCqs0P6DG+m6zTGnNz5I+uhZ0SHxBs9BsPrwcKDA=="
     },
@@ -3401,9 +3519,15 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@openai/openai@^6.7.0",
+      "jsr:@std/assert@^1.0.15",
+      "jsr:@std/cli@^1.0.23",
       "jsr:@std/dotenv@~0.225.5",
       "jsr:@std/encoding@^1.0.10",
       "jsr:@std/path@^1.1.2",
+      "jsr:@supabase/supabase-js@^2.58.0",
+      "jsr:@zod/zod@^4.1.12",
+      "npm:@anthropic-ai/sdk@0.68",
       "npm:@astrojs/vercel@9",
       "npm:@mistralai/mistralai@^1.10.0",
       "npm:astro@^5.15.1",
