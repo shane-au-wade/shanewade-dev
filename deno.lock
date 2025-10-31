@@ -4,6 +4,7 @@
     "jsr:@hono/hono@^4.10.2": "4.10.2",
     "jsr:@openai/openai@^6.7.0": "6.7.0",
     "jsr:@std/assert@^1.0.15": "1.0.15",
+    "jsr:@std/async@^1.0.15": "1.0.15",
     "jsr:@std/cli@^1.0.23": "1.0.23",
     "jsr:@std/dotenv@~0.225.5": "0.225.5",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
@@ -17,6 +18,7 @@
     "npm:@astrojs/vercel@9": "9.0.0_astro@5.14.8__vite@6.4.1___picomatch@4.0.3__zod@3.25.76__@types+node@24.2.0_react@19.2.0_@vercel+functions@2.2.13_@types+node@24.2.0",
     "npm:@blueprintjs/core@^6.3.2": "6.3.2_@types+react@19.2.2_react@19.2.0_react-dom@19.2.0__react@19.2.0_@popperjs+core@2.11.8",
     "npm:@blueprintjs/icons@^6.2.0": "6.2.0_@types+react@19.2.2_react@19.2.0_react-dom@19.2.0__react@19.2.0",
+    "npm:@deno/astro-adapter@~0.3.2": "0.3.2_astro@5.14.8__vite@6.4.1___picomatch@4.0.3__zod@3.25.76__@types+node@24.2.0_@types+node@24.2.0",
     "npm:@mistralai/mistralai@^1.10.0": "1.10.0_zod@3.25.76",
     "npm:@supabase/auth-js@2.72.0": "2.72.0",
     "npm:@supabase/functions-js@2.5.0": "2.5.0",
@@ -52,6 +54,9 @@
       "dependencies": [
         "jsr:@std/internal@^1.0.12"
       ]
+    },
+    "@std/async@1.0.15": {
+      "integrity": "55d1d9d04f99403fe5730ab16bdcc3c47f658a6bf054cafb38a50f046238116e"
     },
     "@std/cli@1.0.23": {
       "integrity": "bf95b7a9425ba2af1ae5a6359daf58c508f2decf711a76ed2993cd352498ccca",
@@ -373,6 +378,12 @@
       "integrity": "sha512-+ntATQe1AlL7nTOYjwjj6w3299CgRot48wL761TUGYpYgAou3AaONZazp0PKZyCyWhudWsjhq1nvRHOvbMzhTA==",
       "dependencies": [
         "fontkit"
+      ]
+    },
+    "@deno/astro-adapter@0.3.2_astro@5.14.8__vite@6.4.1___picomatch@4.0.3__zod@3.25.76__@types+node@24.2.0_@types+node@24.2.0": {
+      "integrity": "sha512-nN0kQGobRs2XE3R+O/DWYQanEWpteJNsIf5TD65787qFEw2CrqkFNcNolZFJiKUF/2Y/TKyOLRjMS3F6auECVg==",
+      "dependencies": [
+        "astro@5.14.8_vite@6.4.1__picomatch@4.0.3_zod@3.25.76_@types+node@24.2.0"
       ]
     },
     "@emnapi/runtime@1.6.0": {
@@ -3521,6 +3532,7 @@
     "dependencies": [
       "jsr:@openai/openai@^6.7.0",
       "jsr:@std/assert@^1.0.15",
+      "jsr:@std/async@^1.0.15",
       "jsr:@std/cli@^1.0.23",
       "jsr:@std/dotenv@~0.225.5",
       "jsr:@std/encoding@^1.0.10",
@@ -3529,6 +3541,7 @@
       "jsr:@zod/zod@^4.1.12",
       "npm:@anthropic-ai/sdk@0.68",
       "npm:@astrojs/vercel@9",
+      "npm:@deno/astro-adapter@~0.3.2",
       "npm:@mistralai/mistralai@^1.10.0",
       "npm:astro@^5.15.1",
       "npm:sharp@~0.34.4"

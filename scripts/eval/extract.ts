@@ -2,12 +2,35 @@ import recipeJson from "../../local_data/recipes-saved.json" with { type: "json"
 import { z } from "@zod/zod"
 import * as deps from "../../repl-env.ts"
 import { insertRecipe } from "../insert-recipe.ts"
+import { delay } from "@std/async/delay"
 
 const { mistral, openai, anthropic, supabase } = deps
 
 const BATCH_OCR_RESULTS_JSONL_FILE_PATH = "./local_data/batch-ocr-results-recipes-1-to-25.jsonl"
 
 const IMAGES_DIRECTORY = "./local_data/recipes"
+
+const PROCESSING_CACHE_FILE_PATH = "./local_data/processing-cache.json"
+
+async function loadProcessingCache(): Promise<Record<string, boolean>> {
+  try {
+    const stats = await Deno.lstat(PROCESSING_CACHE_FILE_PATH)
+
+    if (!stats.isFile) {
+      await Deno.writeTextFile(PROCESSING_CACHE_FILE_PATH, "{}")
+    }
+
+    const text = await Deno.readTextFile(PROCESSING_CACHE_FILE_PATH)
+    return JSON.parse(text)
+  } catch (err) {
+    if (!(err instanceof Deno.errors.NotFound)) {
+      throw err
+    }
+    console.log("File does not exist")
+    await Deno.writeTextFile(PROCESSING_CACHE_FILE_PATH, "{}")
+    return {}
+  }
+}
 
 type OcrPage = {
   index: number
@@ -459,48 +482,103 @@ async function extractRecipeInfoOpenai(
 if (import.meta.main) {
   const recipesWithOcr = await combineRecipesWithOcr()
 
+  const processingCache = await loadProcessingCache()
   // await Deno.writeTextFile("./save.json", JSON.stringify(recipesWithOcr, null, 2))
 
   console.log(`Loaded ${recipesWithOcr.length} recipes`)
 
-  // I see the case for 3 extraction steps
+  // test with only one recipe
+  for (const recipe of recipesWithOcr) {
+    if (processingCache[recipe.id]) {
+      console.log(`Skipping recipe ${recipe.id} because it is already being processed`)
+      continue
+    }
 
-  // 1. ingredients
-  // 2. recipe steps
-  // 3. general recipe fields like title, description, etc
+    console.log(`[INFO] Processing recipe ${recipe.id}`)
 
-  const firstRecipe = recipesWithOcr[0]
-  const recipeInfoResult = await extractRecipeInfoOpenai(firstRecipe)
-  const ingredientsResult = await extractIngredientsOpenai(firstRecipe)
-  const stepsResult = await extractStepsOpenai(firstRecipe)
-  const miseEnPlaceStepsResult = await extractMiseEnPlaceStepsOpenai(firstRecipe)
-  const cookingToolsResult = await extractCookingToolsOpenai(firstRecipe)
+    // extract the recipe in parallel
+    const [recipeInfoResult, ingredientsResult, stepsResult, miseEnPlaceStepsResult, cookingToolsResult] = await Promise
+      .all([
+        extractRecipeInfoOpenai(recipe),
+        extractIngredientsOpenai(recipe),
+        extractStepsOpenai(recipe),
+        extractMiseEnPlaceStepsOpenai(recipe),
+        extractCookingToolsOpenai(recipe),
+      ])
 
-  if (
-    !(recipeInfoResult.type === "success" && ingredientsResult.type === "success" && stepsResult.type === "success" &&
-      miseEnPlaceStepsResult.type === "success" && cookingToolsResult.type === "success")
-  ) {
-    console.error("one or more extraction steps failed")
-    Deno.exit(1)
+    if (
+      !(recipeInfoResult.type === "success" && ingredientsResult.type === "success" && stepsResult.type === "success" &&
+        miseEnPlaceStepsResult.type === "success" && cookingToolsResult.type === "success")
+    ) {
+      console.error("one or more extraction steps failed")
+      continue
+    }
+
+    const completeRecipe = {
+      id: recipe.id,
+      ...recipeInfoResult.result,
+      ...ingredientsResult.result,
+      ...stepsResult.result,
+      ...miseEnPlaceStepsResult.result,
+      ...cookingToolsResult.result,
+      ocr_markdown: recipe.ocr_markdown,
+      ocr_results: recipe.ocr_results,
+      pages: recipe.pages,
+    }
+
+    try {
+      // insert the complete recipe into the database
+      await insertRecipe(supabase, completeRecipe)
+
+      processingCache[recipe.id] = true
+      await Deno.writeTextFile(PROCESSING_CACHE_FILE_PATH, JSON.stringify(processingCache))
+    } catch (error) {
+      console.error("failed to insert recipe", error)
+    }
+
+    // sleep for 1 second to avoid rate limiting
+    await delay(1000)
   }
-
-  const completeRecipe = {
-    id: firstRecipe.id,
-    ...recipeInfoResult.result,
-    ...ingredientsResult.result,
-    ...stepsResult.result,
-    ...miseEnPlaceStepsResult.result,
-    ...cookingToolsResult.result,
-    ocr_markdown: firstRecipe.ocr_markdown,
-    ocr_results: firstRecipe.ocr_results,
-    pages: firstRecipe.pages,
-  }
-
-  // insert the complete recipe into the database
-  await insertRecipe(supabase, completeRecipe)
-
-  // await Deno.writeTextFile(
-  //   "./save-complete-recipe.json",
-  //   JSON.stringify(completeRecipe, null, 2),
-  // )
 }
+
+// old code
+
+// I see the case for 3 extraction steps
+// 1. ingredients
+// 2. recipe steps
+// 3. general recipe fields like title, description, etc
+
+// const firstRecipe = recipesWithOcr[0]
+// const recipeInfoResult = await extractRecipeInfoOpenai(firstRecipe)
+// const ingredientsResult = await extractIngredientsOpenai(firstRecipe)
+// const stepsResult = await extractStepsOpenai(firstRecipe)
+// const miseEnPlaceStepsResult = await extractMiseEnPlaceStepsOpenai(firstRecipe)
+// const cookingToolsResult = await extractCookingToolsOpenai(firstRecipe)
+
+// if (
+//   !(recipeInfoResult.type === "success" && ingredientsResult.type === "success" && stepsResult.type === "success" &&
+//     miseEnPlaceStepsResult.type === "success" && cookingToolsResult.type === "success")
+// ) {
+//   console.error("one or more extraction steps failed")
+//   Deno.exit(1)
+// }
+
+// const completeRecipe = {
+//   id: firstRecipe.id,
+//   ...recipeInfoResult.result,
+//   ...ingredientsResult.result,
+//   ...stepsResult.result,
+//   ...miseEnPlaceStepsResult.result,
+//   ...cookingToolsResult.result,
+//   ocr_markdown: firstRecipe.ocr_markdown,
+//   ocr_results: firstRecipe.ocr_results,
+//   pages: firstRecipe.pages,
+// }
+
+// // insert the complete recipe into the database
+// await insertRecipe(supabase, completeRecipe)
+
+// await Deno.writeTextFile(
+//   "./save-complete-recipe.json",
+//   JSON.stringify(completeRecipe, null, 2),
+// )

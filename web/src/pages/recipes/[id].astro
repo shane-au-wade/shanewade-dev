@@ -1,0 +1,373 @@
+---
+export const prerender = false;
+
+import { getRecipe } from "../../lib/recipes";
+import { supabase } from "../../lib/db/supabase-client";
+
+const { id } = Astro.params;
+
+if (!id) {
+    return new Response("Recipe ID is required", {
+        status: 400,
+        statusText: "Bad Request",
+    });
+}
+
+let recipe;
+try {
+    recipe = await getRecipe(supabase, id);
+} catch (error) {
+    console.error("Error fetching recipe:", error);
+    return new Response("Error fetching recipe", {
+        status: 500,
+        statusText: "Internal Server Error",
+    });
+}
+
+if (!recipe) {
+    return new Response("Recipe not found", {
+        status: 404,
+        statusText: "Not Found",
+    });
+}
+---
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family:
+            system-ui,
+            -apple-system,
+            sans-serif;
+        overflow: hidden;
+    }
+
+    .screen {
+        width: 100vw;
+        height: 100vh;
+        padding: 1rem;
+        /* cursor: pointer; */
+    }
+
+    .screen.hidden {
+        display: none;
+    }
+
+    .flex-row {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    .page-indicator {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .header {
+        margin-bottom: 1.5rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+    }
+
+    .subtitle {
+        font-size: 1.1rem;
+        opacity: 0.7;
+        margin-bottom: 1rem;
+    }
+
+    .meta {
+        display: flex;
+        gap: 2rem;
+        font-size: 1rem;
+        opacity: 0.8;
+        margin-bottom: 1.5rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .ingredients {
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .ingredient {
+        padding: 0.75rem 1rem;
+        background: #e8e8df;
+        border-left: 3px solid #8b7355;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .ingredient strong {
+        display: inline-block;
+        margin-right: 0.25rem;
+        color: #5d4e37;
+    }
+
+    .tools {
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .tool {
+        padding: 0.75rem 1rem;
+        background: #e8e8df;
+        border-left: 3px solid #8b7355;
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .header-with-tools {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .tools-inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .tools-label {
+        font-weight: 600;
+        margin-right: 0.25rem;
+    }
+
+    .tool-inline {
+        color: #5d4e37;
+    }
+
+    .section-header {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+        margin-top: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+
+    .mise-steps {
+        margin-bottom: 1.5rem;
+    }
+
+    .mise-step {
+        background: #f4f4f4;
+        border-left: 4px solid #6a8b5a;
+    }
+
+    .steps-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+        flex: 1;
+    }
+
+    .step {
+        padding: 1.25rem;
+        background: #f4f4f4;
+        border-left: 4px solid #8b7355;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .step-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+        color: #5d4e37;
+    }
+
+    .step-details {
+        font-size: 0.9rem;
+        line-height: 1.5;
+        opacity: 0.9;
+    }
+
+    .click-hint {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 2rem;
+        font-size: 0.85rem;
+        opacity: 0.6;
+        animation: pulse 2s infinite;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 0.6;
+        }
+        50% {
+            opacity: 1;
+        }
+    }
+
+    .side-bar {
+        width: 400px;
+        height: 100%;
+        border: 1px solid red
+    }
+</style>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{recipe.title}</title>
+    </head>
+    <body>
+        <!-- Screen 1: Recipe Info & Ingredients -->
+        <div class="screen " id="screen1">
+        
+            <div class="header">
+                <h1>{recipe.title}</h1>
+                <p class="subtitle">{recipe.subtitle}</p>
+                <div class="meta">
+                    <span>⏱️ {recipe.cook_time}</span>
+                    <span>🍽️ {recipe.servings}</span>
+                </div>
+            </div>
+
+            <h2>Ingredients</h2>
+            <ul class="ingredients">
+                {
+                    recipe.ingredients.map((ingredient: any) => (
+                        <li class="ingredient">
+                            <strong>
+                                {ingredient.quantity} {ingredient.unit || ""}
+                            </strong>
+                            {ingredient.display_name}
+                        </li>
+                    ))
+                }
+            </ul>
+
+            <h2>Tools</h2>
+            <ul class="tools">
+                {
+                    recipe.cooking_tools.map((tool: any) => (
+                        <li class="tool">{tool.display_name}</li>
+                    ))
+                }
+            </ul>
+
+            <div class="click-hint">
+                <span>Click anywhere to see instructions</span>
+                <span>→</span>
+            </div>
+        </div>
+
+        <!-- Screen 2: Steps -->
+        <div class="screen screen-2 hidden" id="screen2">
+            <div class="page-indicator">👨‍🍳</div>
+            <div class="header">
+                <h1>{recipe.title}</h1>
+                <div class="header-with-tools">
+                    <h2>Instructions</h2>
+                    <div class="tools-inline">
+                        <span class="tools-label">Tools:</span>
+                        {
+                            recipe.cooking_tools.map(
+                                (tool: any, index: number) => (
+                                    <span class="tool-inline">
+                                        {tool.display_name}
+                                        {index < recipe.cooking_tools.length - 1
+                                            ? ","
+                                            : ""}
+                                    </span>
+                                ),
+                            )
+                        }
+                    </div>
+                </div>
+            </div>
+
+            {
+                recipe.mise_en_place_steps &&
+                    recipe.mise_en_place_steps.length > 0 && (
+                        <>
+                            <h2 class="section-header">Mise en Place</h2>
+                            <div class="steps-grid mise-steps">
+                                {recipe.mise_en_place_steps.map(
+                                    (step: any, index: number) => (
+                                        <div class="step mise-step">
+                                            <div class="step-title">
+                                                {index + 1}. {step.title}
+                                            </div>
+                                            <div class="step-details">
+                                                {step.details}
+                                            </div>
+                                        </div>
+                                    ),
+                                )}
+                            </div>
+                        </>
+                    )
+            }
+
+            <h2 class="section-header">Cooking Steps</h2>
+            <div class="steps-grid">
+                {
+                    recipe.steps.map((step: any, index: number) => (
+                        <div class="step">
+                            <div class="step-title">
+                                {index + 1}. {step.title}
+                            </div>
+                            <div class="step-details">{step.details}</div>
+                        </div>
+                    ))
+                }
+            </div>
+
+            <div class="click-hint">
+                <span>←</span>
+                <span>Click anywhere to see ingredients</span>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script>
+    const screen1 = document.getElementById("screen1");
+    const screen2 = document.getElementById("screen2");
+
+    if (screen1 && screen2) {
+        const toggleScreens = () => {
+            screen1!.classList.toggle("hidden");
+            screen2!.classList.toggle("hidden");
+        };
+
+        screen1.addEventListener("click", toggleScreens);
+        screen2.addEventListener("click", toggleScreens);
+    }
+</script>
