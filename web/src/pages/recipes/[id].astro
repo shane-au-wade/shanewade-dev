@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import "@styles/colors.css";
 
 import { getRecipe } from "../../lib/recipes";
 import { supabase } from "../../lib/db/supabase-client";
@@ -58,6 +59,14 @@ if (!recipe) {
         display: none;
     }
 
+    .side-bar {
+        width: 400px;
+        height: 100%;
+        border: 2px solid var(--color-brand-primary-dark);
+        border-radius: 1rem;
+        padding: 1rem;
+    }
+
     .flex-row {
         display: flex;
         flex-direction: row;
@@ -111,8 +120,8 @@ if (!recipe) {
 
     .ingredient {
         padding: 0.75rem 1rem;
-        background: #e8e8df;
-        border-left: 3px solid #8b7355;
+        background: var(--color-bg-secondary);
+        border-left: 3px solid var(--color-brand-primary-dark);
         font-size: 0.95rem;
         line-height: 1.4;
     }
@@ -120,7 +129,7 @@ if (!recipe) {
     .ingredient strong {
         display: inline-block;
         margin-right: 0.25rem;
-        color: #5d4e37;
+        color: var(--color-text-primary);
     }
 
     .tools {
@@ -133,8 +142,8 @@ if (!recipe) {
 
     .tool {
         padding: 0.75rem 1rem;
-        background: #e8e8df;
-        border-left: 3px solid #8b7355;
+        background: var(--color-bg-secondary);
+        border-left: 3px solid var(--color-brand-primary-dark);
         font-size: 0.95rem;
         line-height: 1.4;
     }
@@ -160,7 +169,7 @@ if (!recipe) {
     }
 
     .tool-inline {
-        color: #5d4e37;
+        color: var(--color-text-primary);
     }
 
     .section-header {
@@ -231,12 +240,6 @@ if (!recipe) {
             opacity: 1;
         }
     }
-
-    .side-bar {
-        width: 400px;
-        height: 100%;
-        border: 1px solid red
-    }
 </style>
 
 <html lang="en">
@@ -247,39 +250,51 @@ if (!recipe) {
     </head>
     <body>
         <!-- Screen 1: Recipe Info & Ingredients -->
-        <div class="screen " id="screen1">
-        
-            <div class="header">
+        <div class="screen flex-row" id="screen1">
+            <div class="side-bar">
+                <span>{recipe.company_name}</span>
                 <h1>{recipe.title}</h1>
                 <p class="subtitle">{recipe.subtitle}</p>
                 <div class="meta">
                     <span>⏱️ {recipe.cook_time}</span>
                     <span>🍽️ {recipe.servings}</span>
                 </div>
+                <br />
+                <div>
+                    <h3>Cooking Tips</h3>
+                    <p>{recipe.cooking_tips}</p>
+                </div>
             </div>
 
-            <h2>Ingredients</h2>
-            <ul class="ingredients">
-                {
-                    recipe.ingredients.map((ingredient: any) => (
-                        <li class="ingredient">
-                            <strong>
-                                {ingredient.quantity} {ingredient.unit || ""}
-                            </strong>
-                            {ingredient.display_name}
-                        </li>
-                    ))
-                }
-            </ul>
+            <div
+                style={{
+                    width: "100%",
+                }}
+            >
+                <h2>Ingredients</h2>
+                <ul class="ingredients">
+                    {
+                        recipe.ingredients.map((ingredient: any) => (
+                            <li class="ingredient">
+                                <strong>
+                                    {ingredient.quantity}{" "}
+                                    {ingredient.unit || ""}
+                                </strong>
+                                {ingredient.display_name}
+                            </li>
+                        ))
+                    }
+                </ul>
 
-            <h2>Tools</h2>
-            <ul class="tools">
-                {
-                    recipe.cooking_tools.map((tool: any) => (
-                        <li class="tool">{tool.display_name}</li>
-                    ))
-                }
-            </ul>
+                <h2>Tools</h2>
+                <ul class="tools">
+                    {
+                        recipe.cooking_tools.map((tool: any) => (
+                            <li class="tool">{tool.display_name}</li>
+                        ))
+                    }
+                </ul>
+            </div>
 
             <div class="click-hint">
                 <span>Click anywhere to see instructions</span>
@@ -288,65 +303,89 @@ if (!recipe) {
         </div>
 
         <!-- Screen 2: Steps -->
-        <div class="screen screen-2 hidden" id="screen2">
-            <div class="page-indicator">👨‍🍳</div>
-            <div class="header">
+        <div class="screen flex-row hidden" id="screen2">
+            <div class="side-bar">
+                <span>{recipe.company_name}</span>
                 <h1>{recipe.title}</h1>
-                <div class="header-with-tools">
-                    <h2>Instructions</h2>
-                    <div class="tools-inline">
-                        <span class="tools-label">Tools:</span>
-                        {
-                            recipe.cooking_tools.map(
-                                (tool: any, index: number) => (
-                                    <span class="tool-inline">
-                                        {tool.display_name}
-                                        {index < recipe.cooking_tools.length - 1
-                                            ? ","
-                                            : ""}
-                                    </span>
-                                ),
-                            )
-                        }
-                    </div>
+                <p class="subtitle">{recipe.subtitle}</p>
+                <div class="meta">
+                    <span>⏱️ {recipe.cook_time}</span>
+                    <span>🍽️ {recipe.servings}</span>
                 </div>
+                <br />
+                <div>
+                    <h3>Cooking Tips</h3>
+                    <p>{recipe.cooking_tips}</p>
+                </div>
+
+                <h2>Ingredients</h2>
+                <ul
+                    class="ingredients"
+                    style={{
+                        gridTemplateColumns: "repeat(2, 1fr)",
+                    }}
+                >
+                    {
+                        recipe.ingredients.map((ingredient: any) => (
+                            <li class="ingredient">
+                                <strong>
+                                    {ingredient.quantity}{" "}
+                                    {ingredient.unit || ""}
+                                </strong>
+                                {ingredient.display_name}
+                            </li>
+                        ))
+                    }
+                </ul>
+
+                <h2>Tools</h2>
+                <ul class="tools">
+                    {
+                        recipe.cooking_tools.map((tool: any) => (
+                            <li class="tool">{tool.display_name}</li>
+                        ))
+                    }
+                </ul>
             </div>
 
-            {
-                recipe.mise_en_place_steps &&
-                    recipe.mise_en_place_steps.length > 0 && (
-                        <>
-                            <h2 class="section-header">Mise en Place</h2>
-                            <div class="steps-grid mise-steps">
-                                {recipe.mise_en_place_steps.map(
-                                    (step: any, index: number) => (
-                                        <div class="step mise-step">
-                                            <div class="step-title">
-                                                {index + 1}. {step.title}
-                                            </div>
-                                            <div class="step-details">
-                                                {step.details}
-                                            </div>
-                                        </div>
-                                    ),
-                                )}
-                            </div>
-                        </>
-                    )
-            }
-
-            <h2 class="section-header">Cooking Steps</h2>
-            <div class="steps-grid">
+            <!-- cooking steps -->
+            <div>
                 {
-                    recipe.steps.map((step: any, index: number) => (
-                        <div class="step">
-                            <div class="step-title">
-                                {index + 1}. {step.title}
-                            </div>
-                            <div class="step-details">{step.details}</div>
-                        </div>
-                    ))
+                    recipe.mise_en_place_steps &&
+                        recipe.mise_en_place_steps.length > 0 && (
+                            <>
+                                <h2 class="section-header">Mise en Place</h2>
+                                <div class="steps-grid mise-steps">
+                                    {recipe.mise_en_place_steps.map(
+                                        (step: any, index: number) => (
+                                            <div class="step mise-step">
+                                                <div class="step-title">
+                                                    {index + 1}. {step.title}
+                                                </div>
+                                                <div class="step-details">
+                                                    {step.details}
+                                                </div>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </>
+                        )
                 }
+
+                <h2 class="section-header">Cooking Steps</h2>
+                <div class="steps-grid">
+                    {
+                        recipe.steps.map((step: any, index: number) => (
+                            <div class="step">
+                                <div class="step-title">
+                                    {index + 1}. {step.title}
+                                </div>
+                                <div class="step-details">{step.details}</div>
+                            </div>
+                        ))
+                    }
+                </div>
             </div>
 
             <div class="click-hint">

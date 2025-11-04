@@ -5,14 +5,14 @@ import { supabase } from "../../lib/db/supabase-client";
 const { data: recipes, error } = await supabase
     .from("recipes")
     .select(
-        "id, title, subtitle, company_name, servings, cook_time, created_at",
+        "id, title, subtitle, company_name, servings, cook_time_minutes, created_at",
     );
 
 if (error) {
     console.error(error);
-    return new Response("Error fetching recipes", {
+    return new Response("Error fetching recipes: " + error.message, {
         status: 500,
-        statusText: "Internal Server Error",
+        statusText: "Internal Server Error: " + error.message,
     });
 }
 ---
@@ -77,13 +77,11 @@ if (error) {
                     <a href={`/recipes/${recipe.id}`} class="recipe-card-link">
                         <li class="recipe-card">
                             <p>{recipe.company_name}</p>
-
                             <h2>{recipe.title}</h2>
-
                             <p>{recipe.subtitle}</p>
                             <br />
-                            <p>{recipe.servings}</p>
-                            <p>{recipe.cook_time}</p>
+                            <p>{recipe.servings} servings</p>
+                            <p>{recipe.cook_time_minutes} minutes</p>
                         </li>
                     </a>
                 ))
