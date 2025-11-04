@@ -1,0 +1,1210 @@
+---
+import "@styles/components.css";
+// fetch a simple list of recipes and display them in a grid
+import { supabase } from "../../../lib/db/supabase-client";
+
+const { data: recipes, error } = await supabase
+    .from("recipes")
+    .select(
+        "id, title, subtitle, company_name, servings, cook_time_minutes, created_at",
+    )
+    .order("created_at", { ascending: false });
+
+if (error) {
+    console.error(error);
+    return new Response("Error fetching recipes: " + error.message, {
+        status: 500,
+        statusText: "Internal Server Error: " + error.message,
+    });
+}
+
+const UI_COMPONENT_IDS = {
+    searchInput: "search-input",
+    companyFilter: "company-filter",
+    servingsFilter: "servings-filter",
+    timeFilter: "time-filter",
+    recipeGrid: "recipe-grid",
+    selectionBar: "selection-bar",
+    selectionInfo: "selection-info",
+    clearSelection: "clear-selection",
+    viewIds: "view-ids",
+    copyBtn: "copy-btn",
+    clearAllBtn: "clear-all-btn",
+    generateListBtn: "generate-list-btn",
+    selectedIdsSection: "selected-ids-section",
+    selectedIdsList: "selected-ids-list",
+    selectedPanel: "selected-panel",
+    selectedList: "selected-list",
+    selectedCount: "selected-count",
+    emptySelectionMessage: "empty-selection-message",
+    emptySelectionMessageIcon: "empty-selection-message-icon",
+    emptySelectionMessageText: "empty-selection-message-text",
+    selectedRecipeItem: "selected-recipe-item",
+    selectedRecipeRemove: "selected-recipe-remove",
+    selectedRecipeItemHeader: "selected-recipe-item-header",
+    selectedRecipeCompany: "selected-recipe-company",
+    selectedRecipeTitle: "selected-recipe-title",
+    selectedRecipeSubtitle: "selected-recipe-subtitle",
+    selectedRecipeMeta: "selected-recipe-meta",
+};
+---
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    /* aside {
+        margin: 0;
+    } */
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            sans-serif;
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 1rem;
+        background: #f5f5f5;
+    }
+
+    .main-container {
+        display: grid;
+        gap: 2rem;
+        align-items: start;
+        height: 100%;
+    }
+
+    @media (max-width: 1200px) {
+        .main-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .recipes-section {
+        min-width: 0;
+    }
+
+    .header {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    h1 {
+        margin: 0 0 0.5rem 0;
+        color: #333;
+    }
+
+    .subtitle {
+        color: #666;
+        margin: 0;
+    }
+
+    .controls {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1rem;
+    }
+
+    .search-bar {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #4a90e2;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .filter-group label {
+        font-weight: 500;
+        color: #555;
+    }
+
+    .filter-select {
+        padding: 0.5rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: white;
+        cursor: pointer;
+    }
+
+    .selection-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+        background: #e8f4fd;
+        border-left: 4px solid #4a90e2;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .selection-info {
+        font-weight: 500;
+        color: #2c5aa0;
+    }
+
+    .selection-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn {
+        padding: 0.5rem 1rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background: #4a90e2;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #357abd;
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: #c0392b;
+    }
+
+    .recipe-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .recipe-card {
+        background: white;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .recipe-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .recipe-card.selected {
+        border-color: #4a90e2;
+        background: #f0f8ff;
+    }
+
+    .recipe-card.selected::before {
+        content: "✓";
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        width: 28px;
+        height: 28px;
+        background: #4a90e2;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+
+    .recipe-company {
+        font-size: 0.85rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .recipe-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .recipe-subtitle {
+        font-size: 0.95rem;
+        color: #666;
+        margin: 0 0 1rem 0;
+        line-height: 1.4;
+    }
+
+    .recipe-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.9rem;
+        color: #777;
+    }
+
+    .recipe-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        color: #999;
+        font-size: 1.1rem;
+    }
+
+    .selected-ids-section {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+
+    .selected-ids-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .selected-ids-list {
+        background: #f8f8f8;
+        padding: 1rem;
+        border-radius: 6px;
+        font-family: "Monaco", "Courier New", monospace;
+        font-size: 0.85rem;
+        color: #555;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+
+    .copy-btn {
+        margin-top: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: #4a90e2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .copy-btn:hover {
+        background: #357abd;
+    }
+
+    .copy-btn.copied {
+        background: #27ae60;
+    }
+
+    /* Selected recipes sidebar */
+    .selected-recipes-panel {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        position: sticky;
+        width: 100%;
+        max-width: 380px;
+        max-height: calc(100vh - 4rem);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .selected-recipes-panel.hidden {
+        /* display: none; */
+    }
+
+    .selected-panel-header {
+        padding: 1.5rem;
+        border-bottom: 2px solid #e8f4fd;
+    }
+
+    .selected-panel-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .selected-panel-subtitle {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .selected-recipes-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .selected-recipe-item {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        position: relative;
+        transition: all 0.2s;
+    }
+
+    .selected-recipe-item:hover {
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .selected-recipe-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 0.5rem;
+    }
+
+    .selected-recipe-company {
+        font-size: 0.75rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .selected-recipe-title {
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+        line-height: 1.3;
+        padding-right: 0.5rem;
+    }
+
+    .selected-recipe-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    .selected-recipe-remove {
+        position: absolute;
+        top: 0.75rem;
+        right: 0.75rem;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: #e74c3c;
+        color: white;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        line-height: 1;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        padding: 0;
+    }
+
+    .selected-recipe-remove:hover {
+        background: #c0392b;
+        transform: scale(1.1);
+    }
+
+    .selected-panel-actions {
+        padding: 1rem 1.5rem;
+        border-top: 2px solid #e8f4fd;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .selected-panel-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .empty-selection-message {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: #999;
+    }
+
+    .empty-selection-message-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .empty-selection-message-text {
+        font-size: 0.95rem;
+    }
+</style>
+
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Recipe Composer</title>
+    </head>
+    <body style={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
+        <div>
+            <div class="controls">
+                <div>
+                    <span>Recipe Composer</span>
+                    <p class="subtitle">
+                        Select recipes to create a grocery list or meal plan
+                    </p>
+                </div>
+
+                <br />
+
+                <div class="search-bar">
+                    <input
+                        type="text"
+                        id={UI_COMPONENT_IDS.searchInput}
+                        class="search-input"
+                        placeholder="Search recipes by title, subtitle, or company..."
+                    />
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <label for="company-filter">Company:</label>
+                        <select
+                            id={UI_COMPONENT_IDS.companyFilter}
+                            class="filter-select"
+                        >
+                            <option value="">All Companies</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="servings-filter">Servings:</label>
+                        <select
+                            id={UI_COMPONENT_IDS.servingsFilter}
+                            class="filter-select"
+                        >
+                            <option value="">All Servings</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="time-filter">Cook Time:</label>
+                        <select
+                            id={UI_COMPONENT_IDS.timeFilter}
+                            class="filter-select"
+                        >
+                            <option value="">Any Time</option>
+                            <option value="0-20">Under 20 min</option>
+                            <option value="20-30">20-30 min</option>
+                            <option value="30-45">30-45 min</option>
+                            <option value="45-999">45+ min</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="main-container">
+                <div class="recipes-section">
+                    <div
+                        class="selection-bar"
+                        id={UI_COMPONENT_IDS.selectionBar}
+                        style="display: none;"
+                    >
+                        <div
+                            class="selection-info"
+                            id={UI_COMPONENT_IDS.selectionInfo}
+                        >
+                            0 recipes selected
+                        </div>
+                        <div class="selection-actions">
+                            <button
+                                class="btn btn-secondary"
+                                id={UI_COMPONENT_IDS.clearSelection}
+                            >
+                                Clear Selection
+                            </button>
+                            <button
+                                class="btn btn-primary"
+                                id={UI_COMPONENT_IDS.viewIds}
+                            >
+                                View Selected IDs
+                            </button>
+                        </div>
+                    </div>
+
+                    <ul class="recipe-grid" id={UI_COMPONENT_IDS.recipeGrid}>
+                        {
+                            recipes.map((recipe) => (
+                                <li
+                                    class="recipe-card"
+                                    data-recipe-id={recipe.id}
+                                    data-company={recipe.company_name || ""}
+                                    data-servings={recipe.servings || 0}
+                                    data-cook-time={
+                                        recipe.cook_time_minutes || 0
+                                    }
+                                >
+                                    <div class="recipe-company">
+                                        {recipe.company_name || "Unknown"}
+                                    </div>
+                                    <h2 class="recipe-title">{recipe.title}</h2>
+                                    <p class="recipe-subtitle">
+                                        {recipe.subtitle || "No description"}
+                                    </p>
+                                    <div class="recipe-meta">
+                                        <div class="recipe-meta-item">
+                                            <span>🍽️</span>
+                                            <span>
+                                                {recipe.servings
+                                                    ? `${recipe.servings} servings`
+                                                    : "N/A"}
+                                            </span>
+                                        </div>
+                                        <div class="recipe-meta-item">
+                                            <span>⏱️</span>
+                                            <span>
+                                                {recipe.cook_time_minutes
+                                                    ? `${recipe.cook_time_minutes} min`
+                                                    : "N/A"}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </li>
+                            ))
+                        }
+                    </ul>
+
+                    <div
+                        class="selected-ids-section"
+                        id={UI_COMPONENT_IDS.selectedIdsSection}
+                    >
+                        <h3 class="selected-ids-title">Selected Recipe IDs</h3>
+                        <div
+                            class="selected-ids-list"
+                            id={UI_COMPONENT_IDS.selectedIdsList}
+                        >
+                        </div>
+                        <button class="copy-btn" id={UI_COMPONENT_IDS.copyBtn}
+                            >Copy to Clipboard</button
+                        >
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <aside
+            class="selected-recipes-panel"
+            id={UI_COMPONENT_IDS.selectedPanel}
+        >
+            <div class="selected-panel-header">
+                <h3 class="selected-panel-title">Selected Recipes</h3>
+                <p
+                    class="selected-panel-subtitle"
+                    id={UI_COMPONENT_IDS.selectedCount}
+                >
+                    No recipes selected
+                </p>
+            </div>
+            <div
+                class="selected-recipes-list"
+                id={UI_COMPONENT_IDS.selectedList}
+            >
+                <div class="empty-selection-message">
+                    <div class="empty-selection-message-icon">🍽️</div>
+                    <div class="empty-selection-message-text">
+                        Select recipes to get started
+                    </div>
+                </div>
+            </div>
+            <div class="selected-panel-actions">
+                <button
+                    class="btn btn-primary"
+                    id={UI_COMPONENT_IDS.generateListBtn}
+                    disabled
+                >
+                    Generate Grocery List
+                </button>
+                <button
+                    class="btn btn-secondary"
+                    id={UI_COMPONENT_IDS.clearAllBtn}
+                >
+                    Clear All
+                </button>
+            </div>
+        </aside>
+    </body>
+</html>
+
+<script define:vars={{ UI_COMPONENT_IDS }}>
+    console.log(UI_COMPONENT_IDS);
+    const DOM_ELEMENTS = {
+        searchInput: null,
+        companyFilter: null,
+        servingsFilter: null,
+        timeFilter: null,
+        selectionBar: null,
+        selectionInfo: null,
+        clearSelection: null,
+        viewIds: null,
+        copyBtn: null,
+        clearAllBtn: null,
+        generateListBtn: null,
+        selectedIdsSection: null,
+        selectedIdsList: null,
+        selectedPanel: null,
+        selectedList: null,
+        selectedCount: null,
+        emptySelectionMessage: null,
+        emptySelectionMessageIcon: null,
+        emptySelectionMessageText: null,
+        selectedRecipeItem: null,
+        selectedRecipeRemove: null,
+        selectedRecipeItemHeader: null,
+        selectedRecipeCompany: null,
+        selectedRecipeTitle: null,
+        selectedRecipeSubtitle: null,
+        selectedRecipeMeta: null,
+    };
+
+    // @ts-nocheck
+    // State management with observer pattern
+    const state = {
+        selectedRecipes: new Set(),
+        selectedRecipesData: new Map(), // Store full recipe data
+        allRecipes: [],
+        listeners: new Set(),
+
+        // Observer pattern methods
+        subscribe(listener) {
+            this.listeners.add(listener);
+        },
+
+        notify() {
+            this.listeners.forEach((fn) => fn(this));
+        },
+
+        // State mutation methods that auto-notify
+        selectRecipe(id, recipe) {
+            this.selectedRecipes.add(id);
+            if (recipe) {
+                this.selectedRecipesData.set(id, recipe);
+            }
+            this.notify();
+        },
+
+        deselectRecipe(id) {
+            this.selectedRecipes.delete(id);
+            this.selectedRecipesData.delete(id);
+            this.notify();
+        },
+
+        clearAllSelections() {
+            this.selectedRecipes.clear();
+            this.selectedRecipesData.clear();
+            this.notify();
+        },
+    };
+
+    // Initialize
+    document.addEventListener("DOMContentLoaded", () => {
+        initializeDOMElements();
+        initializeRecipes();
+        setupStateObservers();
+        setupEventListeners();
+        populateFilters();
+    });
+
+    // Set up state observers - UI updates automatically when state changes
+    function setupStateObservers() {
+        state.subscribe(() => {
+            updateSelectionBar();
+            updateSelectedPanel();
+        });
+    }
+
+    function initializeDOMElements() {
+        DOM_ELEMENTS.searchInput = document.getElementById(
+            UI_COMPONENT_IDS.searchInput,
+        );
+        DOM_ELEMENTS.companyFilter = document.getElementById(
+            UI_COMPONENT_IDS.companyFilter,
+        );
+        DOM_ELEMENTS.servingsFilter = document.getElementById(
+            UI_COMPONENT_IDS.servingsFilter,
+        );
+        DOM_ELEMENTS.timeFilter = document.getElementById(
+            UI_COMPONENT_IDS.timeFilter,
+        );
+        DOM_ELEMENTS.selectionBar = document.getElementById(
+            UI_COMPONENT_IDS.selectionBar,
+        );
+        DOM_ELEMENTS.selectionInfo = document.getElementById(
+            UI_COMPONENT_IDS.selectionInfo,
+        );
+        DOM_ELEMENTS.clearSelection = document.getElementById(
+            UI_COMPONENT_IDS.clearSelection,
+        );
+        DOM_ELEMENTS.viewIds = document.getElementById(
+            UI_COMPONENT_IDS.viewIds,
+        );
+        DOM_ELEMENTS.copyBtn = document.getElementById(
+            UI_COMPONENT_IDS.copyBtn,
+        );
+        DOM_ELEMENTS.clearAllBtn = document.getElementById(
+            UI_COMPONENT_IDS.clearAllBtn,
+        );
+        DOM_ELEMENTS.generateListBtn = document.getElementById(
+            UI_COMPONENT_IDS.generateListBtn,
+        );
+        DOM_ELEMENTS.selectedIdsSection = document.getElementById(
+            UI_COMPONENT_IDS.selectedIdsSection,
+        );
+        DOM_ELEMENTS.selectedIdsList = document.getElementById(
+            UI_COMPONENT_IDS.selectedIdsList,
+        );
+        DOM_ELEMENTS.selectedPanel = document.getElementById(
+            UI_COMPONENT_IDS.selectedPanel,
+        );
+        DOM_ELEMENTS.selectedList = document.getElementById(
+            UI_COMPONENT_IDS.selectedList,
+        );
+        DOM_ELEMENTS.selectedCount = document.getElementById(
+            UI_COMPONENT_IDS.selectedCount,
+        );
+        DOM_ELEMENTS.emptySelectionMessage = document.getElementById(
+            UI_COMPONENT_IDS.emptySelectionMessage,
+        );
+        DOM_ELEMENTS.emptySelectionMessageIcon = document.getElementById(
+            UI_COMPONENT_IDS.emptySelectionMessageIcon,
+        );
+        DOM_ELEMENTS.emptySelectionMessageText = document.getElementById(
+            UI_COMPONENT_IDS.emptySelectionMessageText,
+        );
+        DOM_ELEMENTS.selectedRecipeItem = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeItem,
+        );
+        DOM_ELEMENTS.selectedRecipeRemove = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeRemove,
+        );
+        DOM_ELEMENTS.selectedRecipeItemHeader = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeItemHeader,
+        );
+        DOM_ELEMENTS.selectedRecipeCompany = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeCompany,
+        );
+        DOM_ELEMENTS.selectedRecipeTitle = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeTitle,
+        );
+        DOM_ELEMENTS.selectedRecipeSubtitle = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeSubtitle,
+        );
+        DOM_ELEMENTS.selectedRecipeMeta = document.getElementById(
+            UI_COMPONENT_IDS.selectedRecipeMeta,
+        );
+    }
+
+    function initializeRecipes() {
+        const cards = document.querySelectorAll(".recipe-card");
+        cards.forEach((card) => {
+            const titleEl = card.querySelector(".recipe-title");
+            const subtitleEl = card.querySelector(".recipe-subtitle");
+
+            if (!titleEl || !subtitleEl) return;
+
+            state.allRecipes.push({
+                id: card.dataset.recipeId || "",
+                title: titleEl.textContent || "",
+                subtitle: subtitleEl.textContent || "",
+                company: card.dataset.company || "",
+                servings: parseInt(card.dataset.servings || "0"),
+                cookTime: parseInt(card.dataset.cookTime || "0"),
+                element: card,
+            });
+        });
+    }
+
+    function setupEventListeners() {
+        // Recipe card selection
+        document.querySelectorAll(".recipe-card").forEach((card) => {
+            card.addEventListener("click", () => {
+                const recipeId = card.dataset.recipeId;
+                if (recipeId) {
+                    toggleRecipeSelection(recipeId, card);
+                }
+            });
+        });
+
+        // Event delegation for remove buttons in selected panel
+        const selectedList = DOM_ELEMENTS.selectedList;
+        if (selectedList) {
+            selectedList.addEventListener("click", (e) => {
+                const removeBtn = e.target.closest(".selected-recipe-remove");
+                if (removeBtn) {
+                    const recipeId = removeBtn.dataset.recipeId;
+                    if (recipeId) {
+                        removeRecipeFromSelection(recipeId);
+                    }
+                }
+            });
+        }
+
+        // Search
+        const searchInput = DOM_ELEMENTS.searchInput;
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                filterRecipes();
+            });
+        }
+
+        // Filters
+        const companyFilter = DOM_ELEMENTS.companyFilter;
+        const servingsFilter = DOM_ELEMENTS.servingsFilter;
+        const timeFilter = DOM_ELEMENTS.timeFilter;
+
+        if (companyFilter)
+            companyFilter.addEventListener("change", filterRecipes);
+        if (servingsFilter)
+            servingsFilter.addEventListener("change", filterRecipes);
+        if (timeFilter) timeFilter.addEventListener("change", filterRecipes);
+
+        // Selection actions
+        const clearBtn = DOM_ELEMENTS.clearSelection;
+        const viewBtn = DOM_ELEMENTS.viewIds;
+        const copyBtn = DOM_ELEMENTS.copyBtn;
+        const clearAllBtn = DOM_ELEMENTS.clearAllBtn;
+        const generateBtn = DOM_ELEMENTS.generateListBtn;
+
+        if (clearBtn) clearBtn.addEventListener("click", clearSelection);
+        if (viewBtn) viewBtn.addEventListener("click", viewSelectedIds);
+        if (copyBtn) copyBtn.addEventListener("click", copyToClipboard);
+        if (clearAllBtn) clearAllBtn.addEventListener("click", clearSelection);
+        if (generateBtn)
+            generateBtn.addEventListener("click", generateGroceryList);
+    }
+
+    function populateFilters() {
+        // Get unique companies
+        const companies = [
+            ...new Set(state.allRecipes.map((r) => r.company).filter((c) => c)),
+        ].sort();
+        const companyFilter = DOM_ELEMENTS.companyFilter;
+        if (companyFilter) {
+            companies.forEach((company) => {
+                const option = document.createElement("option");
+                option.value = company;
+                option.textContent = company;
+                companyFilter.appendChild(option);
+            });
+        }
+
+        // Get unique servings
+        const servings = [...new Set(state.allRecipes.map((r) => r.servings))]
+            .filter((s) => s > 0)
+            .sort((a, b) => a - b);
+        const servingsFilter = DOM_ELEMENTS.servingsFilter;
+        if (servingsFilter) {
+            servings.forEach((serving) => {
+                const option = document.createElement("option");
+                option.value = serving.toString();
+                option.textContent = `${serving} servings`;
+                servingsFilter.appendChild(option);
+            });
+        }
+    }
+
+    function toggleRecipeSelection(recipeId, card) {
+        const recipe = state.allRecipes.find((r) => r.id === recipeId);
+
+        if (state.selectedRecipes.has(recipeId)) {
+            state.deselectRecipe(recipeId);
+            card.classList.remove("selected");
+        } else {
+            state.selectRecipe(recipeId, recipe);
+            card.classList.add("selected");
+        }
+        // UI updates happen automatically via observer pattern!
+    }
+
+    function removeRecipeFromSelection(recipeId) {
+        state.deselectRecipe(recipeId);
+
+        // Update the card visual
+        const card = document.querySelector(`[data-recipe-id="${recipeId}"]`);
+        if (card) {
+            card.classList.remove("selected");
+        }
+        // UI updates happen automatically via observer pattern!
+    }
+
+    function updateSelectionBar() {
+        const count = state.selectedRecipes.size;
+        const selectionBar = DOM_ELEMENTS.selectionBar;
+        const selectionInfo = DOM_ELEMENTS.selectionInfo;
+
+        if (selectionBar && selectionInfo) {
+            if (count > 0) {
+                selectionBar.style.display = "flex";
+                selectionInfo.textContent = `${count} recipe${count !== 1 ? "s" : ""} selected`;
+            } else {
+                selectionBar.style.display = "none";
+            }
+        }
+    }
+
+    function clearSelection() {
+        state.clearAllSelections();
+        document.querySelectorAll(".recipe-card.selected").forEach((card) => {
+            card.classList.remove("selected");
+        });
+        hideSelectedIds();
+        // UI updates happen automatically via observer pattern!
+    }
+
+    function updateSelectedPanel() {
+        const panel = DOM_ELEMENTS.selectedPanel;
+        const list = DOM_ELEMENTS.selectedList;
+        const count = DOM_ELEMENTS.selectedCount;
+        const generateBtn = DOM_ELEMENTS.generateListBtn;
+
+        if (!panel || !list || !count) return;
+
+        const selectedCount = state.selectedRecipes.size;
+
+        // Update count text
+        if (selectedCount === 0) {
+            count.textContent = "No recipes selected";
+            panel.classList.add("hidden");
+            if (generateBtn) generateBtn.disabled = true;
+        } else {
+            count.textContent = `${selectedCount} recipe${selectedCount !== 1 ? "s" : ""} selected`;
+            panel.classList.remove("hidden");
+            if (generateBtn) generateBtn.disabled = false;
+        }
+
+        // Update list content
+        if (selectedCount === 0) {
+            list.innerHTML = `
+                <div class="empty-selection-message">
+                    <div class="empty-selection-message-icon">🍽️</div>
+                    <div class="empty-selection-message-text">
+                        Select recipes to get started
+                    </div>
+                </div>
+            `;
+        } else {
+            const recipesArray = Array.from(state.selectedRecipesData.values());
+            list.innerHTML = recipesArray
+                .map(
+                    (recipe) => `
+                <div class="selected-recipe-item">
+                    <button 
+                        class="selected-recipe-remove" 
+                        data-recipe-id="${recipe.id}"
+                        title="Remove recipe"
+                    >
+                        ×
+                    </button>
+                    <div class="selected-recipe-item-header">
+                        <div>
+
+                            <div class="selected-recipe-company">${recipe.company || "UNKNOWN"}</div>
+                             <br/>
+                            <strong class="selected-recipe-title">${recipe.title}</strong>
+                            <br/>
+                            <span> ${recipe.subtitle || ""} </span>
+                        </div>
+
+                    </div>
+                     <br/>
+                    <div class="selected-recipe-meta">
+                        <span>🍽️ ${recipe.servings || "N/A"} servings</span>
+                        <span>⏱️ ${recipe.cookTime || "N/A"} min</span>
+                    </div>
+                </div>
+            `,
+                )
+                .join("");
+        }
+    }
+
+    function generateGroceryList() {
+        if (state.selectedRecipes.size === 0) {
+            alert("Please select at least one recipe");
+            return;
+        }
+
+        // For now, just show the IDs - this is where you'll call your API
+        const ids = Array.from(state.selectedRecipes);
+        console.log("Generating grocery list for recipe IDs:", ids);
+        alert(
+            `Ready to generate grocery list for ${ids.length} recipe(s)!\n\nRecipe IDs:\n${ids.join("\n")}\n\n(API endpoint not yet implemented)`,
+        );
+    }
+
+    function viewSelectedIds() {
+        const section = DOM_ELEMENTS.selectedIdsSection;
+        const list = DOM_ELEMENTS.selectedIdsList;
+
+        if (state.selectedRecipes.size === 0) {
+            return;
+        }
+
+        const ids = Array.from(state.selectedRecipes);
+        if (list) {
+            list.textContent = JSON.stringify(ids, null, 2);
+        }
+        if (section) {
+            section.style.display = "block";
+            section.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
+        }
+    }
+
+    function hideSelectedIds() {
+        const section = DOM_ELEMENTS.selectedIdsSection;
+        if (section) {
+            section.style.display = "none";
+        }
+    }
+
+    function copyToClipboard() {
+        const ids = Array.from(state.selectedRecipes);
+        const text = JSON.stringify(ids);
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = DOM_ELEMENTS.copyBtn;
+            if (btn) {
+                const originalText = btn.textContent;
+                btn.textContent = "Copied!";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.classList.remove("copied");
+                }, 2000);
+            }
+        });
+    }
+
+    function filterRecipes() {
+        const searchInput = DOM_ELEMENTS.searchInput;
+        const companyFilter = DOM_ELEMENTS.companyFilter;
+        const servingsFilter = DOM_ELEMENTS.servingsFilter;
+        const timeFilter = DOM_ELEMENTS.timeFilter;
+
+        if (!searchInput || !companyFilter || !servingsFilter || !timeFilter) {
+            return;
+        }
+
+        const searchTerm = searchInput.value.toLowerCase();
+        const companyValue = companyFilter.value;
+        const servingsValue = servingsFilter.value;
+        const timeValue = timeFilter.value;
+
+        let visibleCount = 0;
+
+        state.allRecipes.forEach((recipe) => {
+            let visible = true;
+
+            // Search filter
+            if (searchTerm) {
+                const searchableText =
+                    `${recipe.title} ${recipe.subtitle} ${recipe.company}`.toLowerCase();
+                visible = visible && searchableText.includes(searchTerm);
+            }
+
+            // Company filter
+            if (companyValue) {
+                visible = visible && recipe.company === companyValue;
+            }
+
+            // Servings filter
+            if (servingsValue) {
+                visible =
+                    visible && recipe.servings === parseInt(servingsValue);
+            }
+
+            // Time filter
+            if (timeValue) {
+                const [min, max] = timeValue.split("-").map(Number);
+                visible =
+                    visible && recipe.cookTime >= min && recipe.cookTime <= max;
+            }
+
+            if (recipe.element) {
+                recipe.element.style.display = visible ? "block" : "none";
+            }
+            if (visible) visibleCount++;
+        });
+
+        // Show no results message if needed
+        const grid = DOM_ELEMENTS.recipeGrid;
+        if (!grid) return;
+
+        let noResults = grid.querySelector(".no-results");
+
+        if (visibleCount === 0) {
+            if (!noResults) {
+                noResults = document.createElement("li");
+                noResults.className = "no-results";
+                noResults.style.gridColumn = "1 / -1";
+                noResults.textContent =
+                    "No recipes found matching your criteria";
+                grid.appendChild(noResults);
+            }
+        } else if (noResults) {
+            noResults.remove();
+        }
+    }
+</script>

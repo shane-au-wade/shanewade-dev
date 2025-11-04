@@ -167,13 +167,10 @@ export function getGroceryListFromRecipes(recipes: Awaited<ReturnType<typeof get
 
 export async function testGetGroceryListFromRecipes(supabase: Supabase) {
   const recipeIds = [
-    "01ba27a8-c9a1-4588-81e9-560381469163",
-    "089e2c77-f9a6-4d6c-bb38-11b2e088c001",
-    "093cfd57-dec3-40e3-9ab1-204160a5a332",
-    "14e5736a-1695-4807-a004-18bc8698c2d7",
-    "20d07266-0198-4af5-a4da-3302154685aa",
-    "275ae86f-21fd-4d7b-82ba-541e7dc8fa15",
-    "3447dad9-aae8-4083-847c-6c08d6b06f00",
+    "a952349a-92cc-406d-9962-56c85ef9412a",
+    "36c2dfe5-709e-4b25-ac51-a4dd7f18c980",
+    "b038a208-4e08-4629-bbce-114c9671e8db",
+    "11b8d070-8a38-4f9a-a273-e9c21971f695"
   ]
 
   const recipes = await Promise.all(recipeIds.map(async (id) => await getRecipe(supabase, id)))
