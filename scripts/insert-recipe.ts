@@ -13,14 +13,16 @@ interface RecipeData {
   id: string
   title: string
   subtitle: string
-  servings: string
+  servings: number
   company_name: string | null
-  cook_time: string
+  cook_time_minutes: number
   cooking_tips: string | null
   ingredients: Array<{
     display_name: string
     quantity: number
     unit: string | null
+    is_pantry_staple: boolean | null
+    preparation_note: string | null
   }>
   steps: Array<{
     title: string
@@ -51,7 +53,7 @@ export async function insertRecipe(
       subtitle: recipeData.subtitle,
       company_name: recipeData.company_name,
       servings: recipeData.servings,
-      cook_time: recipeData.cook_time,
+      cook_time_minutes: recipeData.cook_time_minutes,
       cooking_tips: recipeData.cooking_tips,
       ocr_markdown: recipeData.ocr_markdown,
       ocr_results: recipeData.ocr_results,

@@ -161,9 +161,37 @@ async function combineRecipesWithOcr(): Promise<RecipeWithOcr[]> {
 
 const ingredientSchema = z.object({
   type: z.literal("ingredient"),
-  display_name: z.string(),
-  quantity: z.number(),
-  unit: z.string().nullable(),
+  display_name: z.string().describe(
+    "The ingredient name in Title Case, without brand names or customization options in parentheses. E.g., 'Ground Pork' not 'Ground Pork (or Ground Beef...)'",
+  ),
+  quantity: z.number().describe(
+    "The numeric quantity. Use 0 for 'as needed' or pantry items with no specific quantity.",
+  ),
+  unit: z.enum([
+    "oz",
+    "lb",
+    "g",
+    "kg", // Weight
+    "cup",
+    "tbsp",
+    "tsp",
+    "ml",
+    "l", // Volume
+    "whole",
+    "slice",
+    "clove", // Count-based
+    "pinch",
+    "dash", // Approximate
+    "fl oz", // Fluid ounces
+  ]).nullable().describe(
+    "The unit of measurement, normalized (no periods). Use 'whole' for counted items like eggs, onions. Use null only if truly ambiguous.",
+  ),
+  is_pantry_staple: z.boolean().nullable().describe(
+    "True for common pantry items like salt, pepper, oil, water that should show 'as needed'. Defaults to false.",
+  ),
+  preparation_note: z.string().nullable().describe(
+    "Any preparation specified in the ingredient list, e.g., 'diced', 'minced', 'cooked'. Keep null if none.",
+  ),
 })
 
 const ingredientsSchema = z.object({
@@ -188,9 +216,9 @@ const recipeInfoSchema = z.object({
   type: z.literal("recipe"),
   title: z.string(),
   subtitle: z.string(),
-  servings: z.string(),
+  servings: z.number().describe("The lowest reported number of servings the recipe yeilds. Usually 2 or 4 servings."),
   company_name: z.string().nullable(),
-  cook_time: z.string(),
+  cook_time_minutes: z.number().describe("The number of minutes the recipe takes to cook."),
   cooking_tips: z.string().nullable(),
 })
 
@@ -234,7 +262,38 @@ async function extractIngredientsOpenai(
   const response = await openai.responses.create({
     model: "gpt-4.1-2025-04-14",
     input: [
-      { role: "system", content: "Extract the recipe ingredients when given recipe text." },
+      {
+        role: "system",
+        content: `Context about the input recipes and the goal of the extraction:
+The recipes are from meal kit companies like Blue Apron, Hello Fresh, etc.
+The meal kit company typically provides most of the ingredients for the recipe and the 
+buyer provides the pantry basics like salt, pepper, oil, etc.  The goal of this extraction is to
+create a recipe that a buyer can follow to make the recipe without the meal kit company's ingredients.
+        
+Extract recipe ingredients with proper normalization:
+
+INGREDIENT NAMES:
+- Use Title Case (e.g., "Sour Cream" not "sour cream")
+- Remove brand names and parenthetical options (e.g., "Ground Pork" not "Ground Pork (or Ground Beef...)")
+- Use singular or plural as naturally appropriate (e.g., "Flour Tortillas" for multiple, "Tomato" for one)
+- Keep specific types when important (e.g., "Pepperjack Cheese Slices" vs just "Cheese")
+
+UNITS:
+- Normalize all units: "oz" not "oz.", "tbsp" not "Tbsp." or "tablespoon"
+- Use "whole" for counted items (eggs, onions, scallions, etc.)
+- Use "fl oz" for fluid ounces (liquids sold by volume)
+- Convert fractions to decimals (e.g., "1/4" → 0.25, "1 1/2" → 1.5)
+
+PANTRY STAPLES:
+- Mark these as is_pantry_staple=true: salt, pepper, cooking oil, olive oil, water, cooking spray
+- Use quantity=0 for items listed as "as needed" or with no specific amount
+
+PREPARATION NOTES:
+- Extract any prep mentioned with the ingredient (e.g., "diced", "minced", "peeled")
+- Keep in preparation_note field, not in display_name
+
+Extract ingredients from the smallest serving size mentioned (usually "2 servings" column).`,
+      },
       {
         role: "user",
         content: recipe.ocr_markdown,
@@ -338,6 +397,8 @@ Extract the mise en place (set up) steps for the given recipe by reading each
 step of the recipe and pulling out the work that can be done ahead of time.
 This will be things like chopping vegetables, getting out a mixing bowl, etc.
 The goal is to reduce the amount of work that neeeds to be done while cooking.
+Keep the steps concise and tend towards less steps, for example the title coule be "Chop vegetables" and the details
+would describe the specific preperation for each vegetable.
 `.trim(),
       },
       {
@@ -525,6 +586,8 @@ if (import.meta.main) {
       ocr_results: recipe.ocr_results,
       pages: recipe.pages,
     }
+
+    // Deno.writeTextFileSync("./save-complete-recipe.json", JSON.stringify(completeRecipe, null, 2))
 
     try {
       // insert the complete recipe into the database

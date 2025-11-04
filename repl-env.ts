@@ -8,6 +8,8 @@ import { load } from "@std/dotenv"
 import { z } from "@zod/zod"
 import { createClient } from "@supabase/supabase-js"
 import { getRecipe } from "./scripts/query-recipe.ts"
+import type { Database } from "./web/src/lib/db/database.types.ts"
+import { testGetGroceryListFromRecipes } from "./web/src/lib/recipes.ts"
 
 const env = await load({
   envPath: ".env",
@@ -24,6 +26,6 @@ const mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
 const openai = new OpenAI({ apiKey: env.OPENAI_API_KEY })
 const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
 
-const supabase = createClient(env.SUPABASE_URL, env.SUPABASE_KEY)
+const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_KEY)
 
-export { anthropic, env, getRecipe, mistral, openai, supabase, z }
+export { anthropic, env, getRecipe, mistral, openai, supabase, testGetGroceryListFromRecipes, z }
