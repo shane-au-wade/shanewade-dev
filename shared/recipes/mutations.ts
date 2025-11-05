@@ -1,15 +1,10 @@
 /**
- * Helper function to insert recipe JSON data into the database
- *
- * Usage:
- *   import { insertRecipe } from './insert-recipe.ts';
- *   import recipeData from '../save-complete-recipe.json' with { type: 'json' };
- *   await insertRecipe(supabaseClient, recipeData);
+ * Recipe mutation functions (insert, update, delete)
  */
 
-import type { SupabaseClient } from "@supabase/supabase-js"
+import type { Json, Supabase } from "../db/client.ts"
 
-interface RecipeData {
+export interface RecipeData {
   id: string
   title: string
   subtitle: string
@@ -36,12 +31,15 @@ interface RecipeData {
     display_name: string
   }>
   ocr_markdown: string
-  ocr_results: unknown
+  ocr_results: Json
   pages: string[]
 }
 
+/**
+ * Insert a complete recipe with all related data
+ */
 export async function insertRecipe(
-  supabase: SupabaseClient,
+  supabase: Supabase,
   recipeData: RecipeData,
 ) {
   // Insert the main recipe
@@ -73,6 +71,8 @@ export async function insertRecipe(
       display_name: ing.display_name,
       quantity: ing.quantity,
       unit: ing.unit,
+      is_pantry_staple: ing.is_pantry_staple,
+      preparation_note: ing.preparation_note,
       position: index,
     }))
 
@@ -146,3 +146,4 @@ export async function insertRecipe(
 
   return recipe
 }
+

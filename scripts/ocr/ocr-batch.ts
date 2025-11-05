@@ -12,7 +12,7 @@ if (!apiKey) {
   throw new Error("MISTRAL_API_KEY is not set")
 }
 
-let mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
+const mistral = new Mistral({ apiKey: env.MISTRAL_API_KEY })
 
 async function createBatch(batchFile: string) {
   const file = await mistral.files.upload({

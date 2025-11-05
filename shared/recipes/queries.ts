@@ -1,9 +1,12 @@
 /**
- * Helper functions to query recipes from the database
+ * Recipe query functions
  */
 
-import type { Supabase } from "./db/supabase-client.ts"
+import type { Supabase } from "../db/client.ts"
 
+/**
+ * Get a single recipe by ID with all related data
+ */
 export async function getRecipe(supabase: Supabase, recipeId: string) {
   // Fetch recipe with all related data
   const { data: recipe, error: recipeError } = await supabase
@@ -15,7 +18,9 @@ export async function getRecipe(supabase: Supabase, recipeId: string) {
         display_name,
         quantity,
         unit,
-        position
+        position,
+        is_pantry_staple,
+        preparation_note
       ),
       steps (
         id,
@@ -55,6 +60,9 @@ export async function getRecipe(supabase: Supabase, recipeId: string) {
   return recipe
 }
 
+/**
+ * Get all recipes (summary view)
+ */
 export async function getAllRecipes(supabase: Supabase) {
   const { data: recipes, error } = await supabase
     .from("recipes")
@@ -64,7 +72,7 @@ export async function getAllRecipes(supabase: Supabase) {
       subtitle,
       company_name,
       servings,
-      cook_time,
+      cook_time_minutes,
       created_at
     `)
     .order("created_at", { ascending: false })
@@ -76,6 +84,9 @@ export async function getAllRecipes(supabase: Supabase) {
   return recipes
 }
 
+/**
+ * Search recipes by title or subtitle
+ */
 export async function searchRecipes(supabase: Supabase, query: string) {
   const { data: recipes, error } = await supabase
     .from("recipes")
@@ -84,7 +95,7 @@ export async function searchRecipes(supabase: Supabase, query: string) {
       title,
       subtitle,
       company_name,
-      cook_time
+      cook_time_minutes
     `)
     .or(`title.ilike.%${query}%,subtitle.ilike.%${query}%`)
     .order("title")
@@ -97,6 +108,7 @@ export async function searchRecipes(supabase: Supabase, query: string) {
 }
 
 /**
+ * Get a grocery list from multiple recipes
  * @param recipes - A list of recipes to get the grocery list from
  * @returns A record of ingredient names to their formatted quantities with units
  */
@@ -115,10 +127,10 @@ export function getGroceryListFromRecipes(recipes: Awaited<ReturnType<typeof get
 
       if (ingredientMap.has(key)) {
         const existing = ingredientMap.get(key)!
-        existing.quantity += ingredient.quantity
+        existing.quantity += ingredient.quantity ?? 0
       } else {
         ingredientMap.set(key, {
-          quantity: ingredient.quantity,
+          quantity: ingredient.quantity ?? 0,
           unit: ingredient.unit,
           displayName: ingredient.display_name,
         })
@@ -165,21 +177,3 @@ export function getGroceryListFromRecipes(recipes: Awaited<ReturnType<typeof get
   return groceryList
 }
 
-export async function testGetGroceryListFromRecipes(supabase: Supabase) {
-  const recipeIds = [
-    "a952349a-92cc-406d-9962-56c85ef9412a",
-    "36c2dfe5-709e-4b25-ac51-a4dd7f18c980",
-    "b038a208-4e08-4629-bbce-114c9671e8db",
-    "11b8d070-8a38-4f9a-a273-e9c21971f695"
-  ]
-
-  const recipes = await Promise.all(recipeIds.map(async (id) => await getRecipe(supabase, id)))
-
-  const groceryList = getGroceryListFromRecipes(recipes)
-
-  Deno.writeTextFileSync("recipes.json", JSON.stringify(recipes, null, 2))
-
-  Deno.writeTextFileSync("grocery-list.json", JSON.stringify(groceryList, null, 2))
-
-  console.log(`Wrote grocery list to grocery-list.json`)
-}

@@ -1,5 +1,5 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js"
-import type { Database } from "./database.types.ts"
+import { createSupabaseClient } from "@shared/db/client"
+import type { Supabase } from "@shared/db/client"
 
 const supabaseUrl = import.meta.env.SUPABASE_URL
 const supabaseKey = import.meta.env.SUPABASE_KEY
@@ -10,6 +10,7 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Missing Supabase environment variables")
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey)
-
-export type Supabase = SupabaseClient<Database>
+export const supabase: Supabase = createSupabaseClient({
+  url: supabaseUrl,
+  key: supabaseKey,
+})

@@ -1,5 +1,5 @@
 {
-  "workspace": ["./web", "./api"],
+  "workspace": ["./web", "./api", "./shared"],
   "fmt": {
     "useTabs": false,
     "lineWidth": 120,
@@ -15,7 +15,8 @@
     "repl": "deno repl -A --eval-file=./repl-env.ts",
     "chroma": "docker run -v ./chroma-data:/data -p 8000:8000 chromadb/chroma",
     "postgres": "docker run -d --name postgres18 -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:18.0",
-    "supabase-studio": "open 'http://127.0.0.1:54323/'"
+    "supabase-studio": "open 'http://127.0.0.1:54323/'",
+    "db-typegen": "supabase gen types typescript --local > shared/db/types.ts"
   },
   "nodeModulesDir": "auto",
   "imports": {

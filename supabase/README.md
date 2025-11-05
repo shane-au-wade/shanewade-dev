@@ -81,26 +81,26 @@ supabase db reset
 See `../scripts/insert-recipe.ts` for a complete example:
 
 ```typescript
-import { createClient } from "@supabase/supabase-js";
-import { insertRecipe } from "./scripts/insert-recipe.ts";
+import { createClient } from "@supabase/supabase-js"
+import { insertRecipe } from "./scripts/insert-recipe.ts"
 
-const supabase = createClient(url, key);
-const recipe = await insertRecipe(supabase, recipeData);
+const supabase = createClient(url, key)
+const recipe = await insertRecipe(supabase, recipeData)
 ```
 
 ### Querying Recipes
 
-See `../scripts/query-recipe.ts` for examples:
+See `shared/recipes/queries` for examples:
 
 ```typescript
 // Get all recipes
-const recipes = await getAllRecipes(supabase);
+const recipes = await getAllRecipes(supabase)
 
 // Get one recipe with all related data
-const recipe = await getRecipe(supabase, recipeId);
+const recipe = await getRecipe(supabase, recipeId)
 
 // Search recipes
-const results = await searchRecipes(supabase, "chicken");
+const results = await searchRecipes(supabase, "chicken")
 ```
 
 ## Design Decisions

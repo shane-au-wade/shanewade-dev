@@ -1,8 +1,8 @@
 import recipeJson from "../../local_data/recipes-saved.json" with { type: "json" }
 import { z } from "@zod/zod"
 import * as deps from "../../repl-env.ts"
-import { insertRecipe } from "../insert-recipe.ts"
 import { delay } from "@std/async/delay"
+import { insertRecipe } from "@shared/core/recipes/mutations"
 
 const { mistral, openai, anthropic, supabase } = deps
 

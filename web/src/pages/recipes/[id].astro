@@ -2,7 +2,7 @@
 export const prerender = false;
 import "@styles/colors.css";
 
-import { getRecipe } from "../../lib/recipes";
+import { getRecipe } from "@shared/recipes/queries";
 import { supabase } from "../../lib/db/supabase-client";
 
 const { id } = Astro.params;
