@@ -60,6 +60,8 @@ export async function getRecipe(supabase: Supabase, recipeId: string) {
   return recipe
 }
 
+export type Recipe = Awaited<ReturnType<typeof getRecipe>>
+
 /**
  * Get all recipes (summary view)
  */

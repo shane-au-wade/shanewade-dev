@@ -1,13 +1,21 @@
-// @ts-check
 import { defineConfig } from "astro/config"
 import react from "@astrojs/react"
 import deno from "@deno/astro-adapter"
+import UnoCSS from "unocss/astro"
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
   adapter: deno(),
-  integrations: [react()],
+  integrations: [
+    react(),
+    UnoCSS(
+      {
+        // this will link to the @unocss/reset package
+        injectReset: true,
+      },
+    ),
+  ],
   site: "https://www.shanewade.dev",
   vite: {
     server: {

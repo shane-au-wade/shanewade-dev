@@ -1084,12 +1084,10 @@ const UI_COMPONENT_IDS = {
             return;
         }
 
-        // For now, just show the IDs - this is where you'll call your API
+        // Navigate to groceries page with recipe IDs in URL
         const ids = Array.from(state.selectedRecipes);
-        console.log("Generating grocery list for recipe IDs:", ids);
-        alert(
-            `Ready to generate grocery list for ${ids.length} recipe(s)!\n\nRecipe IDs:\n${ids.join("\n")}\n\n(API endpoint not yet implemented)`,
-        );
+        const recipeParams = ids.join(",");
+        window.location.href = `/groceries?recipes=${encodeURIComponent(recipeParams)}`;
     }
 
     function viewSelectedIds() {

@@ -1,0 +1,283 @@
+---
+import type { getRecipe } from "@shared/recipes/queries";
+
+interface Props {
+    recipe: Awaited<ReturnType<typeof getRecipe>>;
+}
+
+const { recipe } = Astro.props;
+
+if (!recipe) {
+    return null;
+}
+---
+
+<style>
+    .recipe-card {
+        background: white;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .recipe-header {
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .recipe-company {
+        font-size: 0.75rem;
+        color: #888;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+    }
+
+    .recipe-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .recipe-subtitle {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0;
+    }
+
+    .recipe-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 0.75rem;
+        font-size: 0.85rem;
+        color: #777;
+    }
+
+    .recipe-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .recipe-section {
+        margin-bottom: 1.25rem;
+    }
+
+    .recipe-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .ingredient-list,
+    .tool-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .ingredient-item,
+    .tool-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f5f5f5;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .ingredient-item:last-child,
+    .tool-item:last-child {
+        border-bottom: none;
+    }
+
+    .ingredient-quantity {
+        font-weight: 500;
+        color: #333;
+    }
+
+    .ingredient-prep {
+        font-style: italic;
+        color: #888;
+        font-size: 0.85rem;
+    }
+
+    .step-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        counter-reset: step-counter;
+    }
+
+    .step-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f5f5f5;
+        counter-increment: step-counter;
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .step-item:last-child {
+        border-bottom: none;
+    }
+
+    .step-item::before {
+        content: counter(step-counter);
+        position: absolute;
+        left: 0;
+        top: 0.75rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        background: #4a90e2;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .step-title {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+
+    .step-details {
+        color: #666;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .cooking-tips {
+        background: #fffbf0;
+        border-left: 3px solid #ffc107;
+        padding: 0.75rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        color: #666;
+        line-height: 1.5;
+    }
+</style>
+
+<div class="recipe-card">
+    <div class="recipe-header">
+        {
+            recipe.company_name && (
+                <div class="recipe-company">{recipe.company_name}</div>
+            )
+        }
+        <h2 class="recipe-title">{recipe.title}</h2>
+        {recipe.subtitle && <p class="recipe-subtitle">{recipe.subtitle}</p>}
+        <div class="recipe-meta">
+            {
+                recipe.servings && (
+                    <div class="recipe-meta-item">
+                        <span>🍽️</span>
+                        <span>{recipe.servings} servings</span>
+                    </div>
+                )
+            }
+            {
+                recipe.cook_time_minutes && (
+                    <div class="recipe-meta-item">
+                        <span>⏱️</span>
+                        <span>{recipe.cook_time_minutes} min</span>
+                    </div>
+                )
+            }
+        </div>
+    </div>
+
+    {
+        recipe.ingredients && recipe.ingredients.length > 0 && (
+            <div class="recipe-section">
+                <h3 class="section-title">Ingredients</h3>
+                <ul class="ingredient-list">
+                    {recipe.ingredients.map((ingredient) => (
+                        <li class="ingredient-item">
+                            {ingredient.quantity || ingredient.unit ? (
+                                <span class="ingredient-quantity">
+                                    {ingredient.quantity
+                                        ? `${ingredient.quantity}${ingredient.unit ? ` ${ingredient.unit}` : ""}`
+                                        : ingredient.unit || ""}
+                                </span>
+                            ) : null}
+                            <span> {ingredient.display_name}</span>
+                            {ingredient.preparation_note && (
+                                <span class="ingredient-prep">
+                                    {" "}
+                                    ({ingredient.preparation_note})
+                                </span>
+                            )}
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+
+    {
+        recipe.cooking_tools && recipe.cooking_tools.length > 0 && (
+            <div class="recipe-section">
+                <h3 class="section-title">Cooking Tools</h3>
+                <ul class="tool-list">
+                    {recipe.cooking_tools.map((tool) => (
+                        <li class="tool-item">{tool.display_name}</li>
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+
+    {
+        recipe.mise_en_place_steps && recipe.mise_en_place_steps.length > 0 && (
+            <div class="recipe-section">
+                <h3 class="section-title">Mise en Place</h3>
+                <ul class="step-list">
+                    {recipe.mise_en_place_steps.map((step) => (
+                        <li class="step-item">
+                            <div class="step-title">{step.title}</div>
+                            <div class="step-details">{step.details}</div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+
+    {
+        recipe.steps && recipe.steps.length > 0 && (
+            <div class="recipe-section">
+                <h3 class="section-title">Cooking Steps</h3>
+                <ul class="step-list">
+                    {recipe.steps.map((step) => (
+                        <li class="step-item">
+                            <div class="step-title">{step.title}</div>
+                            <div class="step-details">{step.details}</div>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        )
+    }
+
+    {
+        recipe.cooking_tips && (
+            <div class="recipe-section">
+                <h3 class="section-title">Cooking Tips</h3>
+                <div class="cooking-tips">{recipe.cooking_tips}</div>
+            </div>
+        )
+    }
+</div>

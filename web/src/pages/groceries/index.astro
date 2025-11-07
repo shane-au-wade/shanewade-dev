@@ -1,6 +1,50 @@
 ---
-import groceryListData from "./grocery-list.json";
+import { supabase } from "../../lib/db/supabase-client";
+import {
+    getRecipe,
+    getGroceryListFromRecipes,
+    type Recipe,
+} from "@shared/recipes/queries";
+import RecipesModal from "../../components/recipes-modal.astro";
 
+// Check for recipe IDs in URL params
+const url = new URL(Astro.request.url);
+const recipesParam = url.searchParams.get("recipes");
+
+let groceryListData: Record<string, string> = {};
+let recipeCount = 0;
+let errorMessage = "";
+let recipes: Recipe[] = [];
+
+if (recipesParam) {
+    // Parse recipe IDs from URL
+    const recipeIds = recipesParam
+        .split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+    recipeCount = recipeIds.length;
+
+    if (recipeIds.length > 0) {
+        try {
+            // Fetch all recipes
+            const recipePromises = recipeIds.map((id) =>
+                getRecipe(supabase, id),
+            );
+            recipes = await Promise.all(recipePromises);
+
+            // Generate grocery list from recipes
+            groceryListData = getGroceryListFromRecipes(recipes);
+        } catch (error) {
+            console.error("Error fetching recipes:", error);
+            errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch recipes";
+        }
+    }
+}
+
+// Separate "as needed" items from quantified items
 const asNeededGroceries: Record<string, string> = {};
 const groceries: Record<string, string> = {};
 Object.entries(groceryListData).forEach(([key, value]) => {
@@ -96,7 +140,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
 
             .btn {
                 flex: 1;
-                padding: 0.625rem 1rem;
+                padding: 0.25rem;
                 border: none;
                 border-radius: 8px;
                 font-size: 0.875rem;
@@ -252,6 +296,13 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
         <div class="container">
             <div class="header">
                 <h1>Grocery List</h1>
+                {
+                    recipeCount > 0 && (
+                        <p style="color: var(--color-text-secondary); margin-top: 0.5rem;">
+                            From {recipeCount} recipe{recipeCount !== 1 ? "s" : ""}
+                        </p>
+                    )
+                }
                 <div class="stats">
                     <div class="stat">
                         <span class="stat-value" id="checked-count">0</span>
@@ -264,90 +315,132 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                     <button class="btn btn-secondary" id="clear-checked"
                         >Clear Checked</button
                     >
-                    <button class="btn btn-primary" id="reset-all"
+                    <button class="btn btn-secondary" id="reset-all"
                         >Reset All</button
+                    >
+                    {
+                        recipes.length > 0 && (
+                            <button
+                                class="btn btn-primary"
+                                onclick="window.openRecipesModal('recipes-modal')"
+                            >
+                                View Recipes ({recipes.length})
+                            </button>
+                        )
+                    }
+                    <button
+                        class="btn btn-primary"
+                        onclick="window.location.href='/recipes/composer'"
+                        >Back to Composer</button
                     >
                 </div>
             </div>
 
             {
-                sortedGroceries.length === 0 ? (
-                    <div class="grocery-list">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🛒</div>
-                            <p>Your grocery list is empty</p>
-                        </div>
-                    </div>
-                ) : (
-                    <div class="grocery-list">
-                        {sortedGroceries.map(([name, quantity]) => (
-                            <div class="grocery-item">
-                                <div class="checkbox-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        class="checkbox"
-                                        id={`item-${name}`}
-                                        data-item={name}
-                                    />
-                                </div>
-                                <label
-                                    for={`item-${name}`}
-                                    class="item-content"
-                                >
-                                    <span class="item-name">{name}</span>
-                                    <span class="item-quantity">
-                                        {quantity}
-                                    </span>
-                                </label>
-                            </div>
-                        ))}
+                errorMessage && (
+                    <div style="background: #fee; border: 1px solid #fcc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; color: #c33;">
+                        <strong>Error:</strong> {errorMessage}
                     </div>
                 )
             }
 
-            <!-- this is hacky, need to rethink this rendering logic -->
             {
+                sortedGroceries.length === 0 &&
                 sortedAsNeededGroceries.length === 0 ? (
                     <div class="grocery-list">
                         <div class="empty-state">
                             <div class="empty-state-icon">🛒</div>
-                            <p>Your grocery list is empty</p>
+                            {recipesParam ? (
+                                <p>No ingredients found in selected recipes</p>
+                            ) : (
+                                <div>
+                                    <p>No recipes selected</p>
+                                    <br />
+                                    <a
+                                        href="/recipes/composer"
+                                        class="btn btn-primary"
+                                    >
+                                        Select Recipes
+                                    </a>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : (
-                    <div class="grocery-list">
-                        {sortedAsNeededGroceries.map(([name, quantity]) => (
-                            <div class="grocery-item">
-                                <div class="checkbox-wrapper">
-                                    <input
-                                        type="checkbox"
-                                        class="checkbox"
-                                        id={`item-${name}`}
-                                        data-item={name}
-                                    />
+                    <>
+                        <div class="grocery-list">
+                            {sortedGroceries.map(([name, quantity]) => (
+                                <div class="grocery-item">
+                                    <div class="checkbox-wrapper">
+                                        <input
+                                            type="checkbox"
+                                            class="checkbox"
+                                            id={`item-${name}`}
+                                            data-item={name}
+                                        />
+                                    </div>
+                                    <label
+                                        for={`item-${name}`}
+                                        class="item-content"
+                                    >
+                                        <span class="item-name">{name}</span>
+                                        <span class="item-quantity">
+                                            {quantity}
+                                        </span>
+                                    </label>
                                 </div>
-                                <label
-                                    for={`item-${name}`}
-                                    class="item-content"
-                                >
-                                    <span class="item-name">{name}</span>
-                                    <span class="item-quantity">
-                                        {quantity}
-                                    </span>
-                                </label>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+
+                        {sortedAsNeededGroceries.length > 0 && (
+                            <>
+                                <div style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
+                                    <h3 style="font-size: 0.9rem; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Pantry Staples
+                                    </h3>
+                                </div>
+                                <div class="grocery-list">
+                                    {sortedAsNeededGroceries.map(
+                                        ([name, quantity]) => (
+                                            <div class="grocery-item">
+                                                <div class="checkbox-wrapper">
+                                                    <input
+                                                        type="checkbox"
+                                                        class="checkbox"
+                                                        id={`item-${name}`}
+                                                        data-item={name}
+                                                    />
+                                                </div>
+                                                <label
+                                                    for={`item-${name}`}
+                                                    class="item-content"
+                                                >
+                                                    <span class="item-name">
+                                                        {name}
+                                                    </span>
+                                                    <span class="item-quantity">
+                                                        {quantity}
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </>
+                        )}
+                    </>
                 )
             }
         </div>
 
-        <script>
-            // Local storage key
-            const STORAGE_KEY = "grocery-list-checked";
+        <script define:vars={{ recipesParam }}>
+            // Local storage key - unique per recipe combination
+            const STORAGE_KEY = recipesParam
+                ? `grocery-list-checked-${recipesParam}`
+                : "grocery-list-checked";
 
             // Load checked items from localStorage
-            function loadCheckedItems(): Set<string> {
+            function loadCheckedItems() {
                 try {
                     const stored = localStorage.getItem(STORAGE_KEY);
                     return stored ? new Set(JSON.parse(stored)) : new Set();
@@ -358,7 +451,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
             }
 
             // Save checked items to localStorage
-            function saveCheckedItems(checkedItems: Set<string>) {
+            function saveCheckedItems(checkedItems) {
                 try {
                     localStorage.setItem(
                         STORAGE_KEY,
@@ -370,7 +463,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
             }
 
             // Update the checked count display
-            function updateCheckedCount(count: number) {
+            function updateCheckedCount(count) {
                 const countElement = document.getElementById("checked-count");
                 if (countElement) {
                     countElement.textContent = count.toString();
@@ -380,8 +473,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
             // Initialize on page load
             function init() {
                 const checkedItems = loadCheckedItems();
-                const checkboxes =
-                    document.querySelectorAll<HTMLInputElement>(".checkbox");
+                const checkboxes = document.querySelectorAll(".checkbox");
 
                 // Restore checked state
                 checkboxes.forEach((checkbox) => {
@@ -399,7 +491,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                 // Add event listeners to checkboxes
                 checkboxes.forEach((checkbox) => {
                     checkbox.addEventListener("change", (e) => {
-                        const target = e.target as HTMLInputElement;
+                        const target = e.target;
                         const itemName = target.dataset.item;
                         const item = target.closest(".grocery-item");
 
@@ -423,9 +515,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                     document.getElementById("clear-checked");
                 clearCheckedBtn?.addEventListener("click", () => {
                     const checkedCheckboxes =
-                        document.querySelectorAll<HTMLInputElement>(
-                            ".checkbox:checked",
-                        );
+                        document.querySelectorAll(".checkbox:checked");
                     checkedCheckboxes.forEach((checkbox) => {
                         checkbox.checked = false;
                         checkbox
@@ -462,5 +552,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                 init();
             }
         </script>
+
+        <RecipesModal recipes={recipes} modalId="recipes-modal" />
     </body>
 </html>

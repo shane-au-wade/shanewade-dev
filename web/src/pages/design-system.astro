@@ -1,0 +1,110 @@
+---
+// No imports needed for UnoCSS
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design System</title>
+  </head>
+  <body class="bg-page p-8 font-sans">
+    <div class="max-w-4xl mx-auto">
+      <h1 class="text-4xl font-bold mb-8 text-gray-600">Design System</h1>
+      
+      <!-- Colors Section -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-600">Colors</h2>
+        
+        <div class="mb-6">
+          <h3 class="text-lg font-medium mb-3 text-gray-500">Brand</h3>
+          <div class="flex gap-4">
+            <div class="text-center">
+              <div class="w-24 h-24 bg-brand-primary rounded-lg shadow-md mb-2"></div>
+              <p class="text-sm text-gray-500">Primary</p>
+              <code class="text-xs text-gray-400">#c44536</code>
+            </div>
+            <div class="text-center">
+              <div class="w-24 h-24 bg-brand-primary-hover rounded-lg shadow-md mb-2"></div>
+              <p class="text-sm text-gray-500">Hover</p>
+              <code class="text-xs text-gray-400">#a83a2e</code>
+            </div>
+            <div class="text-center">
+              <div class="w-24 h-24 bg-brand-primary-dark rounded-lg shadow-md mb-2"></div>
+              <p class="text-sm text-gray-500">Dark</p>
+              <code class="text-xs text-gray-400">#8b2f23</code>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-lg font-medium mb-3 text-gray-500">Neutrals</h3>
+          <div class="flex gap-4">
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-100 rounded-lg border border-gray-300 mb-2"></div>
+              <code class="text-xs text-gray-400">100</code>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-200 rounded-lg border border-gray-300 mb-2"></div>
+              <code class="text-xs text-gray-400">200</code>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-300 rounded-lg border border-gray-300 mb-2"></div>
+              <code class="text-xs text-gray-400">300</code>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-400 rounded-lg mb-2"></div>
+              <code class="text-xs text-gray-400">400</code>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-500 rounded-lg mb-2"></div>
+              <code class="text-xs text-gray-400">500</code>
+            </div>
+            <div class="text-center">
+              <div class="w-16 h-16 bg-gray-600 rounded-lg mb-2"></div>
+              <code class="text-xs text-gray-400">600</code>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Buttons Section -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-600">Buttons</h2>
+        
+        <div class="mb-6">
+          <h3 class="text-lg font-medium mb-3 text-gray-500">Variants</h3>
+          <div class="flex flex-wrap gap-3">
+            <button class="btn-primary">Primary Button</button>
+            <button class="btn-secondary">Secondary Button</button>
+            <button class="btn-default">Default Button</button>
+            <button class="btn-outline">Outline Button</button>
+            <button class="btn-ghost">Ghost Button</button>
+            <button class="btn-disabled">Disabled Button</button>
+          </div>
+        </div>
+
+        <div class="mb-6">
+          <h3 class="text-lg font-medium mb-3 text-gray-500">Sizes</h3>
+          <div class="flex flex-wrap items-center gap-3">
+            <button class="btn-primary btn-sm">Small</button>
+            <button class="btn-primary">Default</button>
+            <button class="btn-primary btn-lg">Large</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Usage Examples -->
+      <section class="mb-12">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-600">Usage</h2>
+        <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+          <h3 class="text-lg font-medium mb-3 text-gray-600">Example: Call-to-Action</h3>
+          <div class="flex gap-3">
+            <button class="btn-primary">View My Work</button>
+            <button class="btn-outline">Get In Touch</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
