@@ -1,0 +1,84 @@
+---
+/**
+ * Modal Component - Data Attribute Approach
+ *
+ * Usage:
+ * <Modal id="my-modal" title="Title">Content</Modal>
+ * <button data-modal-open="my-modal">Open</button>
+ * <button data-modal-close="my-modal">Close</button>
+ * <button data-modal-toggle="my-modal">Toggle</button>
+ */
+interface Props {
+    id: string;
+    title?: string;
+    size?: "sm" | "md" | "lg" | "xl";
+}
+
+const { id, title, size = "md" } = Astro.props;
+
+const sizeMap = {
+    sm: "max-w-sm",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
+};
+---
+
+<dialog id={id} class="dialog" data-modal-size={sizeMap[size]}>
+    <div class={`dialog-content ${sizeMap[size]}`}>
+        <div class="dialog-header">
+            <slot name="header">
+                {title && <h3 class="dialog-title">{title}</h3>}
+            </slot>
+            <button
+                class="dialog-close"
+                aria-label="Close"
+                data-modal-close={id}
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="dialog-body">
+            <slot />
+        </div>
+
+        {
+            Astro.slots.has("footer") && (
+                <div class="dialog-footer">
+                    <slot name="footer" />
+                </div>
+            )
+        }
+    </div>
+</dialog>
+
+<script define:vars={{ id }}>
+    const modal = document.getElementById(id);
+
+    if (modal) {
+        // Click outside to close
+        modal.addEventListener("click", (e) => {
+            const dialogDimensions = modal.getBoundingClientRect();
+            if (
+                e.clientX < dialogDimensions.left ||
+                e.clientX > dialogDimensions.right ||
+                e.clientY < dialogDimensions.top ||
+                e.clientY > dialogDimensions.bottom
+            ) {
+                modal.close();
+            }
+        });
+    }
+</script>
