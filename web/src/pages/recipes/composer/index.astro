@@ -390,77 +390,6 @@ const UI_COMPONENT_IDS = {
         padding: 1rem;
     }
 
-    .selected-recipe-item {
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
-        padding: 1rem;
-        margin-bottom: 0.75rem;
-        position: relative;
-        transition: all 0.2s;
-    }
-
-    .selected-recipe-item:hover {
-        background: #fff;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .selected-recipe-item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: start;
-        margin-bottom: 0.5rem;
-    }
-
-    .selected-recipe-company {
-        font-size: 0.75rem;
-        color: #888;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.25rem;
-    }
-
-    .selected-recipe-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-        line-height: 1.3;
-        padding-right: 0.5rem;
-    }
-
-    .selected-recipe-meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.8rem;
-        color: #777;
-    }
-
-    .selected-recipe-remove {
-        position: absolute;
-        top: 0.75rem;
-        right: 0.75rem;
-        width: 24px;
-        height: 24px;
-        border: none;
-        background: #e74c3c;
-        color: white;
-        border-radius: 50%;
-        font-size: 1.2rem;
-        line-height: 1;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.2s;
-        padding: 0;
-    }
-
-    .selected-recipe-remove:hover {
-        background: #c0392b;
-        transform: scale(1.1);
-    }
-
     .selected-panel-actions {
         padding: 1rem 1.5rem;
         border-top: 2px solid #e8f4fd;
@@ -472,22 +401,6 @@ const UI_COMPONENT_IDS = {
     .selected-panel-actions .btn {
         width: 100%;
         justify-content: center;
-    }
-
-    .empty-selection-message {
-        text-align: center;
-        padding: 3rem 2rem;
-        color: #999;
-    }
-
-    .empty-selection-message-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.5;
-    }
-
-    .empty-selection-message-text {
-        font-size: 0.95rem;
     }
 </style>
 
@@ -660,11 +573,11 @@ const UI_COMPONENT_IDS = {
                 class="selected-recipes-list"
                 id={UI_COMPONENT_IDS.selectedList}
             >
-                <div class="empty-selection-message">
-                    <div class="empty-selection-message-icon">🍽️</div>
-                    <div class="empty-selection-message-text">
-                        Select recipes to get started
-                    </div>
+                <div
+                    class="text-center py-12 text-gray-500 dark:text-dark-text-muted"
+                >
+                    <div class="text-5xl mb-4 opacity-50">🍽️</div>
+                    <div class="text-sm">Select recipes to get started</div>
                 </div>
             </div>
             <div class="selected-panel-actions">
@@ -683,6 +596,43 @@ const UI_COMPONENT_IDS = {
                 </button>
             </div>
         </aside>
+
+        <!-- Hidden template for UnoCSS class detection (dynamically generated content) -->
+        <template id="unocss-safelist" style="display: none;">
+            <!-- Empty state -->
+            <div
+                class="text-center py-12 text-gray-500 dark:text-dark-text-muted"
+            >
+                <div class="text-5xl mb-4 opacity-50"></div>
+                <div class="text-sm"></div>
+            </div>
+            <!-- Selected recipe item -->
+            <div
+                class="bg-gray-50 dark:bg-dark-bg-elevated border border-gray-200 dark:border-dark-border rounded-lg p-3 mb-3 relative transition-all hover:bg-white dark:hover:bg-dark-bg-hover hover:shadow-sm"
+            >
+                <button
+                    class="selected-recipe-remove absolute top-3 right-3 w-6 h-6 flex items-center justify-center bg-error hover:bg-error-dark text-white rounded-full text-lg font-bold transition-all hover:scale-110 cursor-pointer border-none p-0"
+                ></button>
+                <div class="pr-8">
+                    <div class="badge-secondary text-xs mb-2 inline-block">
+                    </div>
+                    <h4 class="heading-6 mb-1"></h4>
+                    <p
+                        class="text-xs text-gray-600 dark:text-dark-text-secondary mb-3 line-clamp-2"
+                    >
+                    </p>
+                    <div class="flex gap-2 flex-wrap">
+                        <span class="badge-secondary text-xs"></span>
+                        <span class="badge-info text-xs"></span>
+                    </div>
+                </div>
+            </div>
+            <!-- No results message -->
+            <div
+                class="no-results text-center col-span-full py-12 text-gray-500 dark:text-dark-text-muted text-lg"
+            >
+            </div>
+        </template>
     </body>
 </html>
 
@@ -1035,9 +985,9 @@ const UI_COMPONENT_IDS = {
         // Update list content
         if (selectedCount === 0) {
             list.innerHTML = `
-                <div class="empty-selection-message">
-                    <div class="empty-selection-message-icon">🍽️</div>
-                    <div class="empty-selection-message-text">
+                <div class="text-center py-12 text-gray-500 dark:text-dark-text-muted">
+                    <div class="text-5xl mb-4 opacity-50">🍽️</div>
+                    <div class="text-sm">
                         Select recipes to get started
                     </div>
                 </div>
@@ -1047,29 +997,22 @@ const UI_COMPONENT_IDS = {
             list.innerHTML = recipesArray
                 .map(
                     (recipe) => `
-                <div class="selected-recipe-item">
+                <div class="bg-gray-50 dark:bg-dark-bg-elevated border border-gray-200 dark:border-dark-border rounded-lg p-3 mb-3 relative transition-all hover:bg-white dark:hover:bg-dark-bg-hover hover:shadow-sm">
                     <button 
-                        class="selected-recipe-remove" 
+                        class="selected-recipe-remove absolute top-3 right-3 w-6 h-6 flex items-center justify-center bg-error hover:bg-error-dark text-white rounded-full text-lg font-bold transition-all hover:scale-110 cursor-pointer border-none p-0" 
                         data-recipe-id="${recipe.id}"
                         title="Remove recipe"
                     >
                         ×
                     </button>
-                    <div class="selected-recipe-item-header">
-                        <div>
-
-                            <div class="selected-recipe-company">${recipe.company || "UNKNOWN"}</div>
-                             <br/>
-                            <strong class="selected-recipe-title">${recipe.title}</strong>
-                            <br/>
-                            <span> ${recipe.subtitle || ""} </span>
+                    <div class="pr-8">
+                        <div class="badge-secondary text-xs mb-2 inline-block">${recipe.company || "UNKNOWN"}</div>
+                        <h4 class="heading-6 mb-1">${recipe.title}</h4>
+                        <p class="text-xs text-gray-600 dark:text-dark-text-secondary mb-3 line-clamp-2">${recipe.subtitle || ""}</p>
+                        <div class="flex gap-2 flex-wrap">
+                            <span class="badge-secondary text-xs">🍽️ ${recipe.servings || "N/A"} servings</span>
+                            <span class="badge-info text-xs">⏱️ ${recipe.cookTime || "N/A"} min</span>
                         </div>
-
-                    </div>
-                     <br/>
-                    <div class="selected-recipe-meta">
-                        <span>🍽️ ${recipe.servings || "N/A"} servings</span>
-                        <span>⏱️ ${recipe.cookTime || "N/A"} min</span>
                     </div>
                 </div>
             `,
@@ -1195,8 +1138,8 @@ const UI_COMPONENT_IDS = {
         if (visibleCount === 0) {
             if (!noResults) {
                 noResults = document.createElement("li");
-                noResults.className = "no-results";
-                noResults.style.gridColumn = "1 / -1";
+                noResults.className =
+                    "no-results text-center col-span-full py-12 text-gray-500 dark:text-dark-text-muted text-lg";
                 noResults.textContent =
                     "No recipes found matching your criteria";
                 grid.appendChild(noResults);
