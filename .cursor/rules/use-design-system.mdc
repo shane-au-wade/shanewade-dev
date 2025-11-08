@@ -1,0 +1,5 @@
+---
+alwaysApply: true
+---
+read the web/src/pages/design-system.astro when implementing new astro files 
+to understand the latest design system.

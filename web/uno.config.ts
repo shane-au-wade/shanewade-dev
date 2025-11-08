@@ -128,7 +128,7 @@ export default defineConfig({
     "textarea": "input resize-y min-h-24",
 
     "checkbox":
-      "w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary focus:ring-2 cursor-pointer dark:border-dark-border dark:bg-dark-bg-elevated",
+      "relative w-4 h-4 rounded appearance-none border-2 border-gray-300 bg-white cursor-pointer transition-all focus:ring-brand-primary focus:ring-2 checked:bg-brand-primary checked:border-brand-primary dark:border-dark-border dark:bg-dark-bg-elevated dark:checked:bg-brand-primary dark:checked:border-brand-primary",
     "radio": "checkbox rounded-full",
 
     "label": "block text-sm font-medium text-gray-700 mb-1 dark:text-dark-text-secondary",

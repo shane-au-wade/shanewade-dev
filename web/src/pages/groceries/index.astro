@@ -6,6 +6,9 @@ import {
     type Recipe,
 } from "@shared/recipes/queries";
 import RecipesModal from "../../components/recipes-modal.astro";
+import "@styles/components.css";
+import 'remixicon/fonts/remixicon.css'
+
 
 // Check for recipe IDs in URL params
 const url = new URL(Astro.request.url);
@@ -67,278 +70,74 @@ const sortedAsNeededGroceries = Object.entries(asNeededGroceries).sort((a, b) =>
 const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
 ---
 
-<!doctype html>
+<style>
+    .grocery-item.checked {
+        opacity: 0.5;
+    }
+
+    .grocery-item.checked .item-name,
+    .grocery-item.checked .item-quantity {
+        text-decoration: line-through;
+    }
+</style>
+
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Grocery List</title>
-        <style>
-            @import "../../styles/colors.css";
-
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-
-            body {
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue",
-                    sans-serif;
-                background: var(--color-bg-secondary);
-                color: var(--color-text-primary);
-                padding: 0;
-                margin: 0;
-                min-height: 100vh;
-            }
-
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                padding: 1rem;
-            }
-
-            .header {
-                background: var(--color-white);
-                border-radius: 12px;
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            }
-
-            .header h1 {
-                font-size: 2rem;
-                margin-bottom: 0.5rem;
-                color: var(--color-brand-primary);
-            }
-
-            .stats {
-                display: flex;
-                gap: 1rem;
-                font-size: 0.875rem;
-                color: var(--color-text-secondary);
-                margin-top: 1rem;
-            }
-
-            .stat {
-                display: flex;
-                align-items: center;
-                gap: 0.25rem;
-            }
-
-            .stat-value {
-                font-weight: 600;
-                color: var(--color-text-primary);
-            }
-
-            .actions {
-                display: flex;
-                gap: 0.5rem;
-                margin-top: 1rem;
-            }
-
-            .btn {
-                flex: 1;
-                padding: 0.25rem;
-                border: none;
-                border-radius: 8px;
-                font-size: 0.875rem;
-                font-weight: 500;
-                cursor: pointer;
-                transition: all 0.2s;
-            }
-
-            .btn-primary {
-                background: var(--color-brand-primary);
-                color: white;
-            }
-
-            .btn-primary:hover {
-                background: var(--color-brand-primary-hover);
-            }
-
-            .btn-secondary {
-                background: white;
-                color: var(--color-text-primary);
-                border: 1px solid var(--color-border-medium);
-            }
-
-            .btn-secondary:hover {
-                background: var(--color-bg-secondary);
-            }
-
-            .grocery-list {
-                background: var(--color-white);
-                border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            }
-
-            .grocery-item {
-                display: flex;
-                align-items: center;
-                padding: 1rem;
-                border-bottom: 1px solid var(--color-border-light);
-                transition: background 0.2s;
-            }
-
-            .grocery-item:last-child {
-                border-bottom: none;
-            }
-
-            .grocery-item:hover {
-                background: var(--color-bg-secondary);
-            }
-
-            .grocery-item.checked {
-                opacity: 0.5;
-            }
-
-            .grocery-item.checked .item-name,
-            .grocery-item.checked .item-quantity {
-                text-decoration: line-through;
-            }
-
-            .checkbox-wrapper {
-                position: relative;
-                margin-right: 1rem;
-                flex-shrink: 0;
-            }
-
-            .checkbox {
-                width: 24px;
-                height: 24px;
-                border: 2px solid var(--color-gray-300);
-                border-radius: 6px;
-                cursor: pointer;
-                appearance: none;
-                transition: all 0.2s;
-                background: white;
-            }
-
-            .checkbox:checked {
-                background: var(--color-brand-primary);
-                border-color: var(--color-brand-primary);
-            }
-
-            .checkbox:checked::after {
-                content: "✓";
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                color: white;
-                font-size: 16px;
-                font-weight: bold;
-            }
-
-            .item-content {
-                flex: 1;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 1rem;
-            }
-
-            .item-name {
-                font-size: 1rem;
-                color: var(--color-text-primary);
-                font-weight: 500;
-            }
-
-            .item-quantity {
-                font-size: 0.875rem;
-                color: var(--color-text-secondary);
-                white-space: nowrap;
-            }
-
-            .empty-state {
-                padding: 3rem 1rem;
-                text-align: center;
-                color: var(--color-text-secondary);
-            }
-
-            .empty-state-icon {
-                font-size: 3rem;
-                margin-bottom: 1rem;
-            }
-
-            @media (max-width: 480px) {
-                .container {
-                    padding: 0.5rem;
-                }
-
-                .header {
-                    padding: 1rem;
-                    margin-bottom: 0.5rem;
-                }
-
-                .header h1 {
-                    font-size: 1.5rem;
-                }
-
-                .grocery-item {
-                    padding: 0.75rem;
-                }
-
-                .item-name {
-                    font-size: 0.9375rem;
-                }
-
-                .item-quantity {
-                    font-size: 0.8125rem;
-                }
-            }
-        </style>
     </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>Grocery List</h1>
-                {
-                    recipeCount > 0 && (
-                        <p style="color: var(--color-text-secondary); margin-top: 0.5rem;">
-                            From {recipeCount} recipe{recipeCount !== 1 ? "s" : ""}
-                        </p>
-                    )
-                }
-                <div class="stats">
-                    <div class="stat">
-                        <span class="stat-value" id="checked-count">0</span>
-                        <span>/</span>
-                        <span>{totalItems}</span>
-                        <span>items</span>
-                    </div>
-                </div>
-                <div class="actions">
-                    <button class="btn btn-secondary" id="clear-checked"
-                        >Clear Checked</button
-                    >
-                    <button class="btn btn-secondary" id="reset-all"
-                        >Reset All</button
-                    >
+    <body class="bg-page dark:bg-dark-bg min-h-screen">
+        <div class="container py-4 max-w-2xl">
+            <button
+            class="btn-ghost btn-sm"
+            onclick="window.location.href='/recipes/composer'"
+            ><i class="ri-add-line"></i> New Grocery List
+        </button>
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="heading-2 mb-2">Grocery List</h1>
                     {
-                        recipes.length > 0 && (
-                            <button
-                                class="btn btn-primary"
-                                onclick="window.openRecipesModal('recipes-modal')"
-                            >
-                                View Recipes ({recipes.length})
-                            </button>
+                        recipeCount > 0 && (
+                            <p class="text-muted mb-4">
+                                {/* do not adjust this line  */}
+                                From {recipeCount} recipe
+                                {recipeCount !== 1 ? "s" : ""}
+                            </p>
                         )
                     }
-                    <button
-                        class="btn btn-primary"
-                        onclick="window.location.href='/recipes/composer'"
-                        >Back to Composer</button
-                    >
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-body font-semibold" id="checked-count"
+                            >0</span
+                        >
+                        <span class="text-body">/</span>
+                        <span class="text-body">{totalItems}</span>
+                        <span class="text-small text-muted">items checked</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="btn-default btn-sm" id="clear-checked"
+                            >Clear Checked</button
+                        >
+                        <button class="btn-default btn-sm" id="reset-all"
+                            >Reset All</button
+                        >
+                        {
+                            recipes.length > 0 && (
+                                <button
+                                    class="btn-primary btn-sm"
+                                    onclick="window.openRecipesModal('recipes-modal')"
+                                >
+                                    View Recipes ({recipes.length})
+                                </button>
+                            )
+                        }
+                    </div>
                 </div>
             </div>
 
             {
                 errorMessage && (
-                    <div style="background: #fee; border: 1px solid #fcc; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; color: #c33;">
+                    <div class="alert-error mb-4">
                         <strong>Error:</strong> {errorMessage}
                     </div>
                 )
@@ -347,18 +146,21 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
             {
                 sortedGroceries.length === 0 &&
                 sortedAsNeededGroceries.length === 0 ? (
-                    <div class="grocery-list">
-                        <div class="empty-state">
-                            <div class="empty-state-icon">🛒</div>
+                    <div class="card">
+                        <div class="card-body text-center py-12">
+                            <div class="text-6xl mb-4">🛒</div>
                             {recipesParam ? (
-                                <p>No ingredients found in selected recipes</p>
+                                <p class="text-muted">
+                                    No ingredients found in selected recipes
+                                </p>
                             ) : (
                                 <div>
-                                    <p>No recipes selected</p>
-                                    <br />
+                                    <p class="text-muted mb-4">
+                                        No recipes selected
+                                    </p>
                                     <a
                                         href="/recipes/composer"
-                                        class="btn btn-primary"
+                                        class="btn-primary"
                                     >
                                         Select Recipes
                                     </a>
@@ -368,23 +170,25 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                     </div>
                 ) : (
                     <>
-                        <div class="grocery-list">
+                        <div class="card overflow-hidden">
                             {sortedGroceries.map(([name, quantity]) => (
-                                <div class="grocery-item">
-                                    <div class="checkbox-wrapper">
+                                <div class="grocery-item flex items-center px-4 py-3 border-b border-gray-200 dark:border-dark-border last:border-b-0 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                                    <div class="relative mr-3 flex-shrink-0">
                                         <input
                                             type="checkbox"
-                                            class="checkbox"
+                                            class="checkbox grocery-item-checkbox"
                                             id={`item-${name}`}
                                             data-item={name}
                                         />
                                     </div>
                                     <label
                                         for={`item-${name}`}
-                                        class="item-content"
+                                        class="flex-1 flex items-center justify-between gap-4 cursor-pointer"
                                     >
-                                        <span class="item-name">{name}</span>
-                                        <span class="item-quantity">
+                                        <span class="item-name text-body font-medium">
+                                            {name}
+                                        </span>
+                                        <span class="item-quantity text-small text-muted whitespace-nowrap">
                                             {quantity}
                                         </span>
                                     </label>
@@ -394,31 +198,31 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
 
                         {sortedAsNeededGroceries.length > 0 && (
                             <>
-                                <div style="margin-top: 1.5rem; margin-bottom: 0.5rem;">
-                                    <h3 style="font-size: 0.9rem; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+                                <div class="mt-6 mb-2">
+                                    <h3 class="text-small font-semibold text-muted uppercase tracking-wide">
                                         Pantry Staples
                                     </h3>
                                 </div>
-                                <div class="grocery-list">
+                                <div class="card overflow-hidden">
                                     {sortedAsNeededGroceries.map(
                                         ([name, quantity]) => (
-                                            <div class="grocery-item">
-                                                <div class="checkbox-wrapper">
+                                            <div class="grocery-item flex items-center px-4 py-3 border-b border-gray-200 dark:border-dark-border last:border-b-0 hover:bg-gray-50 dark:hover:bg-dark-bg transition-colors">
+                                                <div class="relative mr-3 flex-shrink-0">
                                                     <input
                                                         type="checkbox"
-                                                        class="checkbox"
+                                                        class="checkbox grocery-item-checkbox"
                                                         id={`item-${name}`}
                                                         data-item={name}
                                                     />
                                                 </div>
                                                 <label
                                                     for={`item-${name}`}
-                                                    class="item-content"
+                                                    class="flex-1 flex items-center justify-between gap-4 cursor-pointer"
                                                 >
-                                                    <span class="item-name">
+                                                    <span class="item-name text-body font-medium">
                                                         {name}
                                                     </span>
-                                                    <span class="item-quantity">
+                                                    <span class="item-quantity text-small text-muted whitespace-nowrap">
                                                         {quantity}
                                                     </span>
                                                 </label>
@@ -433,126 +237,120 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
             }
         </div>
 
-        <script define:vars={{ recipesParam }}>
-            // Local storage key - unique per recipe combination
-            const STORAGE_KEY = recipesParam
-                ? `grocery-list-checked-${recipesParam}`
-                : "grocery-list-checked";
-
-            // Load checked items from localStorage
-            function loadCheckedItems() {
-                try {
-                    const stored = localStorage.getItem(STORAGE_KEY);
-                    return stored ? new Set(JSON.parse(stored)) : new Set();
-                } catch (e) {
-                    console.error("Failed to load checked items:", e);
-                    return new Set();
-                }
-            }
-
-            // Save checked items to localStorage
-            function saveCheckedItems(checkedItems) {
-                try {
-                    localStorage.setItem(
-                        STORAGE_KEY,
-                        JSON.stringify(Array.from(checkedItems)),
-                    );
-                } catch (e) {
-                    console.error("Failed to save checked items:", e);
-                }
-            }
-
-            // Update the checked count display
-            function updateCheckedCount(count) {
-                const countElement = document.getElementById("checked-count");
-                if (countElement) {
-                    countElement.textContent = count.toString();
-                }
-            }
-
-            // Initialize on page load
-            function init() {
-                const checkedItems = loadCheckedItems();
-                const checkboxes = document.querySelectorAll(".checkbox");
-
-                // Restore checked state
-                checkboxes.forEach((checkbox) => {
-                    const itemName = checkbox.dataset.item;
-                    if (itemName && checkedItems.has(itemName)) {
-                        checkbox.checked = true;
-                        checkbox
-                            .closest(".grocery-item")
-                            ?.classList.add("checked");
-                    }
-                });
-
-                updateCheckedCount(checkedItems.size);
-
-                // Add event listeners to checkboxes
-                checkboxes.forEach((checkbox) => {
-                    checkbox.addEventListener("change", (e) => {
-                        const target = e.target;
-                        const itemName = target.dataset.item;
-                        const item = target.closest(".grocery-item");
-
-                        if (!itemName || !item) return;
-
-                        if (target.checked) {
-                            checkedItems.add(itemName);
-                            item.classList.add("checked");
-                        } else {
-                            checkedItems.delete(itemName);
-                            item.classList.remove("checked");
-                        }
-
-                        saveCheckedItems(checkedItems);
-                        updateCheckedCount(checkedItems.size);
-                    });
-                });
-
-                // Clear checked items button
-                const clearCheckedBtn =
-                    document.getElementById("clear-checked");
-                clearCheckedBtn?.addEventListener("click", () => {
-                    const checkedCheckboxes =
-                        document.querySelectorAll(".checkbox:checked");
-                    checkedCheckboxes.forEach((checkbox) => {
-                        checkbox.checked = false;
-                        checkbox
-                            .closest(".grocery-item")
-                            ?.classList.remove("checked");
-                        const itemName = checkbox.dataset.item;
-                        if (itemName) {
-                            checkedItems.delete(itemName);
-                        }
-                    });
-                    saveCheckedItems(checkedItems);
-                    updateCheckedCount(0);
-                });
-
-                // Reset all button
-                const resetAllBtn = document.getElementById("reset-all");
-                resetAllBtn?.addEventListener("click", () => {
-                    checkboxes.forEach((checkbox) => {
-                        checkbox.checked = false;
-                        checkbox
-                            .closest(".grocery-item")
-                            ?.classList.remove("checked");
-                    });
-                    checkedItems.clear();
-                    saveCheckedItems(checkedItems);
-                    updateCheckedCount(0);
-                });
-            }
-
-            // Run initialization when DOM is ready
-            if (document.readyState === "loading") {
-                document.addEventListener("DOMContentLoaded", init);
-            } else {
-                init();
-            }
-        </script>
-
         <RecipesModal recipes={recipes} modalId="recipes-modal" />
     </body>
 </html>
+
+<script define:vars={{ recipesParam }}>
+    // Local storage key - unique per recipe combination
+    const STORAGE_KEY = recipesParam
+        ? `grocery-list-checked-${recipesParam}`
+        : "grocery-list-checked";
+
+    // Load checked items from localStorage
+    function loadCheckedItems() {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? new Set(JSON.parse(stored)) : new Set();
+        } catch (e) {
+            console.error("Failed to load checked items:", e);
+            return new Set();
+        }
+    }
+
+    // Save checked items to localStorage
+    function saveCheckedItems(checkedItems) {
+        try {
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(Array.from(checkedItems)),
+            );
+        } catch (e) {
+            console.error("Failed to save checked items:", e);
+        }
+    }
+
+    // Update the checked count display
+    function updateCheckedCount(count) {
+        const countElement = document.getElementById("checked-count");
+        if (countElement) {
+            countElement.textContent = count.toString();
+        }
+    }
+
+    // Initialize on page load
+    function init() {
+        const checkedItems = loadCheckedItems();
+        const checkboxes = document.querySelectorAll(".grocery-item-checkbox");
+
+        // Restore checked state
+        checkboxes.forEach((checkbox) => {
+            const itemName = checkbox.dataset.item;
+            if (itemName && checkedItems.has(itemName)) {
+                checkbox.checked = true;
+                checkbox.closest(".grocery-item")?.classList.add("checked");
+            }
+        });
+
+        updateCheckedCount(checkedItems.size);
+
+        // Add event listeners to checkboxes
+        checkboxes.forEach((checkbox) => {
+            checkbox.addEventListener("change", (e) => {
+                const target = e.target;
+                const itemName = target.dataset.item;
+                const item = target.closest(".grocery-item");
+
+                if (!itemName || !item) return;
+
+                if (target.checked) {
+                    checkedItems.add(itemName);
+                    item.classList.add("checked");
+                } else {
+                    checkedItems.delete(itemName);
+                    item.classList.remove("checked");
+                }
+
+                saveCheckedItems(checkedItems);
+                updateCheckedCount(checkedItems.size);
+            });
+        });
+
+        // Clear checked items button
+        const clearCheckedBtn = document.getElementById("clear-checked");
+        clearCheckedBtn?.addEventListener("click", () => {
+            const checkedCheckboxes = document.querySelectorAll(
+                ".grocery-item-checkbox:checked",
+            );
+            checkedCheckboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+                checkbox.closest(".grocery-item")?.classList.remove("checked");
+                const itemName = checkbox.dataset.item;
+                if (itemName) {
+                    checkedItems.delete(itemName);
+                }
+            });
+            saveCheckedItems(checkedItems);
+            updateCheckedCount(0);
+        });
+
+        // Reset all button
+        const resetAllBtn = document.getElementById("reset-all");
+        resetAllBtn?.addEventListener("click", () => {
+            checkboxes.forEach((checkbox) => {
+                checkbox.checked = false;
+                checkbox.closest(".grocery-item")?.classList.remove("checked");
+            });
+            checkedItems.clear();
+            saveCheckedItems(checkedItems);
+            updateCheckedCount(0);
+        });
+    }
+
+    // Run initialization when DOM is ready
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+    } else {
+        init();
+    }
+</script>

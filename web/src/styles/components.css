@@ -1,6 +1,19 @@
 /* import colors */
 @import "@styles/colors.css";
 
+/* Checkbox with visible checkmark */
+.checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+
 /* basic card style */
 .card {
   padding: 1rem;
@@ -39,7 +52,6 @@
   background: #c0392b;
   transform: scale(1.1);
 }
-
 
 .selected-recipe-item {
   border: 1px solid var(--color-border-light);
