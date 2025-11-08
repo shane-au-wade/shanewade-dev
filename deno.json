@@ -35,6 +35,10 @@
     "@zod/zod": "jsr:@zod/zod@^4.1.12",
     "astro": "npm:astro@^5.15.1",
     "minisearch": "npm:minisearch@^7.2.0",
+    "react": "npm:react@^19.2.0",
+    "react-dom": "npm:react-dom@^19.2.0",
+    "react-dom/": "npm:/react-dom@^19.2.0/",
+    "react/": "npm:/react@^19.2.0/",
     "sharp": "npm:sharp@^0.34.4",
     "zod": "npm:zod@^4.1.12"
   }

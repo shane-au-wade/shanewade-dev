@@ -4238,6 +4238,8 @@
       "npm:@mistralai/mistralai@^1.10.0",
       "npm:astro@^5.15.1",
       "npm:minisearch@^7.2.0",
+      "npm:react-dom@^19.2.0",
+      "npm:react@^19.2.0",
       "npm:sharp@~0.34.4",
       "npm:zod@^4.1.12"
     ],
