@@ -178,7 +178,8 @@ export default defineConfig({
     // ===================
     // MODAL/DIALOG
     // ===================
-    "dialog": "backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm bg-transparent border-none max-w-lg w-full p-0 rounded-lg fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
+    "dialog":
+      "backdrop:bg-black backdrop:bg-opacity-50 backdrop:backdrop-blur-sm bg-transparent border-none max-w-lg w-full p-0 rounded-lg fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2",
     "dialog-backdrop": "fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm",
     "dialog-content": "relative bg-white rounded-lg shadow-xl max-w-lg w-full mx-auto p-6 dark:bg-dark-bg-elevated",
     "dialog-header": "flex items-start justify-between mb-4",

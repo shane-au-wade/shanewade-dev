@@ -1,6 +1,5 @@
 ---
 export const prerender = false;
-import "@styles/colors.css";
 
 import { getRecipe } from "@shared/recipes/queries";
 import { supabase } from "../../lib/db/supabase-client";
@@ -33,337 +32,171 @@ if (!recipe) {
 }
 ---
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family:
-            system-ui,
-            -apple-system,
-            sans-serif;
-        overflow: hidden;
-    }
-
-    .screen {
-        width: 100vw;
-        height: 100vh;
-        padding: 1rem;
-        /* cursor: pointer; */
-    }
-
-    .screen.hidden {
-        display: none;
-    }
-
-    .side-bar {
-        width: 400px;
-        height: 100%;
-        border: 2px solid var(--color-brand-primary-dark);
-        border-radius: 1rem;
-        padding: 1rem;
-    }
-
-    .flex-row {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-    }
-
-    .page-indicator {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-    }
-
-    .header {
-        margin-bottom: 1.5rem;
-    }
-
-    h1 {
-        font-size: 2.5rem;
-        margin-bottom: 0.5rem;
-        font-weight: 700;
-    }
-
-    .subtitle {
-        font-size: 1.1rem;
-        opacity: 0.7;
-        margin-bottom: 1rem;
-    }
-
-    .meta {
-        display: flex;
-        gap: 2rem;
-        font-size: 1rem;
-        opacity: 0.8;
-        margin-bottom: 1.5rem;
-    }
-
-    h2 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .ingredients {
-        list-style: none;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .ingredient {
-        padding: 0.75rem 1rem;
-        background: var(--color-bg-secondary);
-        border-left: 3px solid var(--color-brand-primary-dark);
-        font-size: 0.95rem;
-        line-height: 1.4;
-    }
-
-    .ingredient strong {
-        display: inline-block;
-        margin-right: 0.25rem;
-        color: var(--color-text-primary);
-    }
-
-    .tools {
-        list-style: none;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-    }
-
-    .tool {
-        padding: 0.75rem 1rem;
-        background: var(--color-bg-secondary);
-        border-left: 3px solid var(--color-brand-primary-dark);
-        font-size: 0.95rem;
-        line-height: 1.4;
-    }
-
-    .header-with-tools {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .tools-inline {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        font-size: 0.9rem;
-        opacity: 0.8;
-    }
-
-    .tools-label {
-        font-weight: 600;
-        margin-right: 0.25rem;
-    }
-
-    .tool-inline {
-        color: var(--color-text-primary);
-    }
-
-    .section-header {
-        font-size: 1.25rem;
-        margin-bottom: 0.75rem;
-        margin-top: 1rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.9;
-    }
-
-    .mise-steps {
-        margin-bottom: 1.5rem;
-    }
-
-    .mise-step {
-        background: #f4f4f4;
-        border-left: 4px solid #6a8b5a;
-    }
-
-    .steps-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.25rem;
-        flex: 1;
-    }
-
-    .step {
-        padding: 1.25rem;
-        background: #f4f4f4;
-        border-left: 4px solid #8b7355;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .step-title {
-        font-weight: 700;
-        font-size: 1.1rem;
-        margin-bottom: 0.5rem;
-        color: #5d4e37;
-    }
-
-    .step-details {
-        font-size: 0.9rem;
-        line-height: 1.5;
-        opacity: 0.9;
-    }
-
-    .click-hint {
-        position: fixed;
-        bottom: 1.5rem;
-        right: 2rem;
-        font-size: 0.85rem;
-        opacity: 0.6;
-        animation: pulse 2s infinite;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    @keyframes pulse {
-        0%,
-        100% {
-            opacity: 0.6;
-        }
-        50% {
-            opacity: 1;
-        }
-    }
-</style>
-
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{recipe.title}</title>
+        <title>{recipe.title} - Recipe</title>
     </head>
-    <body>
+    <body class="overflow-hidden bg-page dark:bg-dark-bg font-sans m-0 p-0">
         <!-- Screen 1: Recipe Info & Ingredients -->
-        <div class="screen flex-row" id="screen1">
-            <div class="side-bar">
-                <span>{recipe.company_name}</span>
-                <h1>{recipe.title}</h1>
-                <p class="subtitle">{recipe.subtitle}</p>
-                <div class="meta">
-                    <span>⏱️ {recipe.cook_time}</span>
-                    <span>🍽️ {recipe.servings}</span>
+        <div
+            class="w-screen h-screen p-4 flex flex-row gap-4 cursor-pointer"
+            id="screen1"
+        >
+            <!-- Sidebar -->
+            <div
+                class="w-96 h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-6 overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+            >
+                <span class="badge-secondary mb-3">{recipe.company_name}</span>
+                <h1 class="heading-2 mb-2">{recipe.title}</h1>
+                <p
+                    class="text-lead mb-4 text-gray-600 dark:text-dark-text-secondary"
+                >
+                    {recipe.subtitle}
+                </p>
+                <div class="flex gap-3 mb-6">
+                    <span class="badge-info"
+                        >⏱️ {recipe.cook_time_minutes} min</span
+                    >
+                    <span class="badge-secondary"
+                        >🍽️ {recipe.servings} servings</span
+                    >
                 </div>
-                <br />
-                <div>
-                    <h3>Cooking Tips</h3>
-                    <p>{recipe.cooking_tips}</p>
+                <div class="alert-info">
+                    <h3 class="heading-6 mb-2">Cooking Tips</h3>
+                    <p class="text-small">{recipe.cooking_tips}</p>
                 </div>
             </div>
 
-            <div
-                style={{
-                    width: "100%",
-                }}
-            >
-                <h2>Ingredients</h2>
-                <ul class="ingredients">
+            <!-- Main Content -->
+            <div class="flex-1 overflow-y-auto">
+                <h2 class="heading-4 uppercase mb-4">Ingredients</h2>
+                <ul
+                    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8 list-none"
+                >
                     {
                         recipe.ingredients.map((ingredient: any) => (
-                            <li class="ingredient">
-                                <strong>
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-4 py-3 rounded text-sm">
+                                <strong class="text-gray-900 dark:text-dark-text mr-1">
                                     {ingredient.quantity}{" "}
                                     {ingredient.unit || ""}
                                 </strong>
-                                {ingredient.display_name}
+                                <span class="text-gray-700 dark:text-dark-text-secondary">
+                                    {ingredient.display_name}
+                                </span>
                             </li>
                         ))
                     }
                 </ul>
 
-                <h2>Tools</h2>
-                <ul class="tools">
+                <h2 class="heading-4 uppercase mb-4">Tools</h2>
+                <ul
+                    class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 list-none"
+                >
                     {
                         recipe.cooking_tools.map((tool: any) => (
-                            <li class="tool">{tool.display_name}</li>
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-4 py-3 rounded text-sm text-gray-700 dark:text-dark-text-secondary">
+                                {tool.display_name}
+                            </li>
                         ))
                     }
                 </ul>
             </div>
 
-            <div class="click-hint">
+            <!-- Navigation Hint -->
+            <div
+                class="fixed bottom-6 right-8 flex items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+            >
                 <span>Click anywhere to see instructions</span>
-                <span>→</span>
+                <span class="text-brand-primary">→</span>
             </div>
         </div>
 
         <!-- Screen 2: Steps -->
-        <div class="screen flex-row hidden" id="screen2">
-            <div class="side-bar">
-                <span>{recipe.company_name}</span>
-                <h1>{recipe.title}</h1>
-                <p class="subtitle">{recipe.subtitle}</p>
-                <div class="meta">
-                    <span>⏱️ {recipe.cook_time}</span>
-                    <span>🍽️ {recipe.servings}</span>
-                </div>
-                <br />
-                <div>
-                    <h3>Cooking Tips</h3>
-                    <p>{recipe.cooking_tips}</p>
+        <div
+            class="w-screen h-screen p-4 flex flex-row gap-4 cursor-pointer hidden"
+            id="screen2"
+        >
+            <!-- Sidebar with condensed info -->
+            <div
+                class="w-96 h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-6 overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+            >
+                <span class="badge-secondary mb-3">{recipe.company_name}</span>
+                <h1 class="heading-3 mb-2">{recipe.title}</h1>
+                <p
+                    class="text-body text-sm mb-4 text-gray-600 dark:text-dark-text-secondary"
+                >
+                    {recipe.subtitle}
+                </p>
+                <div class="flex gap-3 mb-6">
+                    <span class="badge-info"
+                        >⏱️ {recipe.cook_time_minutes} min</span
+                    >
+                    <span class="badge-secondary"
+                        >🍽️ {recipe.servings} servings</span
+                    >
                 </div>
 
-                <h2>Ingredients</h2>
-                <ul
-                    class="ingredients"
-                    style={{
-                        gridTemplateColumns: "repeat(2, 1fr)",
-                    }}
-                >
+                <div class="alert-info mb-6">
+                    <h3 class="heading-6 mb-2">Cooking Tips</h3>
+                    <p class="text-small">{recipe.cooking_tips}</p>
+                </div>
+
+                <h3 class="heading-6 uppercase mb-3">Ingredients</h3>
+                <ul class="grid grid-cols-2 gap-2 mb-6 list-none text-xs">
                     {
                         recipe.ingredients.map((ingredient: any) => (
-                            <li class="ingredient">
-                                <strong>
+                            <li class="bg-gray-100 dark:bg-dark-bg border-l-3 border-brand-primary px-2 py-2 rounded">
+                                <strong class="text-gray-900 dark:text-dark-text mr-1">
                                     {ingredient.quantity}{" "}
                                     {ingredient.unit || ""}
                                 </strong>
-                                {ingredient.display_name}
+                                <span class="text-gray-600 dark:text-dark-text-secondary">
+                                    {ingredient.display_name}
+                                </span>
                             </li>
                         ))
                     }
                 </ul>
 
-                <h2>Tools</h2>
-                <ul class="tools">
+                <h3 class="heading-6 uppercase mb-3">Tools</h3>
+                <div class="flex flex-wrap gap-2">
                     {
                         recipe.cooking_tools.map((tool: any) => (
-                            <li class="tool">{tool.display_name}</li>
+                            <span class="badge-secondary text-xs">
+                                {tool.display_name}
+                            </span>
                         ))
                     }
-                </ul>
+                </div>
             </div>
 
-            <!-- cooking steps -->
-            <div>
+            <!-- Cooking Steps Content -->
+            <div class="flex-1 overflow-y-auto">
                 {
                     recipe.mise_en_place_steps &&
                         recipe.mise_en_place_steps.length > 0 && (
                             <>
-                                <h2 class="section-header">Mise en Place</h2>
-                                <div class="steps-grid mise-steps">
+                                <h2 class="heading-4 uppercase mb-4">
+                                    Mise en Place
+                                </h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
                                     {recipe.mise_en_place_steps.map(
                                         (step: any, index: number) => (
-                                            <div class="step mise-step">
-                                                <div class="step-title">
-                                                    {index + 1}. {step.title}
-                                                </div>
-                                                <div class="step-details">
-                                                    {step.details}
+                                            <div class="card bg-success bg-opacity-10 border-l-4 border-success">
+                                                <div class="card-body">
+                                                    <div class="flex items-start gap-3 mb-2">
+                                                        <span class="badge-success">
+                                                            {index + 1}
+                                                        </span>
+                                                        <h3 class="heading-6 flex-1">
+                                                            {step.title}
+                                                        </h3>
+                                                    </div>
+                                                    <p class="text-small text-gray-700 dark:text-dark-text-secondary leading-relaxed">
+                                                        {step.details}
+                                                    </p>
                                                 </div>
                                             </div>
                                         ),
@@ -373,23 +206,37 @@ if (!recipe) {
                         )
                 }
 
-                <h2 class="section-header">Cooking Steps</h2>
-                <div class="steps-grid">
+                <h2 class="heading-4 uppercase mb-4">Cooking Steps</h2>
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+                >
                     {
                         recipe.steps.map((step: any, index: number) => (
-                            <div class="step">
-                                <div class="step-title">
-                                    {index + 1}. {step.title}
+                            <div class="card border-l-4 border-brand-primary-dark dark:border-brand-primary">
+                                <div class="card-body">
+                                    <div class="flex items-start gap-3 mb-2">
+                                        <span class="badge-primary">
+                                            {index + 1}
+                                        </span>
+                                        <h3 class="heading-6 flex-1">
+                                            {step.title}
+                                        </h3>
+                                    </div>
+                                    <p class="text-small text-gray-700 dark:text-dark-text-secondary leading-relaxed">
+                                        {step.details}
+                                    </p>
                                 </div>
-                                <div class="step-details">{step.details}</div>
                             </div>
                         ))
                     }
                 </div>
             </div>
 
-            <div class="click-hint">
-                <span>←</span>
+            <!-- Navigation Hint -->
+            <div
+                class="fixed bottom-6 right-8 flex items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+            >
+                <span class="text-brand-primary">←</span>
                 <span>Click anywhere to see ingredients</span>
             </div>
         </div>

@@ -17,75 +17,60 @@ if (error) {
 }
 ---
 
-<style>
-    li {
-        list-style: none;
-    }
-
-    .recipe-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
-
-    .recipe-card {
-        border: 1px solid #ccc;
-        padding: 1rem;
-        border-radius: 0.5rem;
-    }
-
-    .recipe-card h2 {
-        font-size: 1.5rem;
-        margin: 0;
-    }
-
-    .recipe-card p {
-        margin: 0;
-        font-size: 1rem;
-        color: #666;
-    }
-
-    .recipe-card a {
-        text-decoration: none;
-        color: #000;
-    }
-
-    .recipe-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .recipe-card a:visited {
-        color: #666;
-    }
-
-    .recipe-card-link {
-        text-decoration: none;
-        color: #000;
-    }
-</style>
-
-<html>
+<html lang="en">
     <head>
-        <title>Recipes</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Recipes - Shane Wade</title>
     </head>
-    <body>
-        <h1>Recipes</h1>
-        <ul class="recipe-grid">
-            {
-                recipes.map((recipe) => (
-                    <a href={`/recipes/${recipe.id}`} class="recipe-card-link">
-                        <li class="recipe-card">
-                            <p>{recipe.company_name}</p>
-                            <h2>{recipe.title}</h2>
-                            <p>{recipe.subtitle}</p>
-                            <br />
-                            <p>{recipe.servings} servings</p>
-                            <p>{recipe.cook_time_minutes} minutes</p>
-                        </li>
-                    </a>
-                ))
-            }
-        </ul>
+    <body class="bg-page dark:bg-dark-bg min-h-screen">
+        <!-- Header Section -->
+        <header
+            class="border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-elevated"
+        >
+            <div class="container py-6">
+                <nav class="mb-4">
+                    <a href="/" class="link-subtle text-sm">← Back to Home</a>
+                </nav>
+                <h1 class="heading-1 mb-2">Recipes</h1>
+                <p
+                    class="text-lead text-gray-600 dark:text-dark-text-secondary"
+                >
+                    Browse our collection of delicious recipes
+                </p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {
+                    recipes.map((recipe) => (
+                        <a
+                            href={`/recipes/${recipe.id}`}
+                            class="card-hover block no-underline"
+                        >
+                            <div class="card-body">
+                                <p class="text-muted mb-2">
+                                    {recipe.company_name}
+                                </p>
+                                <h2 class="heading-5 mb-2">{recipe.title}</h2>
+                                <p class="text-body text-gray-600 dark:text-dark-text-secondary mb-4">
+                                    {recipe.subtitle}
+                                </p>
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="badge-secondary">
+                                        {recipe.servings} servings
+                                    </span>
+                                    <span class="badge-info">
+                                        {recipe.cook_time_minutes} min
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    ))
+                }
+            </div>
+        </main>
     </body>
 </html>
