@@ -50,198 +50,10 @@ const UI_COMPONENT_IDS = {
 ---
 
 <style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-    }
-
-    /* aside {
-        margin: 0;
-    } */
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-            sans-serif;
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 1rem;
-        background: #f5f5f5;
-    }
-
-    .main-container {
-        display: grid;
-        gap: 2rem;
-        align-items: start;
-        height: 100%;
-    }
-
-    @media (max-width: 1200px) {
-        .main-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .recipes-section {
-        min-width: 0;
-    }
-
-    .header {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 2rem;
-    }
-
-    h1 {
-        margin: 0 0 0.5rem 0;
-        color: #333;
-    }
-
-    .subtitle {
-        color: #666;
-        margin: 0;
-    }
-
-    .controls {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1rem;
-    }
-
-    .search-bar {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .search-input {
-        flex: 1;
-        padding: 0.75rem;
-        border: 2px solid #e0e0e0;
-        border-radius: 6px;
-        font-size: 1rem;
-        transition: border-color 0.2s;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: #4a90e2;
-    }
-
-    .filter-bar {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .filter-group {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .filter-group label {
-        font-weight: 500;
-        color: #555;
-    }
-
-    .filter-select {
-        padding: 0.5rem;
-        border: 2px solid #e0e0e0;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        background: white;
-        cursor: pointer;
-    }
-
-    .selection-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 1rem;
-        background: #e8f4fd;
-        border-left: 4px solid #4a90e2;
-        border-radius: 4px;
-        margin-bottom: 1rem;
-    }
-
-    .selection-info {
-        font-weight: 500;
-        color: #2c5aa0;
-    }
-
-    .selection-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .btn {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-
-    .btn-primary {
-        background: #4a90e2;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background: #357abd;
-    }
-
-    .btn-secondary {
-        background: #e0e0e0;
-        color: #333;
-    }
-
-    .btn-secondary:hover {
-        background: #d0d0d0;
-    }
-
-    .btn-danger {
-        background: #e74c3c;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background: #c0392b;
-    }
-
-    .recipe-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1.5rem;
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .recipe-card {
-        background: white;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1.5rem;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-    }
-
-    .recipe-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
+    /* Selected recipe card state */
     .recipe-card.selected {
-        border-color: #4a90e2;
-        background: #f0f8ff;
+        border-color: var(--color-brand-primary) !important;
+        background-color: rgba(196, 69, 54, 0.05) !important;
     }
 
     .recipe-card.selected::before {
@@ -251,156 +63,15 @@ const UI_COMPONENT_IDS = {
         right: 1rem;
         width: 28px;
         height: 28px;
-        background: #4a90e2;
+        background: var(--color-brand-primary);
         color: white;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: bold;
-        font-size: 1.2rem;
-    }
-
-    .recipe-company {
-        font-size: 0.85rem;
-        color: #888;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
-    }
-
-    .recipe-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #333;
-        margin: 0 0 0.5rem 0;
-    }
-
-    .recipe-subtitle {
-        font-size: 0.95rem;
-        color: #666;
-        margin: 0 0 1rem 0;
-        line-height: 1.4;
-    }
-
-    .recipe-meta {
-        display: flex;
-        gap: 1rem;
-        font-size: 0.9rem;
-        color: #777;
-    }
-
-    .recipe-meta-item {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    .no-results {
-        text-align: center;
-        padding: 3rem;
-        color: #999;
-        font-size: 1.1rem;
-    }
-
-    .selected-ids-section {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        margin-top: 2rem;
-    }
-
-    .selected-ids-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        color: #333;
-    }
-
-    .selected-ids-list {
-        background: #f8f8f8;
-        padding: 1rem;
-        border-radius: 6px;
-        font-family: "Monaco", "Courier New", monospace;
-        font-size: 0.85rem;
-        color: #555;
-        max-height: 200px;
-        overflow-y: auto;
-    }
-
-    .copy-btn {
-        margin-top: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: #4a90e2;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    .copy-btn:hover {
-        background: #357abd;
-    }
-
-    .copy-btn.copied {
-        background: #27ae60;
-    }
-
-    /* Selected recipes sidebar */
-    .selected-recipes-panel {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        position: sticky;
-        width: 100%;
-        max-width: 380px;
-        max-height: calc(100vh - 4rem);
-        display: flex;
-        flex-direction: column;
-    }
-
-    .selected-recipes-panel.hidden {
-        /* display: none; */
-    }
-
-    .selected-panel-header {
-        padding: 1.5rem;
-        border-bottom: 2px solid #e8f4fd;
-    }
-
-    .selected-panel-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #333;
-        margin: 0 0 0.5rem 0;
-    }
-
-    .selected-panel-subtitle {
-        font-size: 0.9rem;
-        color: #666;
-        margin: 0;
-    }
-
-    .selected-recipes-list {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem;
-    }
-
-    .selected-panel-actions {
-        padding: 1rem 1.5rem;
-        border-top: 2px solid #e8f4fd;
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .selected-panel-actions .btn {
-        width: 100%;
-        justify-content: center;
+        font-size: 1rem;
+        z-index: 10;
     }
 </style>
 
@@ -410,113 +81,125 @@ const UI_COMPONENT_IDS = {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Recipe Composer</title>
     </head>
-    <body style={{ display: "flex", flexDirection: "row", gap: "1rem" }}>
-        <div>
-            <div class="controls">
-                <div>
-                    <span>Recipe Composer</span>
-                    <p class="subtitle">
-                        Select recipes to create a grocery list or meal plan
-                    </p>
-                </div>
-
-                <br />
-
-                <div class="search-bar">
-                    <input
-                        type="text"
-                        id={UI_COMPONENT_IDS.searchInput}
-                        class="search-input"
-                        placeholder="Search recipes by title, subtitle, or company..."
-                    />
-                </div>
-
-                <div class="filter-bar">
-                    <div class="filter-group">
-                        <label for="company-filter">Company:</label>
-                        <select
-                            id={UI_COMPONENT_IDS.companyFilter}
-                            class="filter-select"
-                        >
-                            <option value="">All Companies</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="servings-filter">Servings:</label>
-                        <select
-                            id={UI_COMPONENT_IDS.servingsFilter}
-                            class="filter-select"
-                        >
-                            <option value="">All Servings</option>
-                        </select>
-                    </div>
-
-                    <div class="filter-group">
-                        <label for="time-filter">Cook Time:</label>
-                        <select
-                            id={UI_COMPONENT_IDS.timeFilter}
-                            class="filter-select"
-                        >
-                            <option value="">Any Time</option>
-                            <option value="0-20">Under 20 min</option>
-                            <option value="20-30">20-30 min</option>
-                            <option value="30-45">30-45 min</option>
-                            <option value="45-999">45+ min</option>
-                        </select>
+    <body class="bg-page dark:bg-dark-bg min-h-screen">
+        <div class="container mx-auto py-6 flex flex-col lg:flex-row gap-6">
+            <div class="flex-1 min-w-0">
+                <!-- Header Card -->
+                <div class="card mb-6">
+                    <div class="card-body">
+                        <h1 class="heading-3 mb-2">Recipe Composer</h1>
+                        <p class="text-muted">
+                            Select recipes to create a grocery list or meal plan
+                        </p>
                     </div>
                 </div>
-            </div>
-            <div class="main-container">
-                <div class="recipes-section">
-                    <div
-                        class="selection-bar"
-                        id={UI_COMPONENT_IDS.selectionBar}
-                        style="display: none;"
-                    >
+
+                <!-- Search & Filters Card -->
+                <div class="card mb-6">
+                    <div class="card-body space-y-4">
+                        <div>
+                            <input
+                                type="text"
+                                id={UI_COMPONENT_IDS.searchInput}
+                                class="input w-full"
+                                placeholder="Search recipes by title, subtitle, or company..."
+                            />
+                        </div>
+
+                        <div class="flex flex-wrap gap-4">
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="label mb-2">Company:</label>
+                                <select
+                                    id={UI_COMPONENT_IDS.companyFilter}
+                                    class="select w-full"
+                                >
+                                    <option value="">All Companies</option>
+                                </select>
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="label mb-2">Servings:</label>
+                                <select
+                                    id={UI_COMPONENT_IDS.servingsFilter}
+                                    class="select w-full"
+                                >
+                                    <option value="">All Servings</option>
+                                </select>
+                            </div>
+
+                            <div class="flex-1 min-w-[200px]">
+                                <label class="label mb-2">Cook Time:</label>
+                                <select
+                                    id={UI_COMPONENT_IDS.timeFilter}
+                                    class="select w-full"
+                                >
+                                    <option value="">Any Time</option>
+                                    <option value="0-20">Under 20 min</option>
+                                    <option value="20-30">20-30 min</option>
+                                    <option value="30-45">30-45 min</option>
+                                    <option value="45-999">45+ min</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selection Bar -->
+                <div
+                    class="alert-info mb-6"
+                    id={UI_COMPONENT_IDS.selectionBar}
+                    style="display: none;"
+                >
+                    <div class="flex items-center justify-between">
                         <div
-                            class="selection-info"
+                            class="font-medium"
                             id={UI_COMPONENT_IDS.selectionInfo}
                         >
                             0 recipes selected
                         </div>
-                        <div class="selection-actions">
+                        <div class="flex gap-2">
                             <button
-                                class="btn btn-secondary"
+                                class="btn-default btn-sm"
                                 id={UI_COMPONENT_IDS.clearSelection}
                             >
                                 Clear Selection
                             </button>
                             <button
-                                class="btn btn-primary"
+                                class="btn-primary btn-sm"
                                 id={UI_COMPONENT_IDS.viewIds}
                             >
                                 View Selected IDs
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <ul class="recipe-grid" id={UI_COMPONENT_IDS.recipeGrid}>
-                        {
-                            recipes.map((recipe) => (
-                                <li
-                                    class="recipe-card"
-                                    data-recipe-id={recipe.id}
-                                    data-company={recipe.company_name || ""}
-                                    data-servings={recipe.servings || 0}
-                                    data-cook-time={
-                                        recipe.cook_time_minutes || 0
-                                    }
-                                >
-                                    <div class="recipe-company">
+                <!-- Recipe Grid -->
+                <ul
+                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+                    id={UI_COMPONENT_IDS.recipeGrid}
+                >
+                    {
+                        recipes.map((recipe) => (
+                            <li
+                                class="recipe-card card-hover relative"
+                                data-recipe-id={recipe.id}
+                                data-company={recipe.company_name || ""}
+                                data-servings={recipe.servings || 0}
+                                data-cook-time={recipe.cook_time_minutes || 0}
+                            >
+                                <div class="card-body">
+                                    <div class="recipe-company badge-secondary text-xs mb-3 inline-block uppercase tracking-wide">
                                         {recipe.company_name || "Unknown"}
                                     </div>
-                                    <h2 class="recipe-title">{recipe.title}</h2>
-                                    <p class="recipe-subtitle">
+                                    <h3 class="recipe-title heading-5 mb-2">
+                                        {recipe.title}
+                                    </h3>
+                                    <p class="recipe-subtitle text-small text-muted mb-4 line-clamp-2">
                                         {recipe.subtitle || "No description"}
                                     </p>
-                                    <div class="recipe-meta">
-                                        <div class="recipe-meta-item">
+                                    <div class="recipe-meta flex gap-3 text-sm text-gray-600 dark:text-dark-text-secondary">
+                                        <div class="flex items-center gap-1">
                                             <span>🍽️</span>
                                             <span>
                                                 {recipe.servings
@@ -524,7 +207,7 @@ const UI_COMPONENT_IDS = {
                                                     : "N/A"}
                                             </span>
                                         </div>
-                                        <div class="recipe-meta-item">
+                                        <div class="flex items-center gap-1">
                                             <span>⏱️</span>
                                             <span>
                                                 {recipe.cook_time_minutes
@@ -533,107 +216,114 @@ const UI_COMPONENT_IDS = {
                                             </span>
                                         </div>
                                     </div>
-                                </li>
-                            ))
-                        }
-                    </ul>
+                                </div>
+                            </li>
+                        ))
+                    }
+                </ul>
 
-                    <div
-                        class="selected-ids-section"
-                        id={UI_COMPONENT_IDS.selectedIdsSection}
-                    >
-                        <h3 class="selected-ids-title">Selected Recipe IDs</h3>
+                <!-- Selected IDs Section -->
+                <div class="card mt-6" id={UI_COMPONENT_IDS.selectedIdsSection}>
+                    <div class="card-header">
+                        <h3 class="heading-5">Selected Recipe IDs</h3>
+                    </div>
+                    <div class="card-body">
                         <div
-                            class="selected-ids-list"
+                            class="bg-gray-50 dark:bg-dark-bg-secondary p-4 rounded font-mono text-sm text-gray-700 dark:text-dark-text-primary max-h-[200px] overflow-y-auto"
                             id={UI_COMPONENT_IDS.selectedIdsList}
                         >
                         </div>
-                        <button class="copy-btn" id={UI_COMPONENT_IDS.copyBtn}
-                            >Copy to Clipboard</button
-                        >
                     </div>
+                    <div class="card-footer">
+                        <button
+                            class="btn-primary btn-sm"
+                            id={UI_COMPONENT_IDS.copyBtn}
+                        >
+                            Copy to Clipboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Recipes Panel -->
+            <aside
+                class="card w-full lg:max-w-[380px] lg:sticky lg:top-6 flex flex-col lg:max-h-[calc(100vh-3rem)]"
+                id={UI_COMPONENT_IDS.selectedPanel}
+            >
+                <div class="card-header">
+                    <h3 class="heading-4 mb-1">Selected Recipes</h3>
+                    <p
+                        class="text-small text-muted"
+                        id={UI_COMPONENT_IDS.selectedCount}
+                    >
+                        No recipes selected
+                    </p>
+                </div>
+                <div
+                    class="flex-1 overflow-y-auto px-6 py-4"
+                    id={UI_COMPONENT_IDS.selectedList}
+                >
+                    <div
+                        class="text-center py-12 text-gray-500 dark:text-dark-text-muted"
+                    >
+                        <div class="text-5xl mb-4 opacity-50">🍽️</div>
+                        <div class="text-sm">Select recipes to get started</div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="flex flex-col gap-2 w-full">
+                        <button
+                            class="btn-primary w-full"
+                            id={UI_COMPONENT_IDS.generateListBtn}
+                            disabled
+                        >
+                            Generate Grocery List
+                        </button>
+                        <button
+                            class="btn-default w-full"
+                            id={UI_COMPONENT_IDS.clearAllBtn}
+                        >
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </body>
+
+    <!-- Hidden template for UnoCSS class detection (dynamically generated content) -->
+    <template id="unocss-safelist" style="display: none;">
+        <!-- Empty state -->
+        <div class="text-center py-12 text-gray-500 dark:text-dark-text-muted">
+            <div class="text-5xl mb-4 opacity-50"></div>
+            <div class="text-sm"></div>
+        </div>
+        <!-- Selected recipe item -->
+        <div
+            class="bg-gray-50 dark:bg-dark-bg-elevated border border-gray-200 dark:border-dark-border rounded-lg p-3 mb-3 relative transition-all hover:bg-white dark:hover:bg-dark-bg-hover hover:shadow-sm"
+        >
+            <button
+                class="selected-recipe-remove absolute top-3 right-3 w-6 h-6 flex items-center justify-center bg-error hover:bg-error-dark text-white rounded-full text-lg font-bold transition-all hover:scale-110 cursor-pointer border-none p-0"
+            ></button>
+            <div class="pr-8">
+                <div class="badge-secondary text-xs mb-2 inline-block"></div>
+                <h4 class="heading-6 mb-1"></h4>
+                <p
+                    class="text-xs text-gray-600 dark:text-dark-text-secondary mb-3 line-clamp-2"
+                >
+                </p>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="badge-secondary text-xs"></span>
+                    <span class="badge-info text-xs"></span>
                 </div>
             </div>
         </div>
-
-        <aside
-            class="selected-recipes-panel"
-            id={UI_COMPONENT_IDS.selectedPanel}
+        <!-- No results message -->
+        <div
+            class="no-results text-center col-span-full py-12 text-gray-500 dark:text-dark-text-muted text-lg"
         >
-            <div class="selected-panel-header">
-                <h3 class="selected-panel-title">Selected Recipes</h3>
-                <p
-                    class="selected-panel-subtitle"
-                    id={UI_COMPONENT_IDS.selectedCount}
-                >
-                    No recipes selected
-                </p>
-            </div>
-            <div
-                class="selected-recipes-list"
-                id={UI_COMPONENT_IDS.selectedList}
-            >
-                <div
-                    class="text-center py-12 text-gray-500 dark:text-dark-text-muted"
-                >
-                    <div class="text-5xl mb-4 opacity-50">🍽️</div>
-                    <div class="text-sm">Select recipes to get started</div>
-                </div>
-            </div>
-            <div class="selected-panel-actions">
-                <button
-                    class="btn btn-primary"
-                    id={UI_COMPONENT_IDS.generateListBtn}
-                    disabled
-                >
-                    Generate Grocery List
-                </button>
-                <button
-                    class="btn btn-secondary"
-                    id={UI_COMPONENT_IDS.clearAllBtn}
-                >
-                    Clear All
-                </button>
-            </div>
-        </aside>
-
-        <!-- Hidden template for UnoCSS class detection (dynamically generated content) -->
-        <template id="unocss-safelist" style="display: none;">
-            <!-- Empty state -->
-            <div
-                class="text-center py-12 text-gray-500 dark:text-dark-text-muted"
-            >
-                <div class="text-5xl mb-4 opacity-50"></div>
-                <div class="text-sm"></div>
-            </div>
-            <!-- Selected recipe item -->
-            <div
-                class="bg-gray-50 dark:bg-dark-bg-elevated border border-gray-200 dark:border-dark-border rounded-lg p-3 mb-3 relative transition-all hover:bg-white dark:hover:bg-dark-bg-hover hover:shadow-sm"
-            >
-                <button
-                    class="selected-recipe-remove absolute top-3 right-3 w-6 h-6 flex items-center justify-center bg-error hover:bg-error-dark text-white rounded-full text-lg font-bold transition-all hover:scale-110 cursor-pointer border-none p-0"
-                ></button>
-                <div class="pr-8">
-                    <div class="badge-secondary text-xs mb-2 inline-block">
-                    </div>
-                    <h4 class="heading-6 mb-1"></h4>
-                    <p
-                        class="text-xs text-gray-600 dark:text-dark-text-secondary mb-3 line-clamp-2"
-                    >
-                    </p>
-                    <div class="flex gap-2 flex-wrap">
-                        <span class="badge-secondary text-xs"></span>
-                        <span class="badge-info text-xs"></span>
-                    </div>
-                </div>
-            </div>
-            <!-- No results message -->
-            <div
-                class="no-results text-center col-span-full py-12 text-gray-500 dark:text-dark-text-muted text-lg"
-            >
-            </div>
-        </template>
-    </body>
+        </div>
+    </template>
 </html>
 
 <script define:vars={{ UI_COMPONENT_IDS }}>
@@ -944,7 +634,7 @@ const UI_COMPONENT_IDS = {
 
         if (selectionBar && selectionInfo) {
             if (count > 0) {
-                selectionBar.style.display = "flex";
+                selectionBar.style.display = "block";
                 selectionInfo.textContent = `${count} recipe${count !== 1 ? "s" : ""} selected`;
             } else {
                 selectionBar.style.display = "none";
