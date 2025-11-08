@@ -16,7 +16,7 @@ export default defineConfig({
       },
     ),
   ],
-  site: "https://shanewade-dev-dbmng99j3grz.shane-au-wade.deno.net",
+  site: "https://shanewade-dev.shane-au-wade.deno.net",
   vite: {
     server: {
       fs: {
