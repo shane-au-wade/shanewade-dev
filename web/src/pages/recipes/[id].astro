@@ -38,15 +38,15 @@ if (!recipe) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>{recipe.title} - Recipe</title>
     </head>
-    <body class="overflow-hidden bg-page dark:bg-dark-bg font-sans m-0 p-0">
+    <body class="bg-page dark:bg-dark-bg font-sans m-0 p-0 md:overflow-hidden">
         <!-- Screen 1: Recipe Info & Ingredients -->
         <div
-            class="w-screen h-screen p-4 flex flex-row gap-4 cursor-pointer"
+            class="w-full md:w-screen min-h-screen md:h-screen p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 md:cursor-pointer"
             id="screen1"
         >
             <!-- Sidebar -->
             <div
-                class="w-96 h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-6 overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+                class="w-full md:w-96 md:h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-4 md:p-6 md:overflow-y-auto bg-white dark:bg-dark-bg-elevated"
             >
                 <span class="badge-secondary mb-3">{recipe.company_name}</span>
                 <h1 class="heading-2 mb-2">{recipe.title}</h1>
@@ -70,14 +70,14 @@ if (!recipe) {
             </div>
 
             <!-- Main Content -->
-            <div class="flex-1 overflow-y-auto">
-                <h2 class="heading-4 uppercase mb-4">Ingredients</h2>
+            <div class="flex-1 md:overflow-y-auto">
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Ingredients</h2>
                 <ul
-                    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-8 list-none"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3 mb-6 md:mb-8 list-none"
                 >
                     {
                         recipe.ingredients.map((ingredient: any) => (
-                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-4 py-3 rounded text-sm">
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-3 md:px-4 py-2 md:py-3 rounded text-xs sm:text-sm">
                                 <strong class="text-gray-900 dark:text-dark-text mr-1">
                                     {ingredient.quantity}{" "}
                                     {ingredient.unit || ""}
@@ -90,13 +90,13 @@ if (!recipe) {
                     }
                 </ul>
 
-                <h2 class="heading-4 uppercase mb-4">Tools</h2>
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Tools</h2>
                 <ul
-                    class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4 list-none"
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-4 list-none"
                 >
                     {
                         recipe.cooking_tools.map((tool: any) => (
-                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-4 py-3 rounded text-sm text-gray-700 dark:text-dark-text-secondary">
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-3 md:px-4 py-2 md:py-3 rounded text-xs sm:text-sm text-gray-700 dark:text-dark-text-secondary">
                                 {tool.display_name}
                             </li>
                         ))
@@ -104,9 +104,9 @@ if (!recipe) {
                 </ul>
             </div>
 
-            <!-- Navigation Hint -->
+            <!-- Navigation Hint (Desktop Only) -->
             <div
-                class="fixed bottom-6 right-8 flex items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+                class="hidden md:flex fixed bottom-6 right-8 items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
             >
                 <span>Click anywhere to see instructions</span>
                 <span class="text-brand-primary">→</span>
@@ -115,12 +115,12 @@ if (!recipe) {
 
         <!-- Screen 2: Steps -->
         <div
-            class="w-screen h-screen p-4 flex flex-row gap-4 cursor-pointer hidden"
+            class="w-full md:w-screen min-h-screen md:h-screen p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 md:cursor-pointer hidden"
             id="screen2"
         >
             <!-- Sidebar with condensed info -->
             <div
-                class="w-96 h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-6 overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+                class="w-full md:w-96 md:h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-4 md:p-6 md:overflow-y-auto bg-white dark:bg-dark-bg-elevated"
             >
                 <span class="badge-secondary mb-3">{recipe.company_name}</span>
                 <h1 class="heading-3 mb-2">{recipe.title}</h1>
@@ -143,11 +143,13 @@ if (!recipe) {
                     <p class="text-small">{recipe.cooking_tips}</p>
                 </div>
 
-                <h3 class="heading-6 uppercase mb-3">Ingredients</h3>
-                <ul class="grid grid-cols-2 gap-2 mb-6 list-none text-xs">
+                <h3 class="heading-6 uppercase mb-2 md:mb-3">Ingredients</h3>
+                <ul
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 md:mb-6 list-none text-2xs md:text-xs"
+                >
                     {
                         recipe.ingredients.map((ingredient: any) => (
-                            <li class="bg-gray-100 dark:bg-dark-bg border-l-3 border-brand-primary px-2 py-2 rounded">
+                            <li class="bg-gray-100 dark:bg-dark-bg border-l-3 border-brand-primary px-2 py-1.5 md:py-2 rounded">
                                 <strong class="text-gray-900 dark:text-dark-text mr-1">
                                     {ingredient.quantity}{" "}
                                     {ingredient.unit || ""}
@@ -160,11 +162,11 @@ if (!recipe) {
                     }
                 </ul>
 
-                <h3 class="heading-6 uppercase mb-3">Tools</h3>
-                <div class="flex flex-wrap gap-2">
+                <h3 class="heading-6 uppercase mb-2 md:mb-3">Tools</h3>
+                <div class="flex flex-wrap gap-1.5 md:gap-2">
                     {
                         recipe.cooking_tools.map((tool: any) => (
-                            <span class="badge-secondary text-xs">
+                            <span class="badge-secondary text-2xs md:text-xs">
                                 {tool.display_name}
                             </span>
                         ))
@@ -173,15 +175,15 @@ if (!recipe) {
             </div>
 
             <!-- Cooking Steps Content -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 md:overflow-y-auto">
                 {
                     recipe.mise_en_place_steps &&
                         recipe.mise_en_place_steps.length > 0 && (
                             <>
-                                <h2 class="heading-4 uppercase mb-4">
+                                <h2 class="heading-4 uppercase mb-3 md:mb-4">
                                     Mise en Place
                                 </h2>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8">
                                     {recipe.mise_en_place_steps.map(
                                         (step: any, index: number) => (
                                             <div class="card bg-success bg-opacity-10 border-l-4 border-success">
@@ -206,9 +208,9 @@ if (!recipe) {
                         )
                 }
 
-                <h2 class="heading-4 uppercase mb-4">Cooking Steps</h2>
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Cooking Steps</h2>
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5"
                 >
                     {
                         recipe.steps.map((step: any, index: number) => (
@@ -232,9 +234,9 @@ if (!recipe) {
                 </div>
             </div>
 
-            <!-- Navigation Hint -->
+            <!-- Navigation Hint (Desktop Only) -->
             <div
-                class="fixed bottom-6 right-8 flex items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+                class="hidden md:flex fixed bottom-6 right-8 items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
             >
                 <span class="text-brand-primary">←</span>
                 <span>Click anywhere to see ingredients</span>
@@ -248,12 +250,42 @@ if (!recipe) {
     const screen2 = document.getElementById("screen2");
 
     if (screen1 && screen2) {
+        // Function to check if screen is desktop size (768px+)
+        const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
+
         const toggleScreens = () => {
-            screen1!.classList.toggle("hidden");
-            screen2!.classList.toggle("hidden");
+            // Only toggle screens on desktop
+            if (isDesktop()) {
+                screen1!.classList.toggle("hidden");
+                screen2!.classList.toggle("hidden");
+            }
         };
 
+        // Add click handlers
         screen1.addEventListener("click", toggleScreens);
         screen2.addEventListener("click", toggleScreens);
+
+        // Handle screen resize - ensure both screens are visible on mobile
+        const handleResize = () => {
+            if (!isDesktop()) {
+                // On mobile, remove hidden class from both screens to show all content
+                screen1!.classList.remove("hidden");
+                screen2!.classList.remove("hidden");
+            } else {
+                // On desktop, ensure only screen1 is visible by default
+                if (
+                    !screen1!.classList.contains("hidden") &&
+                    !screen2!.classList.contains("hidden")
+                ) {
+                    screen2!.classList.add("hidden");
+                }
+            }
+        };
+
+        // Listen for resize events
+        window.addEventListener("resize", handleResize);
+
+        // Run once on load
+        handleResize();
     }
 </script>

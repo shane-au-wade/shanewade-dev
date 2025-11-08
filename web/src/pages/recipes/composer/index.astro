@@ -1,4 +1,5 @@
 ---
+import 'remixicon/fonts/remixicon.css'
 import "@styles/components.css";
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../../lib/db/supabase-client";
@@ -24,7 +25,6 @@ const UI_COMPONENT_IDS = {
     servingsFilter: "servings-filter",
     timeFilter: "time-filter",
     recipeGrid: "recipe-grid",
-    selectionBar: "selection-bar",
     selectionInfo: "selection-info",
     clearSelection: "clear-selection",
     viewIds: "view-ids",
@@ -82,30 +82,40 @@ const UI_COMPONENT_IDS = {
         <title>Recipe Composer</title>
     </head>
     <body class="bg-page dark:bg-dark-bg min-h-screen">
+
+        <button
+            id="scroll-to-bottom-fab"
+            type="button"
+            class="fixed z-50 bottom-0 right-0 shadow-lg radius bg-brand-primary text-white w-12 h-12 flex items-center justify-center text-lg transition hover:bg-brand-primary-dark focus:outline-none active:scale-95"
+            style={{
+                borderRadius: `12px 0 0 0`,
+            }}
+            aria-label="Scroll to bottom"
+        >
+        <i class="ri-arrow-down-s-line"></i>
+        </button>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const fab = document.getElementById('scroll-to-bottom-fab');
+                if (fab) {
+                    fab.addEventListener('click', () => {
+                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    });
+                }
+            });
+        </script>
+
         <div class="container mx-auto py-6 flex flex-col lg:flex-row gap-6">
             <div class="flex-1 min-w-0">
-                <!-- Header Card -->
+                <!-- Search & Filters Card -->
                 <div class="card mb-6">
-                    <div class="card-body">
+                    <div class="card-header">
                         <h1 class="heading-3 mb-2">Recipe Composer</h1>
                         <p class="text-muted">
                             Select recipes to create a grocery list or meal plan
                         </p>
                     </div>
-                </div>
-
-                <!-- Search & Filters Card -->
-                <div class="card mb-6">
                     <div class="card-body space-y-4">
-                        <div>
-                            <input
-                                type="text"
-                                id={UI_COMPONENT_IDS.searchInput}
-                                class="input w-full"
-                                placeholder="Search recipes by title, subtitle, or company..."
-                            />
-                        </div>
-
                         <div class="flex flex-wrap gap-4">
                             <div class="flex-1 min-w-[200px]">
                                 <label class="label mb-2">Company:</label>
@@ -141,38 +151,23 @@ const UI_COMPONENT_IDS = {
                                 </select>
                             </div>
                         </div>
+                        <div>
+                            <div class="relative flex items-center">
+                                <span class="absolute left-3 text-gray-400">
+                                    <i class="ri-search-line"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    autocomplete="off"
+                                    id={UI_COMPONENT_IDS.searchInput}
+                                    class="input w-full pl-10"
+                                    placeholder="Search recipes by title, subtitle, or company"
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Selection Bar -->
-                <div
-                    class="alert-info mb-6"
-                    id={UI_COMPONENT_IDS.selectionBar}
-                    style="display: none;"
-                >
-                    <div class="flex items-center justify-between">
-                        <div
-                            class="font-medium"
-                            id={UI_COMPONENT_IDS.selectionInfo}
-                        >
-                            0 recipes selected
-                        </div>
-                        <div class="flex gap-2">
-                            <button
-                                class="btn-default btn-sm"
-                                id={UI_COMPONENT_IDS.clearSelection}
-                            >
-                                Clear Selection
-                            </button>
-                            <button
-                                class="btn-primary btn-sm"
-                                id={UI_COMPONENT_IDS.viewIds}
-                            >
-                                View Selected IDs
-                            </button>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Recipe Grid -->
                 <ul
@@ -221,28 +216,6 @@ const UI_COMPONENT_IDS = {
                         ))
                     }
                 </ul>
-
-                <!-- Selected IDs Section -->
-                <div class="card mt-6" id={UI_COMPONENT_IDS.selectedIdsSection}>
-                    <div class="card-header">
-                        <h3 class="heading-5">Selected Recipe IDs</h3>
-                    </div>
-                    <div class="card-body">
-                        <div
-                            class="bg-gray-50 dark:bg-dark-bg-secondary p-4 rounded font-mono text-sm text-gray-700 dark:text-dark-text-primary max-h-[200px] overflow-y-auto"
-                            id={UI_COMPONENT_IDS.selectedIdsList}
-                        >
-                        </div>
-                    </div>
-                    <div class="card-footer">
-                        <button
-                            class="btn-primary btn-sm"
-                            id={UI_COMPONENT_IDS.copyBtn}
-                        >
-                            Copy to Clipboard
-                        </button>
-                    </div>
-                </div>
             </div>
 
             <!-- Selected Recipes Panel -->
@@ -333,7 +306,6 @@ const UI_COMPONENT_IDS = {
         companyFilter: null,
         servingsFilter: null,
         timeFilter: null,
-        selectionBar: null,
         selectionInfo: null,
         clearSelection: null,
         viewIds: null,
@@ -408,7 +380,6 @@ const UI_COMPONENT_IDS = {
     // Set up state observers - UI updates automatically when state changes
     function setupStateObservers() {
         state.subscribe(() => {
-            updateSelectionBar();
             updateSelectedPanel();
         });
     }
@@ -425,9 +396,6 @@ const UI_COMPONENT_IDS = {
         );
         DOM_ELEMENTS.timeFilter = document.getElementById(
             UI_COMPONENT_IDS.timeFilter,
-        );
-        DOM_ELEMENTS.selectionBar = document.getElementById(
-            UI_COMPONENT_IDS.selectionBar,
         );
         DOM_ELEMENTS.selectionInfo = document.getElementById(
             UI_COMPONENT_IDS.selectionInfo,
@@ -625,21 +593,6 @@ const UI_COMPONENT_IDS = {
             card.classList.remove("selected");
         }
         // UI updates happen automatically via observer pattern!
-    }
-
-    function updateSelectionBar() {
-        const count = state.selectedRecipes.size;
-        const selectionBar = DOM_ELEMENTS.selectionBar;
-        const selectionInfo = DOM_ELEMENTS.selectionInfo;
-
-        if (selectionBar && selectionInfo) {
-            if (count > 0) {
-                selectionBar.style.display = "block";
-                selectionInfo.textContent = `${count} recipe${count !== 1 ? "s" : ""} selected`;
-            } else {
-                selectionBar.style.display = "none";
-            }
-        }
     }
 
     function clearSelection() {

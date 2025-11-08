@@ -1,4 +1,5 @@
 ---
+import 'remixicon/fonts/remixicon.css'
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../lib/db/supabase-client";
 
@@ -30,7 +31,9 @@ if (error) {
         >
             <div class="container py-6">
                 <nav class="mb-4">
-                    <a href="/" class="link-subtle text-sm">← Back to Home</a>
+                    <a href="/recipes/composer" class="link-subtle text-sm">
+                        <i class="ri-add-line"></i> New Grocery List
+                    </a>
                 </nav>
                 <h1 class="heading-1 mb-2">Recipes</h1>
                 <p

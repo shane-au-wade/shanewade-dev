@@ -7,12 +7,13 @@ import {
 } from "@shared/recipes/queries";
 import RecipesModal from "../../components/recipes-modal.astro";
 import "@styles/components.css";
-import 'remixicon/fonts/remixicon.css'
-
+import "remixicon/fonts/remixicon.css";
 
 // Check for recipe IDs in URL params
 const url = new URL(Astro.request.url);
 const recipesParam = url.searchParams.get("recipes");
+
+const DEBUG = url.searchParams.get("debug") === "true";
 
 let groceryListData: Record<string, string> = {};
 let recipeCount = 0;
@@ -89,11 +90,11 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
     </head>
     <body class="bg-page dark:bg-dark-bg min-h-screen">
         <div class="container py-4 max-w-2xl">
-            <button
-            class="btn-ghost btn-sm"
-            onclick="window.location.href='/recipes/composer'"
-            ><i class="ri-add-line"></i> New Grocery List
-        </button>
+            <nav class="mb-4">
+                <a href="/recipes/composer" class="link-subtle text-sm">
+                    <i class="ri-add-line"></i> New Grocery List
+                </a>
+            </nav>
             <div class="card mb-4">
                 <div class="card-body">
                     <h1 class="heading-2 mb-2">Grocery List</h1>
@@ -115,12 +116,25 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                         <span class="text-small text-muted">items checked</span>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <button class="btn-default btn-sm" id="clear-checked"
-                            >Clear Checked</button
-                        >
-                        <button class="btn-default btn-sm" id="reset-all"
-                            >Reset All</button
-                        >
+                        {
+                            DEBUG && (
+                                <section>
+                                    <button
+                                        class="btn-default btn-sm"
+                                        id="clear-checked"
+                                    >
+                                        Clear Checked
+                                    </button>
+                                    <button
+                                        class="btn-default btn-sm"
+                                        id="reset-all"
+                                    >
+                                        Reset All
+                                    </button>
+                                </section>
+                            )
+                        }
+
                         {
                             recipes.length > 0 && (
                                 <button
