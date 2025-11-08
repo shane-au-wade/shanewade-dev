@@ -3,6 +3,7 @@
  */
 
 import type { Json, Supabase } from "../db/client.ts"
+import type { Recipe } from "./queries.ts"
 
 export interface RecipeData {
   id: string
@@ -147,3 +148,115 @@ export async function insertRecipe(
   return recipe
 }
 
+/**
+ * Upload a recipe from the getRecipe type (used for syncing between databases)
+ * This function takes a complete recipe (as returned by getRecipe) and uploads it to the target database
+ */
+export async function uploadRecipe(
+  supabase: Supabase,
+  recipe: NonNullable<Recipe>,
+) {
+  // Insert the main recipe
+  const { data: insertedRecipe, error: recipeError } = await supabase
+    .from("recipes")
+    .insert({
+      id: recipe.id,
+      title: recipe.title,
+      subtitle: recipe.subtitle,
+      company_name: recipe.company_name,
+      servings: recipe.servings,
+      cook_time_minutes: recipe.cook_time_minutes,
+      cooking_tips: recipe.cooking_tips,
+      ocr_markdown: recipe.ocr_markdown,
+      ocr_results: recipe.ocr_results,
+      pages: recipe.pages,
+    })
+    .select()
+    .single()
+
+  if (recipeError) {
+    throw new Error(`Failed to upload recipe: ${recipeError.message}`)
+  }
+
+  // Insert ingredients
+  if (recipe.ingredients?.length > 0) {
+    const ingredients = recipe.ingredients.map((ing) => ({
+      recipe_id: insertedRecipe.id,
+      display_name: ing.display_name,
+      quantity: ing.quantity,
+      unit: ing.unit,
+      is_pantry_staple: ing.is_pantry_staple,
+      preparation_note: ing.preparation_note,
+      position: ing.position,
+    }))
+
+    const { error: ingredientsError } = await supabase
+      .from("ingredients")
+      .insert(ingredients)
+
+    if (ingredientsError) {
+      throw new Error(
+        `Failed to upload ingredients: ${ingredientsError.message}`,
+      )
+    }
+  }
+
+  // Insert steps
+  if (recipe.steps?.length > 0) {
+    const steps = recipe.steps.map((step) => ({
+      recipe_id: insertedRecipe.id,
+      title: step.title,
+      details: step.details,
+      position: step.position,
+    }))
+
+    const { error: stepsError } = await supabase
+      .from("steps")
+      .insert(steps)
+
+    if (stepsError) {
+      throw new Error(`Failed to upload steps: ${stepsError.message}`)
+    }
+  }
+
+  // Insert mise en place steps
+  if (recipe.mise_en_place_steps?.length > 0) {
+    const miseSteps = recipe.mise_en_place_steps.map((step) => ({
+      recipe_id: insertedRecipe.id,
+      title: step.title,
+      details: step.details,
+      position: step.position,
+    }))
+
+    const { error: miseError } = await supabase
+      .from("mise_en_place_steps")
+      .insert(miseSteps)
+
+    if (miseError) {
+      throw new Error(
+        `Failed to upload mise en place steps: ${miseError.message}`,
+      )
+    }
+  }
+
+  // Insert cooking tools
+  if (recipe.cooking_tools?.length > 0) {
+    const tools = recipe.cooking_tools.map((tool) => ({
+      recipe_id: insertedRecipe.id,
+      display_name: tool.display_name,
+      position: tool.position,
+    }))
+
+    const { error: toolsError } = await supabase
+      .from("cooking_tools")
+      .insert(tools)
+
+    if (toolsError) {
+      throw new Error(
+        `Failed to upload cooking tools: ${toolsError.message}`,
+      )
+    }
+  }
+
+  return insertedRecipe
+}
