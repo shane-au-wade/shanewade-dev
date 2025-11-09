@@ -1,5 +1,5 @@
 ---
-import 'remixicon/fonts/remixicon.css'
+import "remixicon/fonts/remixicon.css";
 import "@styles/components.css";
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../../lib/db/supabase-client";
@@ -82,22 +82,46 @@ const UI_COMPONENT_IDS = {
         <title>Recipe Composer</title>
     </head>
     <body class="bg-page dark:bg-dark-bg min-h-screen">
-
         <button
             id="scroll-to-bottom-fab"
             type="button"
             class="btn-primary fixed z-50 bottom-1 right-1"
             aria-label="Scroll to bottom"
         >
-        <i class="ri-arrow-down-s-line"></i>
+            <i class="ri-arrow-down-s-line"></i>
         </button>
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const fab = document.getElementById('scroll-to-bottom-fab');
+            document.addEventListener("DOMContentLoaded", () => {
+                const fab = document.getElementById("scroll-to-bottom-fab");
                 if (fab) {
-                    fab.addEventListener('click', () => {
-                        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+                    fab.addEventListener("click", () => {
+                        window.scrollTo({
+                            top: document.body.scrollHeight,
+                            behavior: "smooth",
+                        });
                     });
+                }
+
+                // Intersection observer to hide the FAB when the user is at the bottom of the page
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (!fab) return;
+                            if (entry.isIntersecting) {
+                                fab.style.display = "none";
+                            } else {
+                                fab.style.display = "block";
+                            }
+                        });
+                    },
+                    {
+                        threshold: 0.5,
+                    },
+                );
+
+                const bottomSpacer = document.querySelector("#bottom-spacer");
+                if (bottomSpacer) {
+                    observer.observe(bottomSpacer);
                 }
             });
         </script>
@@ -164,7 +188,6 @@ const UI_COMPONENT_IDS = {
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Recipe Grid -->
                 <ul
@@ -259,6 +282,7 @@ const UI_COMPONENT_IDS = {
                 </div>
             </aside>
         </div>
+        <div class="h-0 outline" id="bottom-spacer"></div>
     </body>
 
     <!-- Hidden template for UnoCSS class detection (dynamically generated content) -->
