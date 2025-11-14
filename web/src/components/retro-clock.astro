@@ -1,5 +1,6 @@
 ---
 // Retro Clock Component using BoldPixels font
+import "@styles/colors.css";
 ---
 
 <div class="retro-clock">
@@ -19,7 +20,7 @@
     }
 
     .retro-clock {
-        border: 1px solid #c44536;
+        border: 1px solid var(--color-brand-primary-dark);
         border-radius: 0.375rem;
         padding: 0.375rem 0.5rem;
         display: inline-block;
@@ -30,10 +31,11 @@
     .clock-display {
         font-family: "BoldPixels", monospace;
         font-size: 1rem;
-        color: #c44536;
+        color: var(--color-brand-primary-dark);
         letter-spacing: 0.05em;
         line-height: 1;
         white-space: nowrap;
+        cursor: default;
     }
 </style>
 
