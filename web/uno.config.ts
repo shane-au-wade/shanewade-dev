@@ -162,7 +162,7 @@ export default defineConfig({
     // CARDS
     // ===================
     "card": "bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-dark-bg-elevated dark:border-dark-border",
-    "card-hover": "card hover:shadow-md hover:translate-y-[-1px] hover:translate-x-[2px] transition-all duration-100 cursor-pointer",
+    "card-hover": "card hover:border-brand-primary-dark hover:border-dashed cursor-pointer",
     "card-header": "px-5 py-3",
     "card-body": "px-5 py-3",
     "card-footer":
