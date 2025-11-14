@@ -1,0 +1,78 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+interface Props {
+    id?: string;
+}
+
+const { id = `timer-${crypto.randomUUID()}` } = Astro.props;
+const buttonId = `timer-button-${id}`;
+const displayId = `timer-display-${id}`;
+const iconId = `timer-icon-${id}`;
+---
+
+<button id={buttonId} class="btn-primary" data-timer-button>
+    <i id={iconId} class="ri-timer-line"></i>
+    <span id={displayId}>00:00</span>
+</button>
+
+<script define:vars={{ buttonId, displayId, iconId }}>
+    const button = document.getElementById(buttonId);
+    const display = document.getElementById(displayId);
+    const icon = document.getElementById(iconId);
+
+    let isRunning = false;
+    let elapsedSeconds = 0;
+    let intervalId = null;
+
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    }
+
+    function updateDisplay() {
+        if (display) {
+            display.textContent = formatTime(elapsedSeconds);
+        }
+    }
+
+    function startTimer() {
+        isRunning = true;
+        if (icon) {
+            icon.classList.remove("ri-timer-line");
+            icon.classList.add("ri-pause-line");
+        }
+
+        intervalId = window.setInterval(() => {
+            elapsedSeconds++;
+            updateDisplay();
+        }, 1000);
+    }
+
+    function stopTimer() {
+        isRunning = false;
+        if (icon) {
+            icon.classList.remove("ri-pause-line");
+            icon.classList.add("ri-timer-line");
+        }
+
+        if (intervalId !== null) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    }
+
+    button?.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (isRunning) {
+            stopTimer();
+        } else {
+            startTimer();
+        }
+    });
+</script>

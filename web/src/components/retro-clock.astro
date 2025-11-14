@@ -1,0 +1,134 @@
+---
+// Retro Clock Component using BoldPixels font
+---
+
+<div class="retro-clock">
+    <div id="clock-display" class="clock-display">00:00 AM</div>
+</div>
+
+<style>
+    @font-face {
+        font-family: "BoldPixels";
+        src:
+            url("/boldpixels/BoldPixels.ttf") format("truetype"),
+            url("/boldpixels/BoldPixels.otf") format("opentype");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
+    .retro-clock {
+        border: 1px solid #c44536;
+        border-radius: 0.375rem;
+        padding: 0.375rem 0.5rem;
+        display: inline-block;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .clock-display {
+        font-family: "BoldPixels", monospace;
+        font-size: 1rem;
+        color: #c44536;
+        letter-spacing: 0.05em;
+        line-height: 1;
+        white-space: nowrap;
+    }
+</style>
+
+<script>
+    // Create a Web Worker for timer logic
+    const workerCode = `
+        let intervalId;
+
+        let currentTime = "00:00 AM";
+        
+        function updateTime() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            // Convert to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert 0 to 12
+
+            const time = hours + ':' + minutes + ' ' + ampm;
+            
+            if (time !== currentTime) {
+                currentTime = time;
+                self.postMessage({
+                    time: time
+                });
+            }
+        }
+        
+        self.addEventListener('message', (e) => {
+            if (e.data === 'start') {
+                updateTime(); // Update immediately
+                intervalId = setInterval(updateTime, 1000);
+            } else if (e.data === 'stop') {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+            }
+        });
+    `;
+
+    // Create blob URL for the worker
+    const blob = new Blob([workerCode], { type: "application/javascript" });
+    const workerUrl = URL.createObjectURL(blob);
+
+    // Initialize the worker
+    let worker: Worker;
+
+    try {
+        worker = new Worker(workerUrl);
+
+        // Handle messages from the worker
+        worker.addEventListener("message", (e: MessageEvent) => {
+            const clockDisplay = document.getElementById("clock-display");
+            if (clockDisplay) {
+                clockDisplay.textContent = e.data.time;
+            }
+        });
+
+        // Start the worker
+        worker.postMessage("start");
+
+        // Cleanup on page unload
+        window.addEventListener("beforeunload", () => {
+            worker.postMessage("stop");
+            worker.terminate();
+            URL.revokeObjectURL(workerUrl);
+        });
+    } catch (error) {
+        console.error("Failed to initialize clock worker:", error);
+
+        let currentTime = "00:00 AM";
+        // Fallback to main thread if worker fails
+        function updateTimeFallback() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, "0");
+            const ampm = hours >= 12 ? "PM" : "AM";
+
+            // Convert to 12-hour format
+            hours = hours % 12;
+            hours = hours ? hours : 12; // Convert 0 to 12
+
+            const clockDisplay = document.getElementById("clock-display");
+            if (clockDisplay) {
+                const time = hours + ":" + minutes + " " + ampm;
+                // Only update the clock display if the time has changed
+                if (time !== currentTime) {
+                    currentTime = time;
+                    clockDisplay.textContent = time;
+                }
+            }
+        }
+
+        updateTimeFallback();
+        setInterval(updateTimeFallback, 1000);
+    }
+</script>

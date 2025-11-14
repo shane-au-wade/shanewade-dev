@@ -1,6 +1,8 @@
 ---
 import "remixicon/fonts/remixicon.css";
 import "@styles/components.css";
+
+import Breadcrumbs from "@components/breadcrumbs.astro";
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../../lib/db/supabase-client";
 
@@ -131,6 +133,8 @@ const UI_COMPONENT_IDS = {
                 <!-- Search & Filters Card -->
                 <div class="card mb-6">
                     <div class="card-header">
+                        <Breadcrumbs />
+                        <br />
                         <h1 class="heading-3 mb-2">Recipe Composer</h1>
                         <p class="text-muted">
                             Select recipes to create a grocery list or meal plan

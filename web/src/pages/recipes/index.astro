@@ -1,5 +1,7 @@
 ---
 import 'remixicon/fonts/remixicon.css'
+import Breadcrumbs from "@components/breadcrumbs.astro";
+
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../lib/db/supabase-client";
 
@@ -29,18 +31,17 @@ if (error) {
         <header
             class="border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-elevated"
         >
+            
             <div class="container py-6">
+                <Breadcrumbs />
+                <br />
                 <nav class="mb-4">
                     <a href="/recipes/composer" class="link-subtle text-sm">
-                        <i class="ri-add-line"></i> New Grocery List
+                        <button class="btn-primary btn-sm">
+                            <i class="ri-add-line"></i> New Grocery List
+                        </button>
                     </a>
                 </nav>
-                <h1 class="heading-1 mb-2">Recipes</h1>
-                <p
-                    class="text-lead text-gray-600 dark:text-dark-text-secondary"
-                >
-                    Browse our collection of delicious recipes
-                </p>
             </div>
         </header>
 

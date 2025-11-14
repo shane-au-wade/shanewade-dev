@@ -1,5 +1,6 @@
 ---
 export const prerender = false;
+import TimerButton from "@components/timer-button.astro";
 
 import { getRecipe } from "@shared/recipes/queries";
 import { supabase } from "../../lib/db/supabase-client";
@@ -214,8 +215,8 @@ if (!recipe) {
                 >
                     {
                         recipe.steps.map((step: any, index: number) => (
-                            <div class="card border-l-4 border-brand-primary-dark dark:border-brand-primary">
-                                <div class="card-body">
+                            <div class="card border-l-4 border-brand-primary-dark dark:border-brand-primary flex flex-col">
+                                <div class="card-body flex-grow">
                                     <div class="flex items-start gap-3 mb-2">
                                         <span class="badge-primary">
                                             {index + 1}
@@ -227,6 +228,9 @@ if (!recipe) {
                                     <p class="text-small text-gray-700 dark:text-dark-text-secondary leading-relaxed">
                                         {step.details}
                                     </p>
+                                </div>
+                                <div class="card-footer flex justify-end">
+                                    <TimerButton />
                                 </div>
                             </div>
                         ))
