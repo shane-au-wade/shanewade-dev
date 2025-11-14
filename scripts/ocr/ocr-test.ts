@@ -12,7 +12,7 @@ import { resolve } from "@std/path"
  */
 async function performOCR(imagePath: string): Promise<string> {
   const resolvedImagePath = resolve(imagePath)
-  const macOcrScriptPath = resolve("./mac-ocr")
+  const macOcrScriptPath = resolve("./mac-ocr.swift")
 
   // Check if the Swift OCR script exists
   try {
