@@ -4,6 +4,16 @@ import "@styles/components.css";
 ---
 
 <style>
+    @font-face {
+        font-family: "BoldPixels";
+        src:
+            url("/boldpixels/BoldPixels.ttf") format("truetype"),
+            url("/boldpixels/BoldPixels.otf") format("opentype");
+        font-weight: normal;
+        font-style: normal;
+        font-display: swap;
+    }
+
     .nav-container {
         position: fixed;
         top: 0;
@@ -28,15 +38,17 @@ import "@styles/components.css";
 
     .logo {
         text-decoration: none;
-        color: var(--color-text-primary);
-        font-size: 1.75rem;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        transition: opacity 0.2s ease;
+        color: var(--color-brand-primary-dark);
+        font-size: 32px;
+        font-family: "BoldPixels", sans-serif;
+        width: 45px;
+        height: 45px;
+        text-align: center;
     }
 
     .logo:hover {
-        opacity: 0.7;
+        color: var(--color-brand-primary-hover);
+        transform: scale(1.05);
     }
 
     .nav-buttons {
