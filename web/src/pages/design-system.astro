@@ -1,7 +1,9 @@
 ---
 // Design System Showcase
 import Modal from "@components/modal.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
 import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
 ---
 
 <html lang="en">
@@ -81,6 +83,10 @@ import "@styles/components.css";
                 <a href="#alerts" class="link-subtle">Alerts</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
                 <a href="#modal" class="link-subtle">Modal</a>
+                <span class="text-gray-300 dark:text-dark-border">|</span>
+                <a href="#breadcrumbs" class="link-subtle">Breadcrumbs</a>
+                <span class="text-gray-300 dark:text-dark-border">|</span>
+                <a href="#layouts" class="link-subtle">Layouts</a>
             </nav>
 
             <!-- Colors Section -->
@@ -1054,32 +1060,240 @@ import "@styles/components.css";
                 </div>
             </section>
 
-            <div class="py-12"></div>
+            <div class="divider my-12"></div>
+
+            <!-- Breadcrumbs Section -->
+            <section id="breadcrumbs" class="section">
+                <h2 class="heading-2 mb-6">Breadcrumbs</h2>
+
+                <p class="text-body mb-6">
+                    Breadcrumbs automatically visualize the current page's path
+                    in the router. They help users understand their location in
+                    the site hierarchy.
+                </p>
+
+                <div class="mb-8">
+                    <h3 class="heading-5 mb-4">Current Page</h3>
+                    <div class="card max-w-2xl">
+                        <div class="card-body">
+                            <Breadcrumbs />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="heading-5 mb-4">Examples</h3>
+                    <div class="space-y-4 max-w-2xl">
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-small text-muted mb-2">
+                                    Path: /
+                                </p>
+                                <Breadcrumbs pathname="/" />
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-small text-muted mb-2">
+                                    Path: /recipes
+                                </p>
+                                <Breadcrumbs pathname="/recipes" />
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-small text-muted mb-2">
+                                    Path: /recipes/chocolate-cake
+                                </p>
+                                <Breadcrumbs
+                                    pathname="/recipes/chocolate-cake"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <p class="text-small text-muted mb-2">
+                                    Path: /recipes/category/desserts
+                                </p>
+                                <Breadcrumbs
+                                    pathname="/recipes/category/desserts"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="heading-5 mb-4">Usage</h3>
+                    <div class="card max-w-2xl">
+                        <div class="card-body">
+                            <pre
+                                class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Automatic: Uses current page path --&gt;
+&lt;Breadcrumbs /&gt;
+
+&lt;!-- Manual: Provide a specific path --&gt;
+&lt;Breadcrumbs pathname="/recipes/chocolate-cake" /&gt;</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="heading-5 mb-4">Features</h3>
+                    <div class="card max-w-2xl">
+                        <div class="card-body">
+                            <ul class="space-y-2 text-body">
+                                <li class="flex items-start gap-2">
+                                    <span class="text-success mt-1">✓</span>
+                                    <span
+                                        >Automatically derives navigation from
+                                        URL path</span
+                                    >
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-success mt-1">✓</span>
+                                    <span
+                                        >Proper ARIA labels for accessibility</span
+                                    >
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-success mt-1">✓</span>
+                                    <span
+                                        >Smart formatting (capitalizes and
+                                        replaces hyphens)</span
+                                    >
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-success mt-1">✓</span>
+                                    <span>Dark mode support</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <span class="text-success mt-1">✓</span>
+                                    <span
+                                        >Current page is non-clickable and muted</span
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-12"></div>
+
+            <section id="layouts" class="section">
+                <h1 class="heading-2 mb-6">Layouts</h1>
+                <p>A collection of tailwinds css and pure css layouts.</p>
+                <h2 class="heading-2 mb-6">.auto-grid-css</h2>
+                <div class="auto-grid-css">
+                    {
+                        Array.from({ length: 5 }).map((_, index) => (
+                            <div class="card auto-grid-item">
+                                <div class="card-body">
+                                    <h4 class="heading-6 mb-2">
+                                        Card {index + 1}
+                                    </h4>
+                                    <p class="text-small text-muted">
+                                        This is an example of a simple default
+                                        card in the grid layout.
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+
+                <br />
+
+                <h2 class="heading-2 mb-6">.auto-grid</h2>
+                <div class="auto-grid">
+                    {
+                        Array.from({ length: 5 }).map((_, index) => (
+                            <div class="card auto-grid-item">
+                                <div class="card-body">
+                                    <h4 class="heading-6 mb-2">
+                                        Card {index + 1}
+                                    </h4>
+                                    <p class="text-small text-muted">
+                                        This is an example of a simple default
+                                        card in the grid layout.
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+
+            <div class="divider my-12"></div>
+
+            <section id="floating-action-button" class="section">
+                <h2 class="heading-2 mb-6">Floating Action Button</h2>
+                <p>
+                    A floating action button is a button that is used to trigger
+                    a action.
+                </p>
+                <div class="max-w-xs">
+                    <label
+                        for="fab-select"
+                        class="block mb-2 text-sm font-medium text-gray-700 dark:text-dark-text-muted"
+                    >
+                        Quick Navigation
+                    </label>
+                    <div class="relative">
+                        <select
+                            id="fab-select"
+                            class="form-select w-full rounded-lg border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-elevated shadow-md p-3 text-base transition focus:outline-none focus:ring-2 focus:ring-brand-primary appearance-none pr-10"
+                            onchange="if(this.value) location.href=this.value"
+                            aria-label="Floating Action Navigation"
+                        >
+                            <option value="">Jump to section...</option>
+                            <option value="#colors">🎨 Colors</option>
+                            <option value="#typography">🔡 Typography</option>
+                            <option value="#buttons">☑️ Buttons</option>
+                            <option value="#forms">📝 Forms</option>
+                            <option value="#checkboxes">✅ Checkboxes</option>
+                            <option value="#cards">📄 Cards</option>
+                            <option value="#badges">🏅 Badges</option>
+                            <option value="#alerts">⚠️ Alerts</option>
+                            <option value="#modal">🪟 Modal</option>
+                            <option value="#layouts">🔲 Layouts</option>
+                        </select>
+                        <span
+                            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-gray-400"
+                        >
+                            <i class="ri-arrow-down-s-line"></i>
+                        </span>
+                    </div>
+                </div>
+            </section>
         </div>
-
-        <script>
-            // Import modal data attributes handler
-            import "../lib/modal-data-attrs";
-
-            // Dark mode toggle
-            const themeToggle = document.getElementById("theme-toggle");
-            const html = document.documentElement;
-            const themeText = document.getElementById("theme-text");
-
-            // Check for saved theme preference or default to light mode
-            const currentTheme = localStorage.getItem("theme") || "light";
-            if (currentTheme === "dark") {
-                html.classList.add("dark");
-                if (themeText) themeText.textContent = "Light Mode";
-            }
-
-            themeToggle?.addEventListener("click", () => {
-                html.classList.toggle("dark");
-                const isDark = html.classList.contains("dark");
-                localStorage.setItem("theme", isDark ? "dark" : "light");
-                if (themeText)
-                    themeText.textContent = isDark ? "Light Mode" : "Dark Mode";
-            });
-        </script>
     </body>
+
+    <script>
+        // Import modal data attributes handler
+        import "../lib/modal-data-attrs";
+
+        // Dark mode toggle
+        const themeToggle = document.getElementById("theme-toggle");
+        const html = document.documentElement;
+        const themeText = document.getElementById("theme-text");
+
+        // Check for saved theme preference or default to light mode
+        const currentTheme = localStorage.getItem("theme") || "light";
+        if (currentTheme === "dark") {
+            html.classList.add("dark");
+            if (themeText) themeText.textContent = "Light Mode";
+        }
+
+        themeToggle?.addEventListener("click", () => {
+            html.classList.toggle("dark");
+            const isDark = html.classList.contains("dark");
+            localStorage.setItem("theme", isDark ? "dark" : "light");
+            if (themeText)
+                themeText.textContent = isDark ? "Light Mode" : "Dark Mode";
+        });
+    </script>
 </html>

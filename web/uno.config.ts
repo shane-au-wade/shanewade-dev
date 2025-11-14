@@ -2,6 +2,26 @@ import { defineConfig } from "unocss"
 import presetWind4 from "@unocss/preset-wind4"
 
 export default defineConfig({
+  rules: [
+    [
+      "auto-grid-css",
+      {
+        display: "grid",
+        gap: "var(--gap, 1rem)",
+        "grid-template-columns": "repeat(var(--grid-type, auto-fit), minmax(min(200px, 100%), 1fr))",
+        "grid-auto-rows": "auto auto auto",
+        "container-type": "inline-size",
+      },
+    ],
+    [
+      "section",
+      {
+        "max-width": "80vw",
+        "padding": "8rem 0 4rem 0",
+        "margin": "auto 0",
+      },
+    ]
+  ],
   presets: [
     presetWind4(),
   ],
@@ -190,11 +210,16 @@ export default defineConfig({
     "dialog-footer": "flex justify-end gap-3",
 
     // ===================
+    // FLOATING ACTION BUTTON
+    // ===================
+    "floating-action-button": "fixed bottom-4 right-4",
+
+    // ===================
     // LAYOUT
     // ===================
     "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
-    "section": "py-12",
     "divider": "border-t border-gray-200 dark:border-dark-border",
+    "auto-grid": "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4",
 
     // ===================
     // UTILITIES

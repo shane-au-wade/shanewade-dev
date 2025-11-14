@@ -1,0 +1,77 @@
+---
+// Breadcrumbs component - automatically generates breadcrumbs from the current path
+interface Props {
+    pathname?: string;
+}
+
+const { pathname = Astro.url.pathname } = Astro.props;
+
+// Parse the pathname into breadcrumb segments
+const segments = pathname.split("/").filter((segment) => segment.length > 0);
+
+// Build breadcrumb items with their paths
+const breadcrumbs = segments.map((segment, index) => {
+    const path = "/" + segments.slice(0, index + 1).join("/");
+
+    // Format the display name - capitalize first letter and replace hyphens/underscores
+    const label = segment
+        .replace(/[-_]/g, " ")
+        .split(" ")
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+    return { path, label };
+});
+
+// Add home at the beginning
+const items = [{ path: "/", label: "Home" }, ...breadcrumbs];
+---
+
+<nav aria-label="Breadcrumb" class="breadcrumb">
+    <ol class="flex flex-wrap items-center gap-2 text-sm">
+        {
+            items.map((item, index) => {
+                const isLast = index === items.length - 1;
+
+                return (
+                    <li class="flex items-center gap-2">
+                        {isLast ? (
+                            <span class="text-muted" aria-current="page">
+                                {item.label}
+                            </span>
+                        ) : (
+                            <>
+                                <a
+                                    href={item.path}
+                                    class="link-subtle hover:text-brand-primary dark:hover:text-brand-primary-light transition-colors"
+                                >
+                                    {item.label}
+                                </a>
+                                <span
+                                    class="text-gray-300 dark:text-dark-border select-none"
+                                    aria-hidden="true"
+                                >
+                                    /
+                                </span>
+                            </>
+                        )}
+                    </li>
+                );
+            })
+        }
+    </ol>
+</nav>
+
+<style>
+    .breadcrumb {
+        @apply py-2;
+    }
+
+    .breadcrumb ol {
+        @apply list-none m-0 p-0;
+    }
+
+    .breadcrumb li {
+        @apply inline-flex items-center;
+    }
+</style>
