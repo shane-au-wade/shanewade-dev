@@ -3,6 +3,8 @@
 import Modal from "@components/modal.astro";
 import Breadcrumbs from "@components/breadcrumbs.astro";
 import Head from "@components/head.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+
 import "@styles/components.css";
 import "remixicon/fonts/remixicon.css";
 ---
@@ -18,44 +20,11 @@ import "remixicon/fonts/remixicon.css";
         >
             <div class="container py-4 flex items-center justify-between">
                 <div>
+                    <Breadcrumbs />
                     <h1 class="heading-3">Design System</h1>
                     <p class="text-muted">Component library and style guide</p>
                 </div>
-                <button
-                    id="theme-toggle"
-                    class="btn-default"
-                    aria-label="Toggle dark mode"
-                >
-                    <svg
-                        id="sun-icon"
-                        class="w-5 h-5 hidden dark:block"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                        ></path>
-                    </svg>
-                    <svg
-                        id="moon-icon"
-                        class="w-5 h-5 block dark:hidden"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                        ></path>
-                    </svg>
-                    <span id="theme-text">Dark Mode</span>
-                </button>
+                <ThemeToggle />
             </div>
         </header>
 
@@ -63,27 +32,33 @@ import "remixicon/fonts/remixicon.css";
             <nav
                 class="mb-12 flex flex-wrap gap-3 pb-6 border-b border-gray-200 dark:border-dark-border"
             >
-                <a href="#colors" class="link-subtle">Colors</a>
+                <a href="#colors" class="link-subtle text-body">Colors</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#typography" class="link-subtle">Typography</a>
+                <a href="#typography" class="link-subtle text-body"
+                    >Typography</a
+                >
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#buttons" class="link-subtle">Buttons</a>
+                <a href="#buttons" class="link-subtle text-body">Buttons</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#forms" class="link-subtle">Forms</a>
+                <a href="#forms" class="link-subtle text-body">Forms</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#checkboxes" class="link-subtle">Checkboxes</a>
+                <a href="#checkboxes" class="link-subtle text-body"
+                    >Checkboxes</a
+                >
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#cards" class="link-subtle">Cards</a>
+                <a href="#cards" class="link-subtle text-body">Cards</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#badges" class="link-subtle">Badges</a>
+                <a href="#badges" class="link-subtle text-body">Badges</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#alerts" class="link-subtle">Alerts</a>
+                <a href="#alerts" class="link-subtle text-body">Alerts</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#modal" class="link-subtle">Modal</a>
+                <a href="#modal" class="link-subtle text-body">Modal</a>
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#breadcrumbs" class="link-subtle">Breadcrumbs</a>
+                <a href="#breadcrumbs" class="link-subtle text-body"
+                    >Breadcrumbs</a
+                >
                 <span class="text-gray-300 dark:text-dark-border">|</span>
-                <a href="#layouts" class="link-subtle">Layouts</a>
+                <a href="#layouts" class="link-subtle text-body">Layouts</a>
             </nav>
 
             <!-- Colors Section -->
@@ -736,7 +711,7 @@ import "remixicon/fonts/remixicon.css";
                 <div class="mb-8">
                     <h3 class="heading-5 mb-4">Code Example</h3>
                     <div class="card max-w-2xl">
-                        <div class="card-body">
+                        <div class="card-body text-body">
                             <pre
                                 class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;div class="flex items-center gap-2"&gt;
   &lt;input
@@ -988,7 +963,7 @@ import "remixicon/fonts/remixicon.css";
                         <div class="card-body">
                             <h4 class="heading-6 mb-3">Component Usage</h4>
                             <pre
-                                class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;Modal id="my-modal" title="Title"&gt;
+                                class="text-body bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;Modal id="my-modal" title="Title"&gt;
   &lt;p&gt;Content here&lt;/p&gt;
   &lt;div slot="footer"&gt;
     &lt;button data-modal-close="my-modal"&gt;
@@ -1003,7 +978,7 @@ import "remixicon/fonts/remixicon.css";
                         <div class="card-body">
                             <h4 class="heading-6 mb-3">Triggering Modals</h4>
                             <pre
-                                class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Open modal --&gt;
+                                class="text-body bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Open modal --&gt;
 &lt;button data-modal-open="my-modal"&gt;
   Open
 &lt;/button&gt;
@@ -1126,7 +1101,7 @@ import "remixicon/fonts/remixicon.css";
                 <div class="mb-8">
                     <h3 class="heading-5 mb-4">Usage</h3>
                     <div class="card max-w-2xl">
-                        <div class="card-body">
+                        <div class="card-body text-body">
                             <pre
                                 class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Automatic: Uses current page path --&gt;
 &lt;Breadcrumbs /&gt;
@@ -1267,28 +1242,10 @@ import "remixicon/fonts/remixicon.css";
                 </div>
             </section>
         </div>
-    </body><script>
-        // Import modal data attributes handler
-        import "../lib/modal-data-attrs";
-
-        // Dark mode toggle
-        const themeToggle = document.getElementById("theme-toggle");
-        const html = document.documentElement;
-        const themeText = document.getElementById("theme-text");
-
-        // Check for saved theme preference or default to light mode
-        const currentTheme = localStorage.getItem("theme") || "light";
-        if (currentTheme === "dark") {
-            html.classList.add("dark");
-            if (themeText) themeText.textContent = "Light Mode";
-        }
-
-        themeToggle?.addEventListener("click", () => {
-            html.classList.toggle("dark");
-            const isDark = html.classList.contains("dark");
-            localStorage.setItem("theme", isDark ? "dark" : "light");
-            if (themeText)
-                themeText.textContent = isDark ? "Light Mode" : "Dark Mode";
-        });
-    </script>
+    </body>
 </html>
+
+<script>
+    // Import modal data attributes handler
+    import "../lib/modal-data-attrs";
+</script>

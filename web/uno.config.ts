@@ -133,7 +133,7 @@ export default defineConfig({
     "link":
       "text-brand-primary underline hover:text-brand-primary-hover transition-colors dark:text-brand-primary-light dark:hover:text-brand-primary",
     "link-subtle":
-      "text-gray-600 hover:text-brand-primary transition-colors dark:text-dark-text-secondary dark:hover:text-brand-primary-light",
+      "text-gray-600 hover:text-brand-primary transition-colors dark:text-brand-primary-light dark:hover:text-brand-primary",
 
     // ===================
     // FORMS
