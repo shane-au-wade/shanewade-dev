@@ -1,8 +1,7 @@
 ---
 import "@styles/colors.css";
 import "@styles/components.css";
-import Image from "astro/components/Image.astro";
-import hero_photo from "../images/profile_pic.jpeg";
+import Picture from "astro/components/Picture.astro";
 ---
 
 <style>
@@ -59,7 +58,11 @@ import hero_photo from "../images/profile_pic.jpeg";
 <section id="hero-section" class="full-page-section flex flex-col">
     <div class="hero-section-image">
         <div class="image-wrapper">
-            <Image alt="Picture of Shane Wade with a bike" src={hero_photo} />
+            <Picture
+                alt="Picture of Shane Wade with a bike"
+                src={import("../images/profile_pic.jpeg")}
+                width="450"
+            />
         </div>
     </div>
     <div class="flex-1 p-2 flex justify-center">
