@@ -14,4 +14,3 @@ export const supabase: Supabase = createSupabaseClient({
   url: supabaseUrl,
   key: supabaseKey,
 })
-g
