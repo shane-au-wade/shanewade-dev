@@ -2,7 +2,6 @@
 import "remixicon/fonts/remixicon.css";
 import RetroClock from "@components/retro-clock.astro";
 import DropdownMenu from "@components/dropdown-menu.astro";
-import "@styles/components.css";
 
 const navLinks: Array<{
     href: string;
@@ -46,18 +45,8 @@ const dropdownItems = navLinks.map((link) => ({
 ---
 
 <style>
-    @font-face {
-        font-family: "BoldPixels";
-        src:
-            url("/boldpixels/BoldPixels.ttf") format("truetype"),
-            url("/boldpixels/BoldPixels.otf") format("opentype");
-        font-weight: normal;
-        font-style: normal;
-        font-display: swap;
-    }
-
     .hero-logo {
-        font-family: "BoldPixels", sans-serif;
+        font-family: "BoldPixels", arial;
         text-decoration: none;
         font-size: 28px;
         @media screen and (min-width: 1000px) {
@@ -74,15 +63,16 @@ const dropdownItems = navLinks.map((link) => ({
 </style>
 
 <nav
-    class="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 dark:border-dark-border z-50"
+    class="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 border-opacity-50 dark:border-dark-border z-50"
 >
     <div
         class="max-w-[1200px] mx-auto flex justify-between items-center gap-2 sm:gap-4 px-2 sm:px-2 md:py-2"
     >
         <a
+            id="home-button"
             href="#hero-section"
             aria-label="Home"
-            class="hero-logo px-2 text-brand-primary-dark hover:text-brand-primary-hover"
+            class="hero-logo px-2 text-brand-primary-dark hover:text-brand-primary-hover cursor-pointer"
         >
             SW
         </a>
@@ -96,3 +86,17 @@ const dropdownItems = navLinks.map((link) => ({
         </DropdownMenu>
     </div>
 </nav>
+
+<script>
+    const homeButton = document.getElementById("home-button");
+    if (homeButton) {
+        // Add a class to the body when the navigation is fixed
+        homeButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: "instant",
+            });
+        });
+    }
+</script>

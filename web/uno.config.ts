@@ -20,7 +20,16 @@ export default defineConfig({
         "padding": "8rem 0 4rem 0",
         "margin": "auto 0",
       },
-    ]
+    ],
+    [
+      "full-page-section",
+      {
+        display: "flex",
+        "flex-direction": "row",
+        "min-height": "100vh",
+        "padding-top": "3rem",
+      },
+    ],
   ],
   presets: [
     presetWind4(),
@@ -165,8 +174,7 @@ export default defineConfig({
     "card-hover": "card hover:border-brand-primary-dark hover:border-dashed cursor-pointer",
     "card-header": "px-5 py-3",
     "card-body": "px-5 py-3",
-    "card-footer":
-      "px-5 py-3 border-none",
+    "card-footer": "px-5 py-3 border-none",
 
     // ===================
     // BADGES
