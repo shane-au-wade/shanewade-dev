@@ -4,7 +4,6 @@ import type { Supabase } from "@shared/db/client"
 const supabaseUrl = import.meta.env.SUPABASE_URL ?? Deno.env.get("SUPABASE_URL")
 const supabaseKey = import.meta.env.SUPABASE_KEY ?? Deno.env.get("SUPABASE_KEY")
 
-console.log(import.meta.env)
 console.log(supabaseUrl)
 
 if (!supabaseUrl || !supabaseKey) {
@@ -15,3 +14,4 @@ export const supabase: Supabase = createSupabaseClient({
   url: supabaseUrl,
   key: supabaseKey,
 })
+g
