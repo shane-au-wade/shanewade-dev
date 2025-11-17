@@ -30,6 +30,11 @@ const navLinks: Array<{
         display_name: "Recipes",
         icon: "ri-restaurant-2-line"
     },
+    {
+        href: "/design-system",
+        display_name: "Design System",
+        icon: "ri-palette-line"
+    }
 ];
 
 // Transform navLinks for the dropdown component
@@ -63,7 +68,7 @@ const dropdownItems = navLinks.map((link) => ({
     .menu-icon {
         font-size: 48px;
         @media screen and (min-width: 1000px) {
-            font-size: 24px;
+            font-size: 20px;
         }
     }
 </style>
