@@ -6,7 +6,10 @@ import UnoCSS from "unocss/astro"
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  adapter: deno(),
+  adapter: deno({
+    start: true,
+  }),
+  outDir: "../dist",
   integrations: [
     react(),
     UnoCSS(
@@ -29,5 +32,4 @@ export default defineConfig({
       },
     },
   },
-  outDir: "../dist",
 })
