@@ -2,7 +2,7 @@
 import "@styles/colors.css";
 import "@styles/components.css";
 
-import Image from "astro/components/Image.astro";
+import { Image } from "astro:assets";
 import hero_photo from "../images/profile_pic.jpeg";
 ---
 
@@ -183,7 +183,11 @@ import hero_photo from "../images/profile_pic.jpeg";
     </div>
     <div class="hero-section-image">
         <div class="image-wrapper">
-            <Image alt="Picture of Shane Wade with a bike" src={hero_photo} />
+            <Image
+                alt="Picture of Shane Wade with a bike"
+                src={hero_photo}
+                format="jpeg"
+            />
         </div>
     </div>
 </section>
