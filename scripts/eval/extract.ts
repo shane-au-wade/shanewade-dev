@@ -1,14 +1,11 @@
-import recipeJson from "../../local_data/recipes-saved.json" with { type: "json" }
 import { z } from "@zod/zod"
 import * as deps from "../../repl-env.ts"
 import { delay } from "@std/async/delay"
 import { insertRecipe } from "@shared/core/recipes/mutations"
 
-const { mistral, openai, anthropic, supabase } = deps
+const { openai, supabase } = deps
 
-const BATCH_OCR_RESULTS_JSONL_FILE_PATH = "./local_data/batch-ocr-results-recipes-1-to-25.jsonl"
-
-const IMAGES_DIRECTORY = "./local_data/recipes"
+const MAC_OCR_BATCH_RESULTS_FILE_PATH = "./local_data/mac-ocr-batch-results.json"
 
 const PROCESSING_CACHE_FILE_PATH = "./local_data/processing-cache.json"
 
@@ -32,127 +29,68 @@ async function loadProcessingCache(): Promise<Record<string, boolean>> {
   }
 }
 
-type OcrPage = {
-  index: number
-  markdown: string
-  images: Array<{
-    id: string
-    top_left_x: number
-    top_left_y: number
-    bottom_right_x: number
-    bottom_right_y: number
-    image_base64: string | null
-    image_annotation: string | null
-  }>
-  dimensions: {
-    dpi: number
-    height: number
-    width: number
-  }
+type MacOcrPageResult = {
+  pageName: string
+  text: string
+  lineCount: number
+  processingTimeMs: number
 }
 
-type OcrResult = {
-  id: string
-  custom_id: string
-  response: {
-    status_code: number
-    body: {
-      pages: OcrPage[]
-      model: string
-      usage_info: {
-        pages_processed: number
-        doc_size_bytes: number
-      }
-      document_annotation: null | string
-    }
-  }
-  error: null | string
-}
-
-type Recipe = {
+type MacOcrRecipe = {
   id: string
   pages: string[]
+  ocrResults: MacOcrPageResult[]
+  name: string
 }
 
-type RecipeWithOcr = Recipe & {
+type MacOcrBatchResults = {
+  metadata: {
+    processedAt: string
+    totalRecipes: number
+    totalPages: number
+    processedPages: number
+    failedPages: number
+    totalProcessingTimeMs: number
+    avgTimePerPageMs: number
+  }
+  recipes: MacOcrRecipe[]
+}
+
+type RecipeWithOcr = {
+  id: string
+  pages: string[]
+  name: string
   ocr_results: Array<{
     page: string
-    markdown: string
-    ocr_data: OcrPage
+    text: string
   }>
-  ocr_markdown: string
+  ocr_text: string
 }
 
-// Load JSONL file and parse each line
-async function loadJsonl(filePath: string): Promise<OcrResult[]> {
+// Load Mac OCR batch results from JSON file
+async function loadMacOcrBatchResults(filePath: string): Promise<MacOcrBatchResults> {
   const text = await Deno.readTextFile(filePath)
-  const lines = text.trim().split("\n")
-  return lines.map((line) => JSON.parse(line))
+  return JSON.parse(text)
 }
 
-// Parse custom_id to extract recipe ID and page filename
-function parseCustomId(customId: string): { recipeId: string; pageName: string } {
-  // Format: {recipeId}-doxie-{page_number}
-  // Example: "2373ab9a-fb1c-47e8-b3a5-89a916065b5a-doxie-0311"
-  const parts = customId.split("-")
-
-  // Recipe ID is the first 5 parts (UUID format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
-  const recipeId = parts.slice(0, 5).join("-")
-
-  // Page name is the last two parts: "doxie-0311" -> "Doxie 0311.png"
-  const pageNumber = parts[parts.length - 1]
-  const pageName = `Doxie ${pageNumber}.png`
-
-  return { recipeId, pageName }
-}
-
-// Main function to combine recipes with their OCR results
-async function combineRecipesWithOcr(): Promise<RecipeWithOcr[]> {
-  // Load recipes
-  const recipes = recipeJson as Recipe[]
-
+// Main function to load recipes with their OCR results from Mac OCR format
+async function loadRecipesWithOcr(): Promise<RecipeWithOcr[]> {
   // Load OCR results
-  const ocrResults = await loadJsonl(BATCH_OCR_RESULTS_JSONL_FILE_PATH)
+  const batchResults = await loadMacOcrBatchResults(MAC_OCR_BATCH_RESULTS_FILE_PATH)
 
-  // Create a map of recipe ID + page name to OCR result
-  const ocrMap = new Map<string, OcrResult>()
-
-  for (const ocrResult of ocrResults) {
-    const { recipeId, pageName } = parseCustomId(ocrResult.custom_id)
-    const key = `${recipeId}:${pageName}`
-    ocrMap.set(key, ocrResult)
-  }
-
-  // Combine recipes with their OCR results
-  const recipesWithOcr: RecipeWithOcr[] = recipes.map((recipe) => {
-    const ocr_results = recipe.pages.map((page) => {
-      const key = `${recipe.id}:${page}`
-      const ocrResult = ocrMap.get(key)
-
-      if (!ocrResult) {
-        console.warn(`No OCR result found for recipe ${recipe.id}, page ${page}`)
-        return {
-          page,
-          markdown: "",
-          ocr_data: {} as OcrPage,
-        }
-      }
-
-      // Extract the first page from the OCR result (should only be one page per result)
-      const ocrPage = ocrResult.response.body.pages[0]
-
-      return {
-        page,
-        markdown: ocrPage.markdown,
-        ocr_data: ocrPage,
-      }
-    })
+  // Convert Mac OCR recipes to RecipeWithOcr format
+  const recipesWithOcr: RecipeWithOcr[] = batchResults.recipes.map((recipe) => {
+    const ocr_results = recipe.ocrResults.map((ocrResult) => ({
+      page: ocrResult.pageName,
+      text: ocrResult.text,
+    }))
 
     return {
-      ...recipe,
-      ocr_markdown: ocr_results.map((ocr) => ocr.markdown).join("\n\n"),
-      // all of the ocr results for each page of the recipe
+      id: recipe.id,
+      pages: recipe.pages,
+      name: recipe.name,
       ocr_results,
+      ocr_text: ocr_results.map((ocr) => ocr.text).join("\n\n"),
     }
   })
 
@@ -296,7 +234,7 @@ Extract ingredients from the smallest serving size mentioned (usually "2 serving
       },
       {
         role: "user",
-        content: recipe.ocr_markdown,
+        content: recipe.ocr_text,
       },
     ],
     text: {
@@ -344,11 +282,15 @@ async function extractStepsOpenai(recipe: RecipeWithOcr): Promise<ExtractionResu
         content: `
 Extract the recipe steps when given recipe text.
 The steps should be in the order they are to be followed.
+
+Please highlight the ingredients and quantities in the text with the standard html <b> tag.
+For example, if celery is an ingredient and the text is "Add celery to the pot", the output should be "Add <b>celery</b> to the pot".
+Another example, if the text is "Add 1/2 cup of celery to the pot", the output should be "Add <b>1/2 cup</b> of <b>celery</b> to the pot".
 `.trim(),
       },
       {
         role: "user",
-        content: recipe.ocr_markdown,
+        content: recipe.ocr_text,
       },
     ],
     text: {
@@ -399,11 +341,15 @@ This will be things like chopping vegetables, getting out a mixing bowl, etc.
 The goal is to reduce the amount of work that neeeds to be done while cooking.
 Keep the steps concise and tend towards less steps, for example the title coule be "Chop vegetables" and the details
 would describe the specific preperation for each vegetable.
+
+Please highlight the ingredients and quantities in the text with the standard html <b> tag.
+For example, if celery is an ingredient and the text is "Add celery to the pot", the output should be "Add <b>celery</b> to the pot".
+Another example, if the text is "Add 1/2 cup of celery to the pot", the output should be "Add <b>1/2 cup</b> of <b>celery</b> to the pot".
 `.trim(),
       },
       {
         role: "user",
-        content: recipe.ocr_markdown,
+        content: recipe.ocr_text,
       },
     ],
     text: {
@@ -451,7 +397,7 @@ async function extractCookingToolsOpenai(
       { role: "system", content: "Extract the cooking tools used in the recipe." },
       {
         role: "user",
-        content: recipe.ocr_markdown,
+        content: recipe.ocr_text,
       },
     ],
     text: {
@@ -500,7 +446,7 @@ async function extractRecipeInfoOpenai(
       { role: "system", content: "Extract the recipe information." },
       {
         role: "user",
-        content: recipe.ocr_markdown,
+        content: recipe.ocr_text,
       },
     ],
     text: {
@@ -541,7 +487,7 @@ async function extractRecipeInfoOpenai(
 
 // Run the script
 if (import.meta.main) {
-  const recipesWithOcr = await combineRecipesWithOcr()
+  const recipesWithOcr = await loadRecipesWithOcr()
 
   const processingCache = await loadProcessingCache()
   // await Deno.writeTextFile("./save.json", JSON.stringify(recipesWithOcr, null, 2))
@@ -555,7 +501,7 @@ if (import.meta.main) {
       continue
     }
 
-    console.log(`[INFO] Processing recipe ${recipe.id}`)
+    console.log(`[INFO] Processing recipe ${recipe.id} (${recipe.name})`)
 
     // extract the recipe in parallel
     const [recipeInfoResult, ingredientsResult, stepsResult, miseEnPlaceStepsResult, cookingToolsResult] = await Promise
@@ -582,7 +528,7 @@ if (import.meta.main) {
       ...stepsResult.result,
       ...miseEnPlaceStepsResult.result,
       ...cookingToolsResult.result,
-      ocr_markdown: recipe.ocr_markdown,
+      ocr_markdown: recipe.ocr_text, // Map ocr_text to ocr_markdown for database compatibility
       ocr_results: recipe.ocr_results,
       pages: recipe.pages,
     }
