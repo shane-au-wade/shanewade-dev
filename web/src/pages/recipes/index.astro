@@ -1,6 +1,7 @@
 ---
-import 'remixicon/fonts/remixicon.css'
+import "remixicon/fonts/remixicon.css";
 import Breadcrumbs from "@components/breadcrumbs.astro";
+import Head from "@components/head.astro";
 
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../lib/db/supabase-client";
@@ -21,17 +22,12 @@ if (error) {
 ---
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Recipes - Shane Wade</title>
-    </head>
+    <Head title="Recipes - Shane Wade" />
     <body class="bg-page dark:bg-dark-bg min-h-screen">
         <!-- Header Section -->
         <header
             class="border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-bg-elevated"
         >
-            
             <div class="container py-6">
                 <Breadcrumbs />
                 <br />

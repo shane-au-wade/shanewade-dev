@@ -1,6 +1,7 @@
 ---
 export const prerender = false;
 import TimerButton from "@components/timer-button.astro";
+import Head from "@components/head.astro";
 
 import { getRecipe } from "@shared/recipes/queries";
 import { supabase } from "../../lib/db/supabase-client";
@@ -34,11 +35,7 @@ if (!recipe) {
 ---
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{recipe.title} - Recipe</title>
-    </head>
+    <Head title={`${recipe.title} - Recipe`} />
     <body class="bg-page dark:bg-dark-bg font-sans m-0 p-0 md:overflow-hidden">
         <!-- Screen 1: Recipe Info & Ingredients -->
         <div

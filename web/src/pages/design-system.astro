@@ -2,16 +2,13 @@
 // Design System Showcase
 import Modal from "@components/modal.astro";
 import Breadcrumbs from "@components/breadcrumbs.astro";
+import Head from "@components/head.astro";
 import "@styles/components.css";
 import "remixicon/fonts/remixicon.css";
 ---
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Design System - Shane Wade</title>
-    </head>
+    <Head title="Design System - Shane Wade" />
     <body
         class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
     >
@@ -1270,9 +1267,7 @@ import "remixicon/fonts/remixicon.css";
                 </div>
             </section>
         </div>
-    </body>
-
-    <script>
+    </body><script>
         // Import modal data attributes handler
         import "../lib/modal-data-attrs";
 

@@ -3,6 +3,8 @@ import "remixicon/fonts/remixicon.css";
 import "@styles/components.css";
 
 import Breadcrumbs from "@components/breadcrumbs.astro";
+import Head from "@components/head.astro";
+
 // fetch a simple list of recipes and display them in a grid
 import { supabase } from "../../../lib/db/supabase-client";
 
@@ -78,11 +80,7 @@ const UI_COMPONENT_IDS = {
 </style>
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Recipe Composer</title>
-    </head>
+    <Head title="Recipe Composer - Shane Wade" />
     <body class="bg-page dark:bg-dark-bg min-h-screen">
         <button
             id="scroll-to-bottom-fab"
