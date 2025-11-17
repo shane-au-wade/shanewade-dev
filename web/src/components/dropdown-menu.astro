@@ -1,0 +1,105 @@
+---
+export interface Props {
+    items: Array<{
+        href: string;
+        label: string;
+        icon?: string;
+    }>;
+    buttonClass?: string;
+    ariaLabel?: string;
+}
+
+const { items, buttonClass = "btn-default", ariaLabel = "Menu" } = Astro.props;
+---
+
+<style>
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        right: 0;
+        min-width: 160px;
+        background-color: white;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        z-index: 50;
+        border-radius: 0.5rem;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+        /* margin-top: 0.5rem; */
+    }
+
+    .dropdown-content a {
+        color: #111827;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+        transition: background-color 0.15s;
+        min-width: 200px;
+        /* font-size: 2rem; */
+    }
+
+    .dropdown-content a:hover {
+        background-color: #f3f4f6;
+    }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .dropdown-content {
+            background-color: #1f2937;
+            border-color: #374151;
+        }
+
+        .dropdown-content a {
+            color: #d1d5db;
+        }
+
+        .dropdown-content a:hover {
+            background-color: #374151;
+        }
+    }
+
+    /* Animation for dropdown appearance */
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .dropdown:hover .dropdown-content {
+        animation: slideDown 0.2s ease-out;
+    }
+</style>
+
+<div class="dropdown">
+    <button
+        class={buttonClass}
+        aria-haspopup="true"
+        aria-expanded="false"
+        type="button"
+    >
+        <slot />
+    </button>
+    <div class="dropdown-content" role="menu" aria-label={ariaLabel}>
+        {
+            items.map((item) => (
+                <a href={item.href} role="menuitem">
+                    {item.icon && <i class={item.icon} />}
+                    <span>{item.label}</span>
+                </a>
+            ))
+        }
+    </div>
+</div>

@@ -1,7 +1,43 @@
 ---
-import "@styles/colors.css";
-import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
 import RetroClock from "@components/retro-clock.astro";
+import DropdownMenu from "@components/dropdown-menu.astro";
+import "@styles/components.css";
+
+const navLinks: Array<{
+    href: string;
+    display_name: string;
+    icon?: string;
+}> = [
+    {
+        href: "#about-section",
+        display_name: "About",
+    },
+    {
+        href: "#projects-section",
+        display_name: "Projects",
+    },
+    {
+        href: "#bikes-section",
+        display_name: "Bikes",
+    },
+    {
+        href: "#contact-section",
+        display_name: "Contact",
+    },
+    {
+        href: "/recipes",
+        display_name: "Recipes",
+        icon: "ri-restaurant-2-line"
+    },
+];
+
+// Transform navLinks for the dropdown component
+const dropdownItems = navLinks.map((link) => ({
+    href: link.href,
+    label: link.display_name,
+    icon: link.icon,
+}));
 ---
 
 <style>
@@ -15,116 +51,47 @@ import RetroClock from "@components/retro-clock.astro";
         font-display: swap;
     }
 
-    .nav-container {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        /* background-color: var(--color-overlay-white); */
-        background-color: transparent;
-        backdrop-filter: blur(7px);
-        border-bottom: 1px solid var(--color-border-light);
-        z-index: 1000;
-        padding: 1.5rem 2rem;
-    }
-
-    .nav-content {
-        margin: 0 auto;
-        max-width: 1400px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .logo {
-        text-decoration: none;
-        color: var(--color-brand-primary-dark);
-        font-size: 32px;
+    .hero-logo {
         font-family: "BoldPixels", sans-serif;
-        width: 45px;
-        height: 45px;
-        text-align: center;
-    }
-
-    .logo:hover {
-        color: var(--color-brand-primary-hover);
-        transform: scale(1.05);
-    }
-
-    .nav-buttons {
-        display: flex;
-        gap: 0.5rem;
-        align-items: center;
-    }
-
-    .nav-buttons a {
         text-decoration: none;
-    }
-
-    .nav-buttons button {
-        background: none;
-        border: none;
-        color: var(--color-text-muted);
-        font-size: 0.875rem;
-        font-weight: 500;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 0.625rem 1.25rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-radius: 0.25rem;
-    }
-
-    .nav-buttons button:hover {
-        color: var(--color-hover-primary);
-        background-color: var(--color-hover-bg);
-    }
-
-    @media (max-width: 768px) {
-        .nav-container {
-            padding: 1rem 1.5rem;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-        }
-
-        .nav-buttons {
-            gap: 0.25rem;
-        }
-
-        .nav-buttons button {
-            font-size: 0.75rem;
-            padding: 0.5rem 0.75rem;
+        font-size: 48px;
+        @media screen and (min-width: 1000px) {
+            font-size: 24px;
         }
     }
 
-    @media (max-width: 580px) {
-        .nav-buttons button {
-            padding: 0.5rem 0.5rem;
-            font-size: 0.7rem;
+    .menu-icon {
+        font-size: 48px;
+        @media screen and (min-width: 1000px) {
+            font-size: 24px;
         }
     }
 </style>
 
-<nav class="nav-container">
-    <div class="nav-content">
-        <a href="#hero-section" class="logo"> SW </a>
-        <RetroClock />
-        <div class="nav-buttons">
-            <a href="#about-section">
-                <button>About</button>
-            </a>
-            <a href="#projects-section">
-                <button>Projects</button>
-            </a>
-            <a href="#bikes-section">
-                <button>Bikes</button>
-            </a>
-            <a href="#contact-section">
-                <button>Contact</button>
-            </a>
+<nav
+    class="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 dark:border-dark-border z-50"
+>
+    <div
+        class="max-w-[1200px] mx-auto flex justify-between items-center gap-2 sm:gap-4 py-3 sm:px-4"
+    >
+        <a
+            href="#hero-section"
+            aria-label="Home"
+            class="hero-logo px-2 text-brand-primary-dark hover:text-brand-primary-hover"
+        >
+            SW
+        </a>
+
+        <!-- Clock - hidden on very small screens, visible on sm and up -->
+        <div class="hidden sm:flex flex-1 justify-center">
+            <RetroClock />
+        </div>
+
+        <!-- Dropdown Menu -->
+        <div class="">
+            <DropdownMenu items={dropdownItems} buttonClass="btn-icon">
+                <i class="ri-menu-3-line menu-icon"></i>
+            </DropdownMenu>
         </div>
     </div>
 </nav>

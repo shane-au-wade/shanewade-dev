@@ -21,8 +21,8 @@ import "@styles/colors.css";
 
     .retro-clock {
         border: 1px solid var(--color-brand-primary-dark);
-        border-radius: 0.375rem;
-        padding: 0.375rem 0.5rem;
+        border-radius: 5px;
+        padding: 5px 10px;
         display: inline-block;
         min-width: 100px;
         text-align: center;
@@ -30,12 +30,18 @@ import "@styles/colors.css";
 
     .clock-display {
         font-family: "BoldPixels", monospace;
-        font-size: 1rem;
+        font-size: 48px;
+        padding: 0 20px;
         color: var(--color-brand-primary-dark);
         letter-spacing: 0.05em;
         line-height: 1;
         white-space: nowrap;
         cursor: default;
+
+        @media screen and (min-width: 1000px) {
+            font-size: 18px;
+            padding: 0;
+        }
     }
 </style>
 
