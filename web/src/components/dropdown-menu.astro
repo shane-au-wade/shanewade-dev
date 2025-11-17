@@ -39,15 +39,22 @@ const { items, buttonClass = "btn-default", ariaLabel = "Menu" } = Astro.props;
         display: block;
         transition: background-color 0.15s;
         min-width: 200px;
-        /* font-size: 2rem; */
     }
 
     .dropdown-content a:hover {
         background-color: #f3f4f6;
     }
 
-    .dropdown:hover .dropdown-content {
+    /* Show dropdown when open class is added */
+    .dropdown-content.open {
         display: block;
+    }
+
+    /* Keep hover functionality for desktop */
+    @media (hover: hover) and (pointer: fine) {
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
     }
 
     /* Dark mode support */
@@ -78,8 +85,14 @@ const { items, buttonClass = "btn-default", ariaLabel = "Menu" } = Astro.props;
         }
     }
 
-    .dropdown:hover .dropdown-content {
+    .dropdown-content.open {
         animation: slideDown 0.2s ease-out;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+        .dropdown:hover .dropdown-content {
+            animation: slideDown 0.2s ease-out;
+        }
     }
 </style>
 
@@ -89,10 +102,16 @@ const { items, buttonClass = "btn-default", ariaLabel = "Menu" } = Astro.props;
         aria-haspopup="true"
         aria-expanded="false"
         type="button"
+        data-dropdown-button
     >
         <slot />
     </button>
-    <div class="dropdown-content" role="menu" aria-label={ariaLabel}>
+    <div
+        class="dropdown-content"
+        role="menu"
+        aria-label={ariaLabel}
+        data-dropdown-menu
+    >
         {
             items.map((item) => (
                 <a href={item.href} role="menuitem">
@@ -103,3 +122,77 @@ const { items, buttonClass = "btn-default", ariaLabel = "Menu" } = Astro.props;
         }
     </div>
 </div>
+
+<script>
+    // Initialize dropdown functionality for all dropdowns on the page
+    function initDropdowns() {
+        const dropdowns = document.querySelectorAll("[data-dropdown-button]");
+
+        dropdowns.forEach((button) => {
+            const dropdown = button.closest(".dropdown");
+            const menu = dropdown?.querySelector("[data-dropdown-menu]");
+
+            if (!menu) return;
+
+            // Toggle dropdown on button click
+            button.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = menu.classList.contains("open");
+
+                // Close all other dropdowns
+                document
+                    .querySelectorAll("[data-dropdown-menu]")
+                    .forEach((m) => {
+                        if (m !== menu) {
+                            m.classList.remove("open");
+                            const btn = m
+                                .closest(".dropdown")
+                                ?.querySelector("[data-dropdown-button]");
+                            btn?.setAttribute("aria-expanded", "false");
+                        }
+                    });
+
+                // Toggle current dropdown
+                menu.classList.toggle("open");
+                button.setAttribute("aria-expanded", (!isOpen).toString());
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", (e) => {
+            const target = e.target as HTMLElement;
+            if (!target.closest(".dropdown")) {
+                document
+                    .querySelectorAll("[data-dropdown-menu]")
+                    .forEach((menu) => {
+                        menu.classList.remove("open");
+                        const btn = menu
+                            .closest(".dropdown")
+                            ?.querySelector("[data-dropdown-button]");
+                        btn?.setAttribute("aria-expanded", "false");
+                    });
+            }
+        });
+
+        // Close dropdown on escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                document
+                    .querySelectorAll("[data-dropdown-menu]")
+                    .forEach((menu) => {
+                        menu.classList.remove("open");
+                        const btn = menu
+                            .closest(".dropdown")
+                            ?.querySelector("[data-dropdown-button]");
+                        btn?.setAttribute("aria-expanded", "false");
+                    });
+            }
+        });
+    }
+
+    // Initialize on page load
+    initDropdowns();
+
+    // Re-initialize after page transitions (for SPAs or view transitions)
+    document.addEventListener("astro:after-swap", initDropdowns);
+</script>
