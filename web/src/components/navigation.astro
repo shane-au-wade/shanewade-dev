@@ -28,13 +28,13 @@ const navLinks: Array<{
     {
         href: "/recipes",
         display_name: "Recipes",
-        icon: "ri-restaurant-2-line"
+        icon: "ri-restaurant-2-line",
     },
     {
         href: "/design-system",
         display_name: "Design System",
-        icon: "ri-palette-line"
-    }
+        icon: "ri-palette-line",
+    },
 ];
 
 // Transform navLinks for the dropdown component
@@ -59,14 +59,14 @@ const dropdownItems = navLinks.map((link) => ({
     .hero-logo {
         font-family: "BoldPixels", sans-serif;
         text-decoration: none;
-        font-size: 48px;
+        font-size: 28px;
         @media screen and (min-width: 1000px) {
             font-size: 24px;
         }
     }
 
     .menu-icon {
-        font-size: 48px;
+        font-size: 28px;
         @media screen and (min-width: 1000px) {
             font-size: 20px;
         }
@@ -77,7 +77,7 @@ const dropdownItems = navLinks.map((link) => ({
     class="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 dark:border-dark-border z-50"
 >
     <div
-        class="max-w-[1200px] mx-auto flex justify-between items-center gap-2 sm:gap-4 py-3 sm:px-4"
+        class="max-w-[1200px] mx-auto flex justify-between items-center gap-2 sm:gap-4 py-2 sm:px-2"
     >
         <a
             href="#hero-section"
@@ -88,15 +88,11 @@ const dropdownItems = navLinks.map((link) => ({
         </a>
 
         <!-- Clock - hidden on very small screens, visible on sm and up -->
-        <div class="hidden sm:flex flex-1 justify-center">
-            <RetroClock />
-        </div>
+        <RetroClock />
 
         <!-- Dropdown Menu -->
-        <div class="">
-            <DropdownMenu items={dropdownItems} buttonClass="btn-icon">
-                <i class="ri-menu-3-line menu-icon"></i>
-            </DropdownMenu>
-        </div>
+        <DropdownMenu items={dropdownItems} buttonClass="btn-icon">
+            <i class="ri-menu-3-line menu-icon"></i>
+        </DropdownMenu>
     </div>
 </nav>
