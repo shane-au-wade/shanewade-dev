@@ -5,7 +5,8 @@ import {
     getGroceryListFromRecipes,
     type Recipe,
 } from "@shared/recipes/queries";
-import RecipesModal from "../../components/recipes-modal.astro";
+import RecipesModal from "@components/recipes-modal.astro";
+import Head from "@components/head.astro";
 import "@styles/components.css";
 import "remixicon/fonts/remixicon.css";
 
@@ -80,14 +81,49 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
     .grocery-item.checked .item-quantity {
         text-decoration: line-through;
     }
+
+    /* Flash animation for remote updates */
+    @keyframes flash {
+        0%,
+        100% {
+            background-color: transparent;
+        }
+        50% {
+            background-color: rgba(196, 69, 54, 0.1);
+        }
+    }
+
+    .grocery-item.flash {
+        animation: flash 0.6s ease-in-out;
+    }
+
+    /* Connection status indicator */
+    .connection-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .connection-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .connection-dot.connected {
+        background-color: #10b981;
+        box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+
+    .connection-dot.disconnected {
+        background-color: #6b7280;
+    }
 </style>
 
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Grocery List</title>
-    </head>
+    <Head title="Grocery List" />
     <body class="bg-page dark:bg-dark-bg min-h-screen">
         <div class="container py-4 max-w-2xl">
             <nav class="mb-4">
@@ -115,7 +151,7 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                         <span class="text-body">{totalItems}</span>
                         <span class="text-small text-muted">items checked</span>
                     </div>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2 items-center">
                         {
                             DEBUG && (
                                 <section>
@@ -143,6 +179,34 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                                 >
                                     View Recipes ({recipes.length})
                                 </button>
+                            )
+                        }
+
+                        {
+                            totalItems > 0 && (
+                                <>
+                                    <button
+                                        class="btn-secondary btn-sm"
+                                        id="share-list-btn"
+                                    >
+                                        <i class="ri-share-line" /> Share List
+                                    </button>
+                                    <button
+                                        class="btn-outline btn-sm hidden"
+                                        id="copy-url-btn"
+                                    >
+                                        <i class="ri-clipboard-line" /> Copy URL
+                                    </button>
+                                    <span
+                                        class="connection-status hidden"
+                                        id="connection-status"
+                                    >
+                                        <span class="connection-dot disconnected" />
+                                        <span class="text-muted">
+                                            Connecting...
+                                        </span>
+                                    </span>
+                                </>
                             )
                         }
                     </div>
@@ -255,11 +319,25 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
     </body>
 </html>
 
-<script define:vars={{ recipesParam }}>
+<script>
+    // @ts-nocheck
+    import { supabaseBrowser } from "../../lib/db/supabase-browser-client";
+
+    const url = new URL(window.location.href);
+    const recipesParam = url.searchParams.get("recipes");
+    const sessionParam = url.searchParams.get("session");
+
+    // Generate unique client ID for this browser tab
+    const clientId = `client-${Math.random().toString(36).substring(2, 9)}`;
+
     // Local storage key - unique per recipe combination
     const STORAGE_KEY = recipesParam
         ? `grocery-list-checked-${recipesParam}`
         : "grocery-list-checked";
+
+    // Global state
+    let realtimeChannel = null;
+    let checkedItems = new Set();
 
     // Load checked items from localStorage
     function loadCheckedItems() {
@@ -273,11 +351,11 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
     }
 
     // Save checked items to localStorage
-    function saveCheckedItems(checkedItems) {
+    function saveCheckedItems(items) {
         try {
             localStorage.setItem(
                 STORAGE_KEY,
-                JSON.stringify(Array.from(checkedItems)),
+                JSON.stringify(Array.from(items)),
             );
         } catch (e) {
             console.error("Failed to save checked items:", e);
@@ -292,12 +370,196 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
         }
     }
 
+    // Update connection status UI
+    function updateConnectionStatus(status, message) {
+        const statusElement = document.getElementById("connection-status");
+        if (!statusElement) return;
+
+        const dot = statusElement.querySelector(".connection-dot");
+        const text = statusElement.querySelector(".text-muted");
+
+        if (status === "connected") {
+            dot.classList.remove("disconnected");
+            dot.classList.add("connected");
+            text.textContent = message || "Connected";
+            text.classList.remove("text-muted");
+            text.classList.add("text-success");
+        } else if (status === "disconnected") {
+            dot.classList.remove("connected");
+            dot.classList.add("disconnected");
+            text.textContent = message || "Disconnected";
+            text.classList.remove("text-success");
+            text.classList.add("text-muted");
+        }
+    }
+
+    // Generate session ID and update URL
+    function generateSession() {
+        // Generate a 8 character session ID
+        const sessionId = crypto.randomUUID().slice(0, 8);
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set("session", sessionId);
+        window.history.pushState({}, "", newUrl.toString());
+        return sessionId;
+    }
+
+    // Copy URL to clipboard
+    async function copyUrlToClipboard() {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            const btn = document.getElementById("copy-url-btn");
+            if (btn) {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="ri-check-line"></i> Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                }, 2000);
+            }
+        } catch (e) {
+            console.error("Failed to copy URL:", e);
+            alert(
+                "Failed to copy URL. Please copy manually from the address bar.",
+            );
+        }
+    }
+
+    // Apply flash animation to item
+    function flashItem(itemName) {
+        const checkbox = document.querySelector(
+            `.grocery-item-checkbox[data-item="${itemName}"]`,
+        );
+        if (!checkbox) return;
+
+        const item = checkbox.closest(".grocery-item");
+        if (!item) return;
+
+        item.classList.add("flash");
+        setTimeout(() => {
+            item.classList.remove("flash");
+        }, 600);
+    }
+
+    // Handle remote check/uncheck event
+    function handleRemoteEvent(payload) {
+        const { type, itemName, clientId: remoteClientId } = payload;
+
+        // Ignore our own messages (shouldn't happen with self: false, but just in case)
+        if (remoteClientId === clientId) return;
+
+        console.log("📨 Remote event:", type, itemName, "from", remoteClientId);
+
+        const checkbox = document.querySelector(
+            `.grocery-item-checkbox[data-item="${itemName}"]`,
+        );
+        if (!checkbox) return;
+
+        const item = checkbox.closest(".grocery-item");
+        if (!item) return;
+
+        // Last event wins: update checkbox and localStorage
+        const isChecked = type === "check";
+        checkbox.checked = isChecked;
+
+        if (isChecked) {
+            checkedItems.add(itemName);
+            item.classList.add("checked");
+        } else {
+            checkedItems.delete(itemName);
+            item.classList.remove("checked");
+        }
+
+        saveCheckedItems(checkedItems);
+        updateCheckedCount(checkedItems.size);
+
+        // Flash animation for visual feedback
+        flashItem(itemName);
+    }
+
+    // Broadcast check/uncheck event
+    function broadcastEvent(type, itemName) {
+        if (!realtimeChannel) return;
+
+        const payload = {
+            type,
+            itemName,
+            clientId,
+            timestamp: new Date().toISOString(),
+        };
+
+        console.log("📤 Broadcasting:", payload);
+
+        realtimeChannel.send({
+            type: "broadcast",
+            event: "grocery-item",
+            payload,
+        });
+    }
+
+    // Initialize realtime channel
+    function initializeRealtime(sessionId) {
+        console.log("🚀 Initializing realtime for session:", sessionId);
+
+        const statusElement = document.getElementById("connection-status");
+        if (statusElement) {
+            statusElement.classList.remove("hidden");
+        }
+
+        // Create channel with session ID
+        realtimeChannel = supabaseBrowser.channel(
+            `grocery-session:${sessionId}`,
+            {
+                config: {
+                    broadcast: {
+                        self: false, // Don't receive our own messages
+                    },
+                },
+            },
+        );
+
+        // Listen for broadcast messages
+        realtimeChannel
+            .on("broadcast", { event: "grocery-item" }, (payload) => {
+                handleRemoteEvent(payload.payload);
+            })
+            .subscribe((status) => {
+                console.log("📡 Channel status:", status);
+
+                if (status === "SUBSCRIBED") {
+                    updateConnectionStatus("connected", "Live");
+                } else if (status === "CHANNEL_ERROR") {
+                    updateConnectionStatus("disconnected", "Error");
+                } else if (status === "TIMED_OUT") {
+                    updateConnectionStatus("disconnected", "Timed out");
+                } else {
+                    updateConnectionStatus("disconnected", "Connecting...");
+                }
+            });
+    }
+
+    // Handle share list button click
+    function handleShareList() {
+        const sessionId = generateSession();
+        initializeRealtime(sessionId);
+
+        // Update UI
+        const shareBtn = document.getElementById("share-list-btn");
+        const copyBtn = document.getElementById("copy-url-btn");
+
+        if (shareBtn) {
+            shareBtn.classList.add("hidden");
+        }
+
+        if (copyBtn) {
+            copyBtn.classList.remove("hidden");
+        }
+    }
+
     // Initialize on page load
     function init() {
-        const checkedItems = loadCheckedItems();
+        checkedItems = loadCheckedItems();
         const checkboxes = document.querySelectorAll(".grocery-item-checkbox");
 
-        // Restore checked state
+        // Restore checked state from localStorage
         checkboxes.forEach((checkbox) => {
             const itemName = checkbox.dataset.item;
             if (itemName && checkedItems.has(itemName)) {
@@ -317,7 +579,9 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
 
                 if (!itemName || !item) return;
 
-                if (target.checked) {
+                const isChecked = target.checked;
+
+                if (isChecked) {
                     checkedItems.add(itemName);
                     item.classList.add("checked");
                 } else {
@@ -327,10 +591,21 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
 
                 saveCheckedItems(checkedItems);
                 updateCheckedCount(checkedItems.size);
+
+                // Broadcast to other users if realtime is active
+                broadcastEvent(isChecked ? "check" : "uncheck", itemName);
             });
         });
 
-        // Clear checked items button
+        // Share list button
+        const shareBtn = document.getElementById("share-list-btn");
+        shareBtn?.addEventListener("click", handleShareList);
+
+        // Copy URL button
+        const copyBtn = document.getElementById("copy-url-btn");
+        copyBtn?.addEventListener("click", copyUrlToClipboard);
+
+        // Clear checked items button (DEBUG)
         const clearCheckedBtn = document.getElementById("clear-checked");
         clearCheckedBtn?.addEventListener("click", () => {
             const checkedCheckboxes = document.querySelectorAll(
@@ -342,23 +617,47 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
                 const itemName = checkbox.dataset.item;
                 if (itemName) {
                     checkedItems.delete(itemName);
+                    // Broadcast uncheck event
+                    broadcastEvent("uncheck", itemName);
                 }
             });
             saveCheckedItems(checkedItems);
             updateCheckedCount(0);
         });
 
-        // Reset all button
+        // Reset all button (DEBUG)
         const resetAllBtn = document.getElementById("reset-all");
         resetAllBtn?.addEventListener("click", () => {
             checkboxes.forEach((checkbox) => {
                 checkbox.checked = false;
                 checkbox.closest(".grocery-item")?.classList.remove("checked");
+                const itemName = checkbox.dataset.item;
+                if (itemName) {
+                    // Broadcast uncheck event
+                    broadcastEvent("uncheck", itemName);
+                }
             });
             checkedItems.clear();
             saveCheckedItems(checkedItems);
             updateCheckedCount(0);
         });
+
+        // If session ID exists in URL, initialize realtime
+        if (sessionParam) {
+            initializeRealtime(sessionParam);
+
+            // Update UI to show copy button instead of share button
+            const shareBtnElement = document.getElementById("share-list-btn");
+            const copyBtnElement = document.getElementById("copy-url-btn");
+
+            if (shareBtnElement) {
+                shareBtnElement.classList.add("hidden");
+            }
+
+            if (copyBtnElement) {
+                copyBtnElement.classList.remove("hidden");
+            }
+        }
     }
 
     // Run initialization when DOM is ready
@@ -367,4 +666,11 @@ const totalItems = sortedGroceries.length + sortedAsNeededGroceries.length;
     } else {
         init();
     }
+
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", () => {
+        if (realtimeChannel) {
+            realtimeChannel.unsubscribe();
+        }
+    });
 </script>
