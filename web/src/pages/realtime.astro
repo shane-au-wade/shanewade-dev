@@ -1,0 +1,239 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+---
+
+<html lang="en">
+    <Head title="Realtime" description="Realtime" />
+    <body class="bg-page dark:bg-dark-bg min-h-screen">
+        <!-- Header -->
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-4 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <h1 class="heading-3">Realtime Demo</h1>
+                    <p class="text-muted">Supabase realtime messaging</p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="container py-8">
+            <!-- Supabase Realtime Demo -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h2 class="heading-3 mb-3">🔴 Realtime Demo</h2>
+                    <div class="mb-4">
+                        <p class="text-small text-muted mb-2">
+                            Client ID: <span
+                                id="client-id"
+                                class="font-mono text-body"
+                                >Initializing...</span
+                            >
+                        </p>
+                        <p class="text-small text-muted mb-2">
+                            Room: <span class="font-mono text-body"
+                                >realtime-demo</span
+                            >
+                        </p>
+                        <p class="text-small text-muted mb-2">
+                            Status: <span
+                                id="connection-status"
+                                class="font-semibold">Connecting...</span
+                            >
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2 mb-4">
+                        <button class="btn-primary btn-sm" id="send-hello">
+                            Send Hello Message
+                        </button>
+                        <button class="btn-default btn-sm" id="clear-messages">
+                            Clear Messages
+                        </button>
+                    </div>
+
+                    <div class="mb-2">
+                        <h3 class="text-small font-semibold text-muted">
+                            Messages:
+                        </h3>
+                    </div>
+                    <div
+                        id="realtime-messages"
+                        class="space-y-2 max-h-60 overflow-y-auto"
+                    >
+                        <p class="text-small text-muted italic">
+                            No messages yet...
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script>
+    // @ts-nocheck
+    import { supabaseBrowser } from "../lib/db/supabase-browser-client";
+
+    // ===== REALTIME DEMO SETUP =====
+
+    // Generate a unique client ID
+    const clientId = `client-${Math.random().toString(36).substring(2, 9)}`;
+    let realtimeChannel = null;
+
+    // Display the client ID
+    const clientIdElement = document.getElementById("client-id");
+    if (clientIdElement) {
+        clientIdElement.textContent = clientId;
+    }
+
+    // Update connection status
+    function updateConnectionStatus(status, color = "text-body") {
+        const statusElement = document.getElementById("connection-status");
+        if (statusElement) {
+            statusElement.textContent = status;
+            statusElement.className = `font-semibold ${color}`;
+        }
+    }
+
+    // Add a message to the display
+    function addMessage(message, type = "received") {
+        const messagesContainer = document.getElementById("realtime-messages");
+        if (!messagesContainer) return;
+
+        // Remove "no messages" placeholder if it exists
+        const placeholder = messagesContainer.querySelector(".italic");
+        if (placeholder) {
+            placeholder.remove();
+        }
+
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `p-3 rounded border ${
+            type === "sent"
+                ? "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
+                : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+        }`;
+
+        const timestamp = new Date().toLocaleTimeString();
+
+        messageDiv.innerHTML = `
+            <div class="flex items-start justify-between gap-2 mb-1">
+                <span class="text-small font-semibold ${type === "sent" ? "text-blue-700 dark:text-blue-300" : "text-body"}">
+                    ${type === "sent" ? "You" : message.clientId}
+                </span>
+                <span class="text-xs text-muted">${timestamp}</span>
+            </div>
+            <p class="text-small text-body">${message.text}</p>
+        `;
+
+        messagesContainer.appendChild(messageDiv);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Initialize Realtime connection
+    function initializeRealtime() {
+        console.log("🚀 Initializing Realtime connection...");
+        console.log("Client ID:", clientId);
+
+        // Create a channel (room) named "realtime-demo"
+        realtimeChannel = supabaseBrowser.channel("realtime-demo", {
+            config: {
+                broadcast: {
+                    self: false, // Don't receive our own messages
+                },
+            },
+        });
+
+        // Listen for broadcast messages
+        realtimeChannel
+            .on("broadcast", { event: "message" }, (payload) => {
+                console.log("📨 Received message:", payload);
+                addMessage(payload.payload, "received");
+            })
+            .subscribe((status) => {
+                console.log("📡 Channel status:", status);
+
+                if (status === "SUBSCRIBED") {
+                    updateConnectionStatus(
+                        "Connected ✓",
+                        "text-green-600 dark:text-green-400",
+                    );
+                    console.log("✅ Successfully subscribed to channel");
+                } else if (status === "CHANNEL_ERROR") {
+                    updateConnectionStatus(
+                        "Error ✗",
+                        "text-red-600 dark:text-red-400",
+                    );
+                    console.error("❌ Channel error");
+                } else if (status === "TIMED_OUT") {
+                    updateConnectionStatus(
+                        "Timed out ✗",
+                        "text-red-600 dark:text-red-400",
+                    );
+                    console.error("⏱️ Channel timed out");
+                } else {
+                    updateConnectionStatus(status);
+                }
+            });
+    }
+
+    // Send a hello message
+    function sendHelloMessage() {
+        if (!realtimeChannel) {
+            console.error("Channel not initialized");
+            return;
+        }
+
+        const message = {
+            clientId: clientId,
+            text: `Hello from ${clientId}!`,
+            timestamp: new Date().toISOString(),
+        };
+
+        console.log("📤 Sending message:", message);
+
+        realtimeChannel.send({
+            type: "broadcast",
+            event: "message",
+            payload: message,
+        });
+
+        // Show our own message
+        addMessage(message, "sent");
+    }
+
+    // Set up button handlers for Realtime demo
+    function setupRealtimeHandlers() {
+        const sendButton = document.getElementById("send-hello");
+        const clearButton = document.getElementById("clear-messages");
+
+        sendButton?.addEventListener("click", sendHelloMessage);
+
+        clearButton?.addEventListener("click", () => {
+            const messagesContainer =
+                document.getElementById("realtime-messages");
+            if (messagesContainer) {
+                messagesContainer.innerHTML =
+                    '<p class="text-small text-muted italic">No messages yet...</p>';
+            }
+        });
+    }
+
+    // Initialize Realtime when page loads
+    initializeRealtime();
+    setupRealtimeHandlers();
+
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", () => {
+        if (realtimeChannel) {
+            realtimeChannel.unsubscribe();
+        }
+    });
+
+    // ===== END REALTIME DEMO =====
+</script>
