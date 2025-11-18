@@ -1,8 +1,7 @@
-import { defineConfig, envField } from "astro/config"
+import { defineConfig } from "astro/config"
 import react from "@astrojs/react"
 import deno from "@deno/astro-adapter"
 import UnoCSS from "unocss/astro"
-import process from "node:process"
 
 // https://astro.build/config
 export default defineConfig({
@@ -22,7 +21,6 @@ export default defineConfig({
   ],
   site: "https://shanewade-dev.shane-au-wade.deno.net",
   vite: {
-    envPrefix: "PUBLIC_",
     server: {
       fs: {
         allow: [
