@@ -1,0 +1,23 @@
+---
+// env test page to test the environment variables injection in deno deploy
+---
+
+<html lang="en">
+    <head>
+        <title>Env Test</title>
+    </head>
+    <body class="bg-page dark:bg-dark-bg min-h-screen p-8">
+        <div class="container py-8 card">
+            <h1 class="heading-1">Env Test</h1>
+            <p id="public-test-var" class="text-leading">PUBLIC_TEST_VAR:</p>
+        </div>
+    </body>
+</html>
+
+<script>
+    const publicTestVarElement = document.getElementById("public-test-var");
+    if (publicTestVarElement) {
+        publicTestVarElement.textContent =
+            "PUBLIC_TEST_VAR: " + import.meta.env.PUBLIC_TEST_VAR;
+    }
+</script>
