@@ -1,0 +1,256 @@
+---
+import "ol/ol.css";
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import "@styles/components.css";
+---
+
+<html lang="en">
+    <Head title="SF Bike Lanes - Shane Wade" />
+    <body>
+        <div
+            id="map-controls"
+            class="rounded-xl radius-xl bg-white backdrop-blur-sm border border-gray-200 shadow-lg p-4"
+        >
+            <Breadcrumbs />
+            <h3 class="text-lg font-semibold mb-3">Base Map</h3>
+            <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="radio"
+                        name="base-map"
+                        value="osm"
+                        id="toggle-osm"
+                        class="w-4 h-4 radio"
+                    />
+                    <span class="text-sm">OpenStreetMap</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="radio"
+                        name="base-map"
+                        value="toner"
+                        checked
+                        id="toggle-toner"
+                        class="radio"
+                    />
+                    <span class="text-sm">Stamen Toner</span>
+                </label>
+            </div>
+
+            <h3 class="text-lg font-semibold mb-3">Data Layers</h3>
+            <div class="space-y-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        id="toggle-bike-lanes"
+                        checked
+                        class="checkbox"
+                    />
+                    <span class="text-sm">Bike Lanes</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        id="toggle-collision-markers"
+                        class="checkbox"
+                    />
+                    <span class="text-sm">Collision Markers</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        id="toggle-collision-heatmap"
+                        checked
+                        class="checkbox"
+                    />
+                    <span class="text-sm">Collision Heatmap</span>
+                </label>
+            </div>
+
+            <div id="loading-status" class="mt-4 flex items-center gap-2">
+                <div class="loading-spinner w-4 h-4"></div>
+                <span class="text-sm text-gray-600" id="loading-text"
+                    >Loading data...</span
+                >
+            </div>
+        </div>
+        <div id="map"></div>
+    </body>
+</html>
+
+<style>
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    #map-controls {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 10px;
+        min-height: 150px;
+        width: 220px;
+        z-index: 1000;
+    }
+
+    #map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .ol-popup {
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        max-width: 300px;
+        font-family: monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+    }
+</style>
+
+<script>
+    import Map from "ol/Map.js";
+    import View from "ol/View.js";
+    import TileLayer from "ol/layer/Tile.js";
+    import OSM from "ol/source/OSM.js";
+    import StadiaMaps from "ol/source/StadiaMaps.js";
+    import { fromLonLat } from "ol/proj.js";
+    import { useBikeLaneMap } from "@lib/maps/sf/bike-lane-map";
+    import { useBikeLaneDisplay } from "@lib/maps/sf/bike-lane-display";
+    import { useCollisionsDisplay } from "@lib/maps/sf/bike-collision-display";
+
+    // Create tile layers
+    const osmLayer = new TileLayer({
+        source: new OSM(),
+        visible: false,
+    });
+
+    const tonerLayer = new TileLayer({
+        source: new StadiaMaps({
+            layer: "stamen_toner",
+        }),
+        visible: true,
+    });
+
+    const STARTING_LOCATION = [-122.44846343994142, 37.75599059794778];
+
+    // Initialize the map centered on San Francisco
+    const map = new Map({
+        target: "map",
+        layers: [osmLayer, tonerLayer],
+        view: new View({
+            center: fromLonLat(STARTING_LOCATION), // San Francisco coordinates
+            zoom: 13,
+        }),
+    });
+
+    const loadingStatus = document.getElementById("loading-status");
+    const loadingText = document.getElementById("loading-text");
+
+    // Load and display data
+    async function loadMapData() {
+        try {
+            loadingText!.textContent = "Loading bike lanes...";
+
+            // Load bike lanes CSV
+            const bikeLaneResponse = await fetch("/bikewaynetwork.csv");
+            const bikeLaneText = await bikeLaneResponse.text();
+
+            // Parse bike lane data
+            const bikeLaneMap = useBikeLaneMap(bikeLaneText);
+
+            // Create and add bike lane layer
+            const bikeLaneLayer = useBikeLaneDisplay(map, bikeLaneMap);
+            map.addLayer(bikeLaneLayer);
+
+            loadingText!.textContent = "Loading collision data...";
+
+            // Load collision JSON
+            const collisionResponse = await fetch(
+                "/transbase_collisions_02262022.json",
+            );
+            const collisionData = await collisionResponse.json();
+
+            // Create and add collision layers
+            const { markersLayer, heatmapLayer } = useCollisionsDisplay(
+                map,
+                collisionData,
+            );
+            // set default visibility to false
+            markersLayer.setVisible(false);
+            map.addLayer(heatmapLayer);
+            map.addLayer(markersLayer);
+
+            loadingText!.textContent = "Done";
+            setTimeout(() => {
+                loadingStatus!.style.display = "none";
+            }, 2000);
+
+            // Wire up base map controls
+            const osmToggle = document.getElementById(
+                "toggle-osm",
+            ) as HTMLInputElement;
+            const tonerToggle = document.getElementById(
+                "toggle-toner",
+            ) as HTMLInputElement;
+
+            osmToggle?.addEventListener("change", (e) => {
+                if ((e.target as HTMLInputElement).checked) {
+                    osmLayer.setVisible(true);
+                    tonerLayer.setVisible(false);
+                }
+            });
+
+            tonerToggle?.addEventListener("change", (e) => {
+                if ((e.target as HTMLInputElement).checked) {
+                    osmLayer.setVisible(false);
+                    tonerLayer.setVisible(true);
+                }
+            });
+
+            // Wire up data layer controls
+            const bikeLanesToggle = document.getElementById(
+                "toggle-bike-lanes",
+            ) as HTMLInputElement;
+            const markersToggle = document.getElementById(
+                "toggle-collision-markers",
+            ) as HTMLInputElement;
+            const heatmapToggle = document.getElementById(
+                "toggle-collision-heatmap",
+            ) as HTMLInputElement;
+
+            bikeLanesToggle?.addEventListener("change", (e) => {
+                bikeLaneLayer.setVisible(
+                    (e.target as HTMLInputElement).checked,
+                );
+            });
+
+            markersToggle?.addEventListener("change", (e) => {
+                markersLayer.setVisible((e.target as HTMLInputElement).checked);
+            });
+
+            heatmapToggle?.addEventListener("change", (e) => {
+                heatmapLayer.setVisible((e.target as HTMLInputElement).checked);
+            });
+        } catch (error) {
+            console.error("Error loading map data:", error);
+            loadingText!.textContent = "Error loading data. Check console.";
+            loadingText!.style.color = "red";
+        }
+    }
+
+    // Start loading data
+    loadMapData();
+</script>

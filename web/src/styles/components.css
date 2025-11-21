@@ -14,6 +14,32 @@
   line-height: 1;
 }
 
+.dot-background {
+  --dot-bg: white;
+  --dot-color: #c44536;
+  --dot-size: 2px;
+  --dot-space: 30px;
+
+  background:
+    linear-gradient(
+      90deg,
+      var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
+      transparent 1%
+    ) center / var(--dot-space) var(--dot-space),
+    linear-gradient(
+    var(--dot-bg) calc(var(--dot-space) - var(--dot-size)),
+    transparent 1%
+  ) center / var(--dot-space) var(--dot-space),
+    var(--dot-color);
+
+  transition: background 0.3s ease;
+}
+
+/* Dark mode support */
+:global(.dark) .dot-background {
+  --dot-bg: #1a1a1a;
+}
+
 /* basic card style */
 .card {
   padding: 1rem;

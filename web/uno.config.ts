@@ -30,6 +30,16 @@ export default defineConfig({
         "padding-top": "3rem",
       },
     ],
+    [
+      "checkbox",
+      {
+        position: "relative",
+        width: "1rem",
+        height: "1rem",
+        "border-radius": "7px",
+        "accent-color": "var(--color-brand-primary)",
+      },
+    ],
   ],
   presets: [
     presetWind4(),
@@ -156,8 +166,6 @@ export default defineConfig({
     "select": "input appearance-none bg-no-repeat bg-right pr-10 cursor-pointer",
     "textarea": "input resize-y min-h-24",
 
-    "checkbox":
-      "relative w-4 h-4 rounded appearance-none border-2 border-gray-300 bg-white cursor-pointer transition-all focus:ring-brand-primary focus:ring-2 checked:bg-brand-primary checked:border-brand-primary dark:border-dark-border dark:bg-dark-bg-elevated dark:checked:bg-brand-primary dark:checked:border-brand-primary",
     "radio": "checkbox rounded-full",
 
     "label": "block text-sm font-medium text-gray-700 mb-1 dark:text-dark-text-secondary",

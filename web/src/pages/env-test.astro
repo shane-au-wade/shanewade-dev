@@ -11,7 +11,6 @@
             <h1 class="heading-1">Env Test</h1>
             <p id="public-test-var" class="text-leading">PUBLIC_TEST_VAR:</p>
             <p id="supabase-url" class="text-leading">SUPABASE_URL:</p>
-            <p id="supabase-anon-key" class="text-leading">SUPABASE_ANON_KEY:</p>
         </div>
     </body>
 </html>
@@ -24,10 +23,7 @@
     }
     const supabaseUrlElement = document.getElementById("supabase-url");
     if (supabaseUrlElement) {
-        supabaseUrlElement.textContent = "SUPABASE_URL: " + import.meta.env.PUBLIC_SUPABASE_URL;
-    }
-    const supabaseAnonKeyElement = document.getElementById("supabase-anon-key");
-    if (supabaseAnonKeyElement) {
-        supabaseAnonKeyElement.textContent = "SUPABASE_ANON_KEY: " + import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+        supabaseUrlElement.textContent =
+            "SUPABASE_URL: " + import.meta.env.PUBLIC_SUPABASE_URL;
     }
 </script>
