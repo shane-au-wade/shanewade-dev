@@ -3,15 +3,13 @@ import "ol/ol.css";
 import Head from "@components/head.astro";
 import Breadcrumbs from "@components/breadcrumbs.astro";
 import "@styles/components.css";
+import MobileFloatingCollapse from "@components/mobile-floating-collapse.astro";
 ---
 
 <html lang="en">
     <Head title="SF Bike Lanes - Shane Wade" />
     <body>
-        <div
-            id="map-controls"
-            class="rounded-xl radius-xl bg-white backdrop-blur-sm border border-gray-200 shadow-lg p-4"
-        >
+        <MobileFloatingCollapse>
             <Breadcrumbs />
             <h3 class="text-lg font-semibold mb-3">Base Map</h3>
             <div class="space-y-2 mb-4 pb-4 border-b border-gray-200">
@@ -74,7 +72,7 @@ import "@styles/components.css";
                     >Loading data...</span
                 >
             </div>
-        </div>
+        </MobileFloatingCollapse>
         <div id="map"></div>
     </body>
 </html>

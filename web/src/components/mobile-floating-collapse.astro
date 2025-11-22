@@ -1,0 +1,48 @@
+---
+import "remixicon/fonts/remixicon.css";
+---
+
+<div class="fab-container sticky z-100 bg-transparent">
+    <button class="fab btn-primary btn-sm float-right rounded-lg p-2n">
+        <i class="ri-arrow-down-s-line"></i>
+    </button>
+
+    <div
+        class="fab-content bg-white dark:bg-dark-bg-elevated border border-gray-200 rounded-lg p-4 max-w-xs"
+        hidden={true}
+    >
+        <slot />
+    </div>
+</div>
+
+<style>
+    .fab-container {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 1000;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const fab = document.querySelector(".fab");
+        if (fab) {
+            fab.addEventListener("click", () => {
+                const fabContent = document.querySelector(".fab-content");
+                if (fabContent) {
+                    console.log(fabContent);
+                    fabContent.hidden = !fabContent.hidden;
+                    if (!fabContent.hidden) {
+                        // set the fab button outline to none
+                        fab.classList.remove("btn-primary");
+                        fab.classList.add("btn-outline");
+                    } else {
+                        fab.classList.remove("btn-outline");
+                        fab.classList.add("btn-primary");
+                    }
+                }
+            });
+        }
+    });
+</script>

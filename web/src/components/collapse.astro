@@ -1,0 +1,152 @@
+---
+/**
+ * Collapse Component
+ *
+ * A collapsible container that can show/hide content with a button trigger.
+ * Useful for creating space-efficient UIs on mobile devices.
+ *
+ * @param id - Unique identifier for the collapse
+ * @param title - Title shown in the collapse header
+ * @param defaultOpen - Whether the collapse is open by default (default: false)
+ * @param buttonClass - Additional classes for the toggle button
+ */
+
+interface Props {
+    id: string;
+    title?: string;
+    defaultOpen?: boolean;
+    buttonClass?: string;
+}
+
+const { id, title, defaultOpen = false, buttonClass = "" } = Astro.props;
+---
+
+<div class="collapse-container" data-collapse-id={id}>
+    <button
+        class={`collapse-toggle ${buttonClass}`}
+        data-collapse-toggle={id}
+        aria-expanded={defaultOpen}
+        aria-controls={`collapse-content-${id}`}
+    >
+        <i class="ri-equalizer-line collapse-icon"></i>
+        {title && <span class="collapse-title">{title}</span>}
+        <i class="ri-arrow-down-s-line collapse-arrow"></i>
+    </button>
+
+    <div
+        id={`collapse-content-${id}`}
+        class={`collapse-content ${defaultOpen ? "is-open" : ""}`}
+        aria-hidden={!defaultOpen}
+    >
+        <slot />
+    </div>
+</div>
+
+<style>
+    .collapse-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .collapse-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: white;
+        border: 1px solid rgb(229 231 235);
+        border-radius: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.875rem;
+        font-weight: 500;
+        width: 100%;
+        text-align: left;
+    }
+
+    .collapse-toggle:hover {
+        background: rgb(249 250 251);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .collapse-toggle:active {
+        transform: scale(0.98);
+    }
+
+    .collapse-icon {
+        font-size: 1.25rem;
+        color: rgb(107 114 128);
+    }
+
+    .collapse-title {
+        flex: 1;
+        color: rgb(31 41 55);
+    }
+
+    .collapse-arrow {
+        font-size: 1.25rem;
+        color: rgb(107 114 128);
+        transition: transform 0.2s ease;
+    }
+
+    .collapse-toggle[aria-expanded="true"] .collapse-arrow {
+        transform: rotate(180deg);
+    }
+
+    .collapse-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+
+    .collapse-content.is-open {
+        max-height: 1000px;
+    }
+
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+        .collapse-toggle {
+            background: rgb(31 41 55);
+            border-color: rgb(55 65 81);
+        }
+
+        .collapse-toggle:hover {
+            background: rgb(55 65 81);
+        }
+
+        .collapse-title {
+            color: rgb(243 244 246);
+        }
+
+        .collapse-icon,
+        .collapse-arrow {
+            color: rgb(156 163 175);
+        }
+    }
+</style>
+
+<script>
+    // Handle collapse toggle functionality
+    document.addEventListener("DOMContentLoaded", () => {
+        const toggleButtons = document.querySelectorAll(
+            "[data-collapse-toggle]",
+        );
+
+        toggleButtons.forEach((button) => {
+            button.addEventListener("click", () => {
+                const targetId = button.getAttribute("data-collapse-toggle");
+                const content = document.getElementById(
+                    `collapse-content-${targetId}`,
+                );
+                const isExpanded =
+                    button.getAttribute("aria-expanded") === "true";
+
+                // Toggle states
+                button.setAttribute("aria-expanded", (!isExpanded).toString());
+                content?.setAttribute("aria-hidden", isExpanded.toString());
+                content?.classList.toggle("is-open");
+            });
+        });
+    });
+</script>

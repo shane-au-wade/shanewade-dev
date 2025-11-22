@@ -5,6 +5,9 @@ import Breadcrumbs from "@components/breadcrumbs.astro";
 import Head from "@components/head.astro";
 import ThemeToggle from "@components/theme-toggle.astro";
 
+import AsciiStyleNav from "@components/ascii-style-nav.astro";
+import MobileFloatingCollapse from "@components/mobile-floating-collapse.astro";
+
 import "@styles/components.css";
 import "remixicon/fonts/remixicon.css";
 ---
@@ -18,18 +21,21 @@ import "remixicon/fonts/remixicon.css";
         <header
             class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
         >
-            <div class="container py-4 flex items-center justify-between">
+            <div class="container py-2 flex items-center justify-between">
                 <div>
                     <Breadcrumbs />
-                    <h1 class="heading-3">Design System</h1>
-                    <p class="text-muted">Component library and style guide</p>
+                    <p class="text-lead">Component library & style guide</p>
                 </div>
-                <ThemeToggle />
             </div>
         </header>
 
         <div class="container py-12">
-            <nav
+            <MobileFloatingCollapse>
+                <AsciiStyleNav />
+                <ThemeToggle />
+            </MobileFloatingCollapse>
+
+            <!-- <nav
                 class="mb-12 flex flex-wrap gap-3 pb-6 border-b border-gray-200 dark:border-dark-border"
             >
                 <a href="#colors" class="link-subtle text-body">Colors</a>
@@ -59,7 +65,7 @@ import "remixicon/fonts/remixicon.css";
                 >
                 <span class="text-gray-300 dark:text-dark-border">|</span>
                 <a href="#layouts" class="link-subtle text-body">Layouts</a>
-            </nav>
+            </nav> -->
 
             <!-- Colors Section -->
             <section id="colors" class="section">

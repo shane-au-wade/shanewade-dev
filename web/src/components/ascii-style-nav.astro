@@ -1,0 +1,142 @@
+---
+// ASCII-Style Navigation Component
+// Displays navigation items in a retro TUI tree structure
+
+export interface Props {
+    items?: Array<{
+        label: string;
+        href: string;
+        icon?: string;
+    }>;
+    title?: string;
+}
+
+const {
+    items = [
+        { label: "Colors", href: "#colors", icon: "" },
+        { label: "Typography", href: "#typography", icon: "" },
+        { label: "Buttons", href: "#buttons", icon: "" },
+        { label: "Forms", href: "#forms", icon: "" },
+        { label: "Checkboxes", href: "#checkboxes", icon: "" },
+        { label: "Cards", href: "#cards", icon: "" },
+        { label: "Badges", href: "#badges", icon: "" },
+        { label: "Alerts", href: "#alerts", icon: "" },
+        { label: "Modal", href: "#modal", icon: "" },
+        { label: "Breadcrumbs", href: "#breadcrumbs", icon: "" },
+        { label: "Layouts", href: "#layouts", icon: "" },
+    ],
+    title = "Nav",
+} = Astro.props;
+---
+
+<nav class="ascii-nav" aria-label="ASCII style navigation">
+    <!-- Title -->
+    {title && <div class="ascii-title">{title}</div>}
+
+    <!-- Navigation Items -->
+    <ul class="ascii-list">
+        {
+            items.map((item, index) => {
+                const isLast = index === items.length - 1;
+                const branch = isLast ? "└──" : "├──";
+
+                return (
+                    <li class="ascii-item">
+                        <span class="ascii-branch">{branch}</span>
+                        <a href={item.href} class="ascii-link">
+                            {item.icon && (
+                                <span class="ascii-icon">{item.icon}</span>
+                            )}
+                            {item.label}
+                        </a>
+                    </li>
+                );
+            })
+        }
+    </ul>
+</nav>
+
+<style>
+    .ascii-nav {
+        font-family: monospace;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        background: transparent;
+        color: #1f2937;
+        max-width: fit-content;
+    }
+
+    .ascii-title {
+        font-weight: bold;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #1f2937;
+    }
+
+    .ascii-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .ascii-item {
+        display: flex;
+        align-items: center;
+        margin: 0;
+    }
+
+    .ascii-branch {
+        color: #1f2937;
+        margin-right: 0.5rem;
+        white-space: pre;
+        user-select: none;
+        font-size: 17px;
+        letter-spacing: -0.15em;
+        line-height: 1;
+    }
+
+    .ascii-link {
+        color: #1f2937;
+        text-decoration: none;
+        transition: color 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .ascii-link:hover {
+        color: #c44536;
+        text-decoration: underline;
+    }
+
+    .ascii-link:focus {
+        outline: 2px solid #c44536;
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+
+    .ascii-icon {
+        font-size: 1rem;
+    }
+
+    /* Dark mode adjustments */
+    :global(.dark) .ascii-nav {
+        color: #e5e7eb;
+    }
+
+    :global(.dark) .ascii-title {
+        color: #e5e7eb;
+    }
+
+    :global(.dark) .ascii-branch {
+        color: #e5e7eb;
+    }
+
+    :global(.dark) .ascii-link {
+        color: #e5e7eb;
+    }
+
+    :global(.dark) .ascii-link:hover {
+        color: #c44536;
+    }
+</style>
