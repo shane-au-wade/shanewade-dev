@@ -27,7 +27,6 @@ export default defineConfig({
         display: "flex",
         "flex-direction": "row",
         "min-height": "100vh",
-        "padding-top": "3rem",
       },
     ],
     [

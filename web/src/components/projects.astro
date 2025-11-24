@@ -46,85 +46,33 @@ const projects = [
 ].reverse();
 ---
 
-<style>
-    .projects-container {
-        padding: 0;
-        padding-top: 8rem;
-        max-width: 80rem;
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .projects-container h2 {
-        margin-top: 0;
-        padding: 0 2rem;
-    }
-
-    .projects-scroll {
-        display: flex;
-        gap: 1rem;
-        overflow-x: auto;
-        padding: 2rem;
-        scroll-behavior: smooth;
-    }
-
-    .project-card {
-        max-width: 25rem;
-        min-width: 20rem;
-        text-align: center;
-        cursor: pointer;
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
-    }
-
-    .project-card:hover {
-        transform: translateY(-4px);
-        box-shadow: var(--shadow-md);
-    }
-
-    .project-image {
-        width: 15rem;
-        border-radius: 7px;
-        display: block;
-        margin: 0 auto;
-    }
-
-    .project-summary {
-        text-align: left;
-        padding: 1rem 0;
-    }
-
-    .project-summary h3 {
-        margin: 0 0 1rem 0;
-    }
-
-    .project-summary p {
-        margin: 0;
-        line-height: 1.5;
-    }
-</style>
-
-<div id="projects-section" class="projects-container">
-    <h2>Projects</h2>
-    <section class="projects-scroll" id="projects-scroll">
+<div
+    id="projects-section"
+    class="p-0 pt-32 max-w-[80rem] mx-auto flex flex-col"
+>
+    <h2 class="heading-2 mt-0 px-8">Projects</h2>
+    <section
+        class="flex gap-4 overflow-x-auto p-8 scroll-smooth"
+        id="projects-scroll"
+    >
         {
             projects.map((project) => (
-                <article class="project-card card">
+                <article class="card max-w-[25rem] min-w-[20rem] text-center cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-4px] hover:shadow-md">
                     <a
                         href={project.href}
                         target="_blank"
-                        style="text-decoration: none; color: inherit;"
+                        class="no-underline text-inherit"
                     >
                         <img
                             src={project.image}
                             alt={`${project.title}, main image`}
-                            class="project-image"
+                            class="w-[15rem] rounded-lg block mx-auto"
                         />
-                        <div class="project-summary">
-                            <h3>{project.title}</h3>
-                            <p>{project.description}</p>
+                        <div class="text-left py-4">
+                            <h3 class="heading-5 m-0 mb-4">{project.title}</h3>
+                            <p class="text-body m-0 leading-relaxed">
+                                {project.description}
+                            </p>
                         </div>
                     </a>
                 </article>

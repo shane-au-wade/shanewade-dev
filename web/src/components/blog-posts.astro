@@ -40,84 +40,30 @@ const blog_posts = [
 ];
 ---
 
-<style>
-    .blog-posts-container {
-        padding: 0;
-        max-width: 80rem;
-        margin: auto;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .blog-posts-container h2 {
-        margin-top: 0;
-        padding: 0 2rem;
-    }
-
-    .blog-posts-scroll {
-        display: flex;
-        gap: 1rem;
-        overflow-x: auto;
-        padding: 2rem;
-        scroll-behavior: smooth;
-    }
-
-    .blog-post-card {
-        max-width: 25rem;
-        min-width: 20rem;
-        text-align: center;
-        cursor: pointer;
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
-    }
-
-    .blog-post-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .blog-post-image {
-        height: 15rem;
-        border-radius: 7px;
-        display: block;
-        margin: 0 auto;
-    }
-
-    .blog-post-summary {
-        text-align: left;
-        padding: 1rem 0;
-    }
-
-    .blog-post-summary h3 {
-        margin: 0 0 1rem 0;
-    }
-
-    .blog-post-summary p {
-        margin: 0;
-        line-height: 1.5;
-    }
-</style>
-
-<div id="blog-posts-section" class="blog-posts-container">
-    <h2>Blog Posts</h2>
-    <section class="blog-posts-scroll" id="blog-posts-scroll">
+<div id="blog-posts-section" class="p-0 max-w-[80rem] mx-auto flex flex-col">
+    <h2 class="heading-2 mt-0 px-8">Blog Posts</h2>
+    <section
+        class="flex gap-4 overflow-x-auto p-8 scroll-smooth"
+        id="blog-posts-scroll"
+    >
         {
             blog_posts.map((post) => (
-                <article class="blog-post-card card">
+                <article class="card max-w-[25rem] min-w-[20rem] text-center cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-4px] hover:shadow-md">
                     <a
                         href={post.href}
                         target="_blank"
-                        style="text-decoration: none; color: inherit;"
+                        class="no-underline text-inherit"
                     >
                         <img
                             src={post.image}
                             alt={`${post.title}, main image`}
-                            class="blog-post-image"
+                            class="h-[15rem] rounded-lg block mx-auto"
                         />
-                        <div class="blog-post-summary">
-                            <h3>{post.title}</h3>
-                            <p>{post.description}</p>
+                        <div class="text-left py-4">
+                            <h3 class="heading-5 m-0 mb-4">{post.title}</h3>
+                            <p class="text-body m-0 leading-relaxed">
+                                {post.description}
+                            </p>
                         </div>
                     </a>
                 </article>

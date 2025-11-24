@@ -2,12 +2,15 @@
 import "@styles/colors.css";
 import "@styles/components.css";
 
-import { Image } from "astro:assets";
-import hero_photo from "../images/profile_pic.jpeg";
+import { Picture } from "astro:assets";
+import hero_photo from "../images/sw-headshot-2025.png";
+import { maxHeight } from "@components/navigation.astro";
 ---
 
-<style>
+<style define:vars={{ maxHeight }}>
     .image-wrapper {
+        margin-top: var(--maxHeight);
+        padding: 1rem;
         max-width: 350px;
         width: fit-content;
         position: relative;
@@ -20,7 +23,7 @@ import hero_photo from "../images/profile_pic.jpeg";
         right: -20px;
         width: 150px;
         height: 150px;
-        background-color: var(--color-brand-primary);
+        background-color: var(--color-brand-primary-dark);
         z-index: -1;
     }
 
@@ -31,7 +34,7 @@ import hero_photo from "../images/profile_pic.jpeg";
         left: -20px;
         width: 100px;
         height: 100px;
-        background-color: var(--color-brand-primary-dark);
+        background-color: var(--color-brand-primary);
         z-index: -1;
     }
 
@@ -70,10 +73,11 @@ import hero_photo from "../images/profile_pic.jpeg";
     </div>
     <div class="flex flex-1 items-center justify-center">
         <div class="image-wrapper">
-            <Image
+            <Picture
                 alt="Picture of Shane Wade with a bike"
                 src={hero_photo}
                 class="rounded-lg"
+                
             />
         </div>
     </div>
