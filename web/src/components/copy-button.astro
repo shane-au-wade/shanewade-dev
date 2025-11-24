@@ -1,0 +1,42 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+interface Props {
+    text: string;
+}
+const { text } = Astro.props;
+const componentId = `copy-button-${crypto.randomUUID()}`;
+const checkIconId = `check-icon-${componentId}`;
+const clipboardIconId = `clipboard-icon-${componentId}`;
+---
+
+<button id={componentId} class="btn-primary">
+    <i id={clipboardIconId} class="ri-clipboard-line" hidden={false}></i>
+    <i id={checkIconId} class="ri-check-line" hidden={true}></i>
+</button>
+
+<script
+    is:inline
+    define:vars={{ componentId, checkIconId, clipboardIconId, text }}
+>
+    const button = document.getElementById(componentId);
+    const clipboardIcon = document.getElementById(clipboardIconId);
+    const checkIcon = document.getElementById(checkIconId);
+    button?.addEventListener("click", async (_e) => {
+        try {
+            await navigator.clipboard.writeText(text);
+            console.log("Copied to clipboard");
+            clipboardIcon.hidden = true;
+            checkIcon.hidden = false;
+
+            setTimeout(() => {
+                checkIcon.hidden = true;
+                clipboardIcon.hidden = false;
+            }, 2000);
+        } catch (error) {
+            console.error("Failed to copy to clipboard:", error);
+        }
+    });
+</script>

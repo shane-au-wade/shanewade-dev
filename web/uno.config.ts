@@ -2,6 +2,21 @@ import { defineConfig } from "unocss"
 import presetWind4 from "@unocss/preset-wind4"
 
 export default defineConfig({
+  preflights: [
+    {
+      getCSS: ({ theme: _theme }) => `
+        .full-page-section {
+          display: flex;
+          flex-direction: row;
+          min-height: 100vh;
+
+          @media (orientation: portrait) {
+            flex-direction: column;
+          }
+        }
+      `,
+    },
+  ],
   rules: [
     [
       "auto-grid-css",
@@ -22,14 +37,6 @@ export default defineConfig({
       },
     ],
     [
-      "full-page-section",
-      {
-        display: "flex",
-        "flex-direction": "row",
-        "min-height": "100vh",
-      },
-    ],
-    [
       "checkbox",
       {
         position: "relative",
@@ -47,10 +54,10 @@ export default defineConfig({
     colors: {
       // Brand colors - light theme
       brand: {
-        primary: "#c44536",
+        primary: "#89181e",
         "primary-hover": "#a83a2e",
-        "primary-dark": "#8b2f23",
-        "primary-light": "#e05545",
+        "primary-dark": "#55161c",
+        "primary-light": "#c22028",
       },
       // Neutral grays - light theme
       gray: {
@@ -147,6 +154,7 @@ export default defineConfig({
     "text-body": "text-base leading-normal text-gray-900 dark:text-dark-text",
     "text-muted": "text-sm text-gray-500 dark:text-dark-text-muted",
     "text-small": "text-sm leading-normal text-gray-600 dark:text-dark-text-secondary",
+    "text-sub": "text-xs text-gray-500 dark:text-dark-text-muted",
 
     "link":
       "text-brand-primary underline hover:text-brand-primary-hover transition-colors dark:text-brand-primary-light dark:hover:text-brand-primary",
