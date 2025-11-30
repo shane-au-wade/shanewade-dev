@@ -4,6 +4,7 @@ import Modal from "@components/modal.astro";
 import Breadcrumbs from "@components/breadcrumbs.astro";
 import Head from "@components/head.astro";
 import ThemeToggle from "@components/theme-toggle.astro";
+import Code from "@components/code.astro";
 
 import AsciiStyleNav from "@components/ascii-style-nav.astro";
 import MobileFloatingCollapse from "@components/mobile-floating-collapse.astro";
@@ -29,9 +30,32 @@ import "remixicon/fonts/remixicon.css";
             </div>
         </header>
 
-        <div class="container py-12">
+        <div class="container">
             <MobileFloatingCollapse>
-                <AsciiStyleNav />
+                <AsciiStyleNav
+                    items={[
+                        { label: "Colors", href: "#colors", icon: "" },
+                        { label: "Typography", href: "#typography", icon: "" },
+                        { label: "Buttons", href: "#buttons", icon: "" },
+                        { label: "Forms", href: "#forms", icon: "" },
+                        { label: "Checkboxes", href: "#checkboxes", icon: "" },
+                        { label: "Cards", href: "#cards", icon: "" },
+                        { label: "Badges", href: "#badges", icon: "" },
+                        { label: "Alerts", href: "#alerts", icon: "" },
+                        { label: "Modal", href: "#modal", icon: "" },
+                        {
+                            label: "Code Blocks",
+                            href: "#code-blocks",
+                            icon: "",
+                        },
+                        {
+                            label: "Breadcrumbs",
+                            href: "#breadcrumbs",
+                            icon: "",
+                        },
+                        { label: "Layouts", href: "#layouts", icon: "" },
+                    ]}
+                />
                 <ThemeToggle />
             </MobileFloatingCollapse>
 
@@ -716,24 +740,25 @@ import "remixicon/fonts/remixicon.css";
 
                 <div class="mb-8">
                     <h3 class="heading-5 mb-4">Code Example</h3>
-                    <div class="card max-w-2xl">
-                        <div class="card-body text-body">
-                            <pre
-                                class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;div class="flex items-center gap-2"&gt;
-  &lt;input
+                    <Code
+                        class="card max-w-2xl"
+                        code={`
+<div class="flex items-center gap-2">
+  <input
     type="checkbox"
     id="my-checkbox"
     class="checkbox"
-  /&gt;
-  &lt;label
+  />
+  <label
     for="my-checkbox"
     class="label-inline cursor-pointer"
-  &gt;
+  >
     Label text
-  &lt;/label&gt;
-&lt;/div&gt;</code></pre>
-                        </div>
-                    </div>
+  </label>
+</div>`.trim()}
+                        lang="html"
+                        wrap
+                    />
                 </div>
             </section>
 
@@ -966,43 +991,49 @@ import "remixicon/fonts/remixicon.css";
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body p-0">
                             <h4 class="heading-6 mb-3">Component Usage</h4>
-                            <pre
-                                class="text-body bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;Modal id="my-modal" title="Title"&gt;
-  &lt;p&gt;Content here&lt;/p&gt;
-  &lt;div slot="footer"&gt;
-    &lt;button data-modal-close="my-modal"&gt;
+                            <Code
+                                code={`<Modal id="my-modal" title="Title">
+  <p>Content here</p>
+  <div slot="footer">
+    <button data-modal-close="my-modal">
       Close
-    &lt;/button&gt;
-  &lt;/div&gt;
-&lt;/Modal&gt;</code></pre>
+    </button>
+  </div>
+</Modal>`}
+                                lang="astro"
+                                wrap
+                            />
                         </div>
                     </div>
 
                     <div class="card">
-                        <div class="card-body">
+                        <div class="card-body p-0">
                             <h4 class="heading-6 mb-3">Triggering Modals</h4>
-                            <pre
-                                class="text-body bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Open modal --&gt;
-&lt;button data-modal-open="my-modal"&gt;
+                            <Code
+                                code={`<!-- Open modal -->
+<button data-modal-open="my-modal">
   Open
-&lt;/button&gt;
+</button>
 
-&lt;!-- Close specific modal --&gt;
-&lt;button data-modal-close="my-modal"&gt;
+<!-- Close specific modal -->
+<button data-modal-close="my-modal">
   Close
-&lt;/button&gt;
+</button>
 
-&lt;!-- Close parent modal --&gt;
-&lt;button data-modal-close&gt;
+<!-- Close parent modal -->
+<button data-modal-close>
   Close
-&lt;/button&gt;
+</button>
 
-&lt;!-- Toggle modal --&gt;
-&lt;button data-modal-toggle="my-modal"&gt;
+<!-- Toggle modal -->
+<button data-modal-toggle="my-modal">
   Toggle
-&lt;/button&gt;</code></pre>
+</button>`}
+                                lang="html"
+                                wrap
+                            />
                         </div>
                     </div>
                 </div>
@@ -1036,6 +1067,52 @@ import "remixicon/fonts/remixicon.css";
                         >Focus me with keyboard</button
                     >
                 </div>
+            </section>
+
+            <div class="divider my-12"></div>
+
+            <!-- Layouts Section -->
+            <section id="code-blocks" class="section">
+                <h2 class="heading-2 mb-6">Code Blocks</h2>
+
+                <p class="text-body mb-6">
+                    Code blocks automatically adjust to the current theme.
+                </p>
+
+                <Code
+                    class="card max-w-2xl"
+                    code={`
+type User = {
+    name: string;
+    email: string;
+    age: number;
+}
+
+const user: User = {
+    name: "John Doe",
+    email: "john.doe@example.com",
+    age: 30,
+}
+
+console.log(user);
+`.trim()}
+                    lang="typescript"
+                    wrap
+                />
+                <br />
+
+                <Code
+                    class="card max-w-2xl"
+                    code={`
+def greet(name):
+    print(f"Hello, {name}!")
+
+if __name__ == "__main__":
+    greet("World")
+`.trim()}
+                    lang="python"
+                    wrap
+                />
             </section>
 
             <div class="divider my-12"></div>
@@ -1106,16 +1183,17 @@ import "remixicon/fonts/remixicon.css";
 
                 <div class="mb-8">
                     <h3 class="heading-5 mb-4">Usage</h3>
-                    <div class="card max-w-2xl">
-                        <div class="card-body text-body">
-                            <pre
-                                class="bg-gray-100 dark:bg-dark-bg p-4 rounded text-sm overflow-x-auto"><code>&lt;!-- Automatic: Uses current page path --&gt;
-&lt;Breadcrumbs /&gt;
 
-&lt;!-- Manual: Provide a specific path --&gt;
-&lt;Breadcrumbs pathname="/recipes/chocolate-cake" /&gt;</code></pre>
-                        </div>
-                    </div>
+                    <Code
+                        class="card max-w-2xl"
+                        code={`<!-- Automatic: Uses current page path -->
+<Breadcrumbs />
+
+<!-- Manual: Provide a specific path -->
+<Breadcrumbs pathname="/recipes/chocolate-cake" />`}
+                        lang="astro"
+                        wrap
+                    />
                 </div>
 
                 <div class="mb-8">

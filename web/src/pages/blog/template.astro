@@ -1,0 +1,241 @@
+---
+import BlogLayout from "@components/blog-layout.astro";
+import Code from "@components/code.astro";
+import { Image } from "astro:assets";
+import headshot2025 from "@images/sw-headshot-2025.png";
+import headshotRedBg from "@images/sw-headshot-2025-red-bg.png";
+---
+
+<BlogLayout
+    title="Building Modern Web Applications: A Complete Guide"
+    description="Explore the fundamentals of modern web development, from design systems to component architecture"
+    date="November 30, 2025"
+    author="Shane Wade"
+    tags={["web development", "design systems", "typescript", "astro"]}
+>
+    <p class="text-body">
+        In this comprehensive guide, we'll explore the essential principles of
+        building modern web applications. From establishing a solid design
+        system to implementing scalable component architectures, you'll learn
+        the techniques that professional developers use to create maintainable,
+        performant applications.
+    </p>
+
+    <h2 class="heading-2">The Foundation: Design Systems</h2>
+    <p class="text-body">
+        A well-crafted design system is the cornerstone of any successful web
+        application. It provides <strong>consistency</strong>, improves{" "}
+        <strong>development velocity</strong>, and ensures a cohesive user
+        experience across your entire product. Think of it as the visual and
+        interactive language that your application speaks.
+    </p>
+
+    <p class="text-body">
+        When building a design system, you should focus on three core pillars:
+    </p>
+
+    <ul class="text-body">
+        <li>
+            <strong>Color palette:</strong> Establish primary, secondary, and semantic
+            colors that work harmoniously together
+        </li>
+        <li>
+            <strong>Typography scale:</strong> Define a consistent hierarchy for
+            headings, body text, and supporting elements
+        </li>
+        <li>
+            <strong>Component library:</strong> Build reusable components that encapsulate
+            common patterns and behaviors
+        </li>
+    </ul>
+
+    <h3 class="heading-3">Implementing Utility-First CSS</h3>
+    <p class="text-body">
+        Modern frameworks like <a href="https://tailwindcss.com">Tailwind CSS</a
+        >{" "}
+        and <a href="https://unocss.dev">UnoCSS</a> have revolutionized how we approach
+        styling. Instead of writing custom CSS for every component, we can leverage
+        utility classes that map directly to design tokens.
+    </p>
+
+    <p class="text-body">
+        Here's a simple example of a button using utility classes:
+    </p>
+
+    <Code
+        code={`<button class="btn-primary">
+  Click me
+</button>`}
+        lang="html"
+        wrap
+    />
+
+    <p class="text-body">
+        This approach reduces the amount of custom CSS you need to write and
+        maintains consistency across your application. The <code
+            >btn-primary</code
+        > class is defined once in your configuration and can be reused everywhere.
+    </p>
+
+    <Image
+        src={headshotRedBg}
+        alt="Professional headshot with red background"
+        class="hero-image w-full max-w-md mx-auto my-8"
+    />
+
+    <div class="divider my-12"></div>
+
+    <h2 class="heading-2">Component Architecture</h2>
+    <p class="text-body">
+        Building scalable applications requires thoughtful component
+        architecture. Components should be <em>composable</em>, <em>reusable</em
+        >, and <em>maintainable</em>. Each component should have a single
+        responsibility and a clear interface.
+    </p>
+
+    <blockquote class="text-blockquote">
+        "The secret to building large apps is never build large apps. Break your
+        applications into small pieces. Then, assemble those testable,
+        bite-sized pieces into your big application." — Justin Meyer
+    </blockquote>
+
+    <h3 class="heading-3">Component Best Practices</h3>
+    <p class="text-body">
+        When designing components, consider these essential principles:
+    </p>
+
+    <ol class="text-body">
+        <li>
+            <strong>Single Responsibility:</strong> Each component should do one
+            thing well
+        </li>
+        <li>
+            <strong>Props Interface:</strong> Define clear, typed interfaces for
+            component props
+        </li>
+        <li>
+            <strong>Composition over Inheritance:</strong> Build complex UIs by composing
+            simple components
+        </li>
+        <li>
+            <strong>Accessibility First:</strong> Ensure all components are keyboard
+            navigable and screen reader friendly
+        </li>
+    </ol>
+
+    <h3 class="heading-3">TypeScript Integration</h3>
+    <p class="text-body">
+        TypeScript adds an invaluable layer of type safety to your components.
+        Here's how you might define a typed component interface:
+    </p>
+    <Code
+        code={`interface ButtonProps {
+  variant: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
+  disabled?: boolean;
+  onClick?: () => void;
+  children: React.ReactNode;
+}`}
+        lang="typescript"
+        wrap
+    />
+
+    <div class="divider my-12"></div>
+
+    <h2 class="heading-2">Performance Optimization</h2>
+    <p class="text-body">
+        Performance isn't just about load times—it's about creating a smooth,
+        responsive experience that feels instant. Modern web applications should
+        be fast by default, not as an afterthought.
+    </p>
+
+    <Image
+        src={headshot2025}
+        alt="Professional headshot 2025"
+        class="hero-image w-full max-w-md mx-auto my-8"
+    />
+
+    <h3 class="heading-3">Key Performance Metrics</h3>
+    <p class="text-body">
+        Focus on these Core Web Vitals to ensure your application performs well:
+    </p>
+
+    <ul class="text-body">
+        <li>
+            <strong>Largest Contentful Paint (LCP):</strong> Measures loading performance
+        </li>
+        <li>
+            <strong>First Input Delay (FID):</strong> Measures interactivity
+        </li>
+        <li>
+            <strong>Cumulative Layout Shift (CLS):</strong> Measures visual stability
+        </li>
+    </ul>
+
+    <h3 class="heading-3">Optimization Techniques</h3>
+    <p class="text-body">
+        Here are some practical ways to improve your application's performance:
+    </p>
+
+    <ul class="text-body">
+        <li>Implement code splitting to reduce initial bundle size</li>
+        <li>Use lazy loading for images and non-critical components</li>
+        <li>Leverage browser caching with appropriate cache headers</li>
+        <li>Optimize images using modern formats like WebP and AVIF</li>
+        <li>Minimize JavaScript execution time on the main thread</li>
+    </ul>
+
+    <div class="divider my-12"></div>
+
+    <h2 class="heading-2">Testing and Quality Assurance</h2>
+    <p class="text-body">
+        A robust testing strategy ensures your application remains reliable as
+        it grows. Combine different testing approaches to catch issues at
+        various levels of your application.
+    </p>
+
+    <h3 class="heading-3">Testing Pyramid</h3>
+    <p class="text-body">
+        Structure your tests following the testing pyramid principle:
+    </p>
+
+    <ol class="text-body">
+        <li>
+            <strong>Unit Tests:</strong> Test individual functions and components
+            in isolation
+        </li>
+        <li>
+            <strong>Integration Tests:</strong> Test how components work together
+        </li>
+        <li>
+            <strong>End-to-End Tests:</strong> Test complete user workflows
+        </li>
+    </ol>
+
+    <p class="text-body">
+        Remember: more tests at the base (unit tests), fewer at the top (E2E
+        tests). This provides fast feedback during development while still
+        catching critical issues.
+    </p>
+
+    <blockquote class="text-blockquote">
+        "Testing leads to failure, and failure leads to understanding." — Burt
+        Rutan
+    </blockquote>
+
+    <h2 class="heading-2">Conclusion</h2>
+    <p class="text-body">
+        Building modern web applications is a journey that combines technical
+        excellence with thoughtful design. By establishing a solid foundation
+        with design systems, architecting components thoughtfully, optimizing
+        for performance, and maintaining quality through testing, you create
+        applications that are not just functional, but delightful to use.
+    </p>
+
+    <p class="text-body">
+        The web platform continues to evolve, and staying current with best
+        practices ensures your applications remain competitive and maintainable
+        for years to come. Keep learning, keep building, and most importantly,
+        keep shipping! 🚀
+    </p>
+</BlogLayout>

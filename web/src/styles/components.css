@@ -41,11 +41,11 @@
 }
 
 /* basic card style */
-.card {
+/* .card {
   padding: 1rem;
   border-radius: 0.8rem;
   background-color: var(--color-bg-primary);
-}
+} */
 
 .selected-recipe-remove {
   position: absolute;

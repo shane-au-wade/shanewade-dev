@@ -1,0 +1,60 @@
+---
+import { Code as AstroCode } from "astro:components";
+
+interface Props {
+    code: string;
+    lang?: string;
+    theme?: string;
+    wrap?: boolean;
+    class?: string;
+    inline?: boolean;
+}
+
+const {
+    code,
+    lang = "plaintext",
+    theme,
+    wrap = false,
+    class: className = "",
+    inline = false,
+    ...rest
+} = Astro.props;
+
+// Determine theme based on current mode if not explicitly provided
+// For light mode: use catppuccin-latte or night-owl
+// For dark mode: use night-owl or catppuccin-frappe
+const lightTheme = theme || "github-light";
+const darkTheme = theme || "github-dark";
+const defaultClasses = "py-3 px-4 rounded-md";
+---
+
+<div>
+    <span class="text-small text-gray-500 dark:text-dark-text-muted"
+        >{lang}</span
+    >
+    <!-- Light mode code block -->
+    <div class="light-mode-code block dark:hidden">
+        <AstroCode
+            class:list={[defaultClasses, className]}
+            code={code}
+            lang={lang as any}
+            theme={lightTheme as any}
+            wrap={wrap}
+            inline={inline}
+            {...rest}
+        />
+    </div>
+
+    <!-- Dark mode code block -->
+    <div class="dark-mode-code hidden dark:block">
+        <AstroCode
+            class:list={[defaultClasses, className]}
+            code={code}
+            lang={lang as any}
+            theme={darkTheme as any}
+            wrap={wrap}
+            inline={inline}
+            {...rest}
+        />
+    </div>
+</div>

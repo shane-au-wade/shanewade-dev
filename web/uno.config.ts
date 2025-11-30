@@ -31,9 +31,10 @@ export default defineConfig({
     [
       "section",
       {
-        "max-width": "80vw",
-        "padding": "8rem 0 4rem 0",
-        "margin": "auto 0",
+        "max-width": "92vw",
+        "padding-top": "7rem",
+        "padding-bottom": "4rem",
+        "margin": "0 auto",
       },
     ],
     [
@@ -65,7 +66,7 @@ export default defineConfig({
         100: "#fafafa",
         200: "#e5e5e5",
         300: "#e0e0e0",
-        400: "#666666",
+        400: "#a8a8a8",
         500: "#555555",
         600: "#333333",
         700: "#2a2a2a",
@@ -144,9 +145,9 @@ export default defineConfig({
     // TYPOGRAPHY
     // ===================
     "heading-1": "text-5xl font-bold leading-tight text-gray-900 dark:text-dark-text",
-    "heading-2": "text-4xl font-bold leading-tight text-gray-900 dark:text-dark-text",
-    "heading-3": "text-3xl font-semibold leading-snug text-gray-900 dark:text-dark-text",
-    "heading-4": "text-2xl font-semibold leading-snug text-gray-700 dark:text-dark-text",
+    "heading-2": "text-4xl font-bold leading-tight text-gray-900 dark:text-gray-400",
+    "heading-3": "text-3xl font-semibold leading-snug text-gray-900 dark:text-gray-400",
+    "heading-4": "text-2xl font-semibold leading-snug text-gray-700 dark:text-gray-400",
     "heading-5": "text-xl font-semibold leading-normal text-gray-700 dark:text-dark-text",
     "heading-6": "text-lg font-semibold leading-normal text-gray-700 dark:text-dark-text",
 
@@ -155,6 +156,7 @@ export default defineConfig({
     "text-muted": "text-sm text-gray-500 dark:text-dark-text-muted",
     "text-small": "text-sm leading-normal text-gray-600 dark:text-dark-text-secondary",
     "text-sub": "text-xs text-gray-500 dark:text-dark-text-muted",
+    "text-blockquote": "text-body italic p-2 my-4 border-s-2 border-brand-primary bg-neutral-secondary-soft",
 
     "link":
       "text-brand-primary underline hover:text-brand-primary-hover transition-colors dark:text-brand-primary-light dark:hover:text-brand-primary",
@@ -185,7 +187,8 @@ export default defineConfig({
     // ===================
     // CARDS
     // ===================
-    "card": "bg-white rounded-lg shadow-sm border border-gray-200 dark:bg-dark-bg-elevated dark:border-dark-border",
+    "card":
+      "bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200 dark:bg-dark-bg-elevated dark:border-dark-border",
     "card-hover": "card hover:border-brand-primary-dark hover:border-dashed cursor-pointer",
     "card-header": "px-5 py-3",
     "card-body": "px-5 py-3",
@@ -240,7 +243,7 @@ export default defineConfig({
     // ===================
     // LAYOUT
     // ===================
-    "container": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8",
+    "container": "max-w-7xl mx-auto px-2 sm:px-6 lg:px-8",
     "divider": "border-t border-gray-200 dark:border-dark-border",
     "auto-grid": "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4",
 
@@ -250,5 +253,6 @@ export default defineConfig({
     "loading-spinner": "animate-spin rounded-full border-2 border-gray-300 border-t-brand-primary",
     "focus-ring":
       "focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 dark:focus:ring-brand-primary-light dark:focus:ring-offset-dark-bg",
+    "hero-image": "rounded-lg border border-gray-200 border-opacity-80 border-2",
   },
 })

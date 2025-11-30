@@ -1,0 +1,90 @@
+---
+// Blog Layout Component
+// Provides a consistent layout for blog posts with mobile navigation
+import Head from "@components/head.astro";
+import MobileFloatingCollapse from "@components/mobile-floating-collapse.astro";
+import AsciiStyleNav from "@components/ascii-style-nav.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import "@styles/colors.css";
+import "remixicon/fonts/remixicon.css";
+
+export interface Props {
+    title: string;
+    description?: string;
+    date: string;
+    author?: string;
+    tags?: string[];
+}
+
+const { title, description, date, author, tags = [] } = Astro.props;
+
+const navItems = [
+    { label: "Home", href: "/" },
+    { label: "Blog", href: "/blog" },
+    { label: "Design System", href: "/design-system" },
+];
+---
+
+<html lang="en">
+    <Head title={title} description={description} />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <!-- Floating Navigation for Mobile -->
+        <MobileFloatingCollapse>
+            <AsciiStyleNav items={navItems} title="Menu" />
+            <ThemeToggle />
+        </MobileFloatingCollapse>
+
+        <!-- Main Content -->
+        <main class="container py-8 md:py-12">
+            <article class="max-w-3xl mx-auto">
+                <!-- Article Header -->
+                <header
+                    class="mb-12 pb-8 border-b border-gray-200 dark:border-dark-border"
+                >
+                    <h1 class="heading-1 mb-4">{title}</h1>
+                    <div
+                        class="flex items-center flex-wrap gap-2 text-muted mb-4"
+                    >
+                        <time datetime={date}>{date}</time>
+                        {author && <span> • {author}</span>}
+                    </div>
+                    {
+                        tags && tags.length > 0 && (
+                            <div class="flex flex-wrap gap-2">
+                                {tags.map((tag) => (
+                                    <span class="badge-secondary">{tag}</span>
+                                ))}
+                            </div>
+                        )
+                    }
+                </header>
+
+                <!-- Article Content -->
+                <div class="blog-prose">
+                    <slot />
+                </div>
+
+                <!-- Footer -->
+                <footer
+                    class="mt-12 pt-8 border-t border-gray-200 dark:border-dark-border"
+                >
+                    <p class="text-small text-muted">
+                        Published on {date} • Last updated: {date}
+                    </p>
+                </footer>
+            </article>
+        </main>
+    </body>
+</html>
+
+<style>
+    .blog-prose {
+        line-height: 1.75;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+</style>

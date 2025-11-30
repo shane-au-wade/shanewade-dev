@@ -1,0 +1,23 @@
+---
+import BlogLayout from "@components/blog-layout.astro";
+---
+
+<BlogLayout
+  title="My Post Title"
+  description="Post description"
+  date="November 30, 2025"
+  author="Shane Wade"
+  tags={["design", "development"]}
+>
+  <p class="lead-paragraph">Your compelling opening paragraph here.</p>
+
+  <h2>Section Title</h2>
+  <p>Your content here with full HTML control.</p>
+
+  <h3>Subsection</h3>
+  <ul>
+    <li>Full control over structure</li>
+    <li>Direct styling access</li>
+    <li>Simpler debugging</li>
+  </ul>
+</BlogLayout>
