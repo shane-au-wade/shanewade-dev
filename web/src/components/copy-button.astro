@@ -5,14 +5,15 @@ import "remixicon/fonts/remixicon.css";
 
 interface Props {
     text: string;
+    class?: string;
 }
-const { text } = Astro.props;
+const { text, class: className = "" } = Astro.props;
 const componentId = `copy-button-${crypto.randomUUID()}`;
 const checkIconId = `check-icon-${componentId}`;
 const clipboardIconId = `clipboard-icon-${componentId}`;
 ---
 
-<button id={componentId} class="btn-primary">
+<button id={componentId} class:list={[className]}>
     <i id={clipboardIconId} class="ri-clipboard-line" hidden={false}></i>
     <i id={checkIconId} class="ri-check-line" hidden={true}></i>
 </button>

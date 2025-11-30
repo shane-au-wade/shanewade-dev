@@ -1,6 +1,8 @@
 ---
 import { Code as AstroCode } from "astro:components";
 
+import CopyButton from "./copy-button.astro";
+
 interface Props {
     code: string;
     lang?: string;
@@ -25,13 +27,20 @@ const {
 // For dark mode: use night-owl or catppuccin-frappe
 const lightTheme = theme || "github-light";
 const darkTheme = theme || "github-dark";
-const defaultClasses = "py-3 px-4 rounded-md";
+const defaultClasses = "py-1 px-3";
 ---
 
-<div>
-    <span class="text-small text-gray-500 dark:text-dark-text-muted"
-        >{lang}</span
-    >
+<div
+    class="text-small border-1 border-gray-200 dark:border-gray-600 rounded-md block overflow-hidden"
+>
+    <div class="py-1 px-3 flex">
+        <span class="text-small text-gray-500 dark:text-dark-text-muted">
+            {lang}</span
+        >
+        <span class="flex-1"></span>
+        <CopyButton text={code} class="btn-icon height-1lh p-0" />
+    </div>
+
     <!-- Light mode code block -->
     <div class="light-mode-code block dark:hidden">
         <AstroCode

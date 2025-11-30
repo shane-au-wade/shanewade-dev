@@ -190,9 +190,9 @@ export default defineConfig({
     "card":
       "bg-white px-4 py-3 rounded-lg shadow-sm border border-gray-200 dark:bg-dark-bg-elevated dark:border-dark-border",
     "card-hover": "card hover:border-brand-primary-dark hover:border-dashed cursor-pointer",
-    "card-header": "px-5 py-3",
-    "card-body": "px-5 py-3",
-    "card-footer": "px-5 py-3 border-none",
+    "card-header": "px-1 py-3",
+    "card-body": "px-1 py-3",
+    "card-footer": "px-1 py-3 border-none",
 
     // ===================
     // BADGES
