@@ -4,12 +4,11 @@ import "@styles/components.css";
 
 import { Picture } from "astro:assets";
 import hero_photo from "@images/sw-headshot-2025.png";
-import { maxHeight } from "@components/index/navigation.astro";
 
 const iconSize = "32px";
 ---
 
-<style define:vars={{ maxHeight }}>
+<style>
     .image-wrapper {
         padding: 1rem;
         max-width: 350px;

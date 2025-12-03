@@ -156,7 +156,7 @@ export default defineConfig({
     "text-muted": "text-sm text-gray-500 dark:text-dark-text-muted",
     "text-small": "text-sm leading-normal text-gray-600 dark:text-dark-text-secondary",
     "text-sub": "text-xs text-gray-500 dark:text-dark-text-muted",
-    "text-blockquote": "text-body italic p-2 my-4 border-s-2 border-brand-primary bg-neutral-secondary-soft",
+    "text-blockquote": "text-body italic p-2 my-4 border-s-2 border-brand-primary",
 
     "link":
       "text-brand-primary underline hover:text-brand-primary-hover transition-colors dark:text-brand-primary-light dark:hover:text-brand-primary",

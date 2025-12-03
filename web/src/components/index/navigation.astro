@@ -48,7 +48,6 @@ const dropdownItems = navLinks.map((link) => ({
     icon: link.icon,
 }));
 
-export const maxHeight = "64px";
 ---
 
 <style>
@@ -70,7 +69,7 @@ export const maxHeight = "64px";
 </style>
 
 <nav
-    class="fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 border-opacity-50 dark:border-dark-border z-50 max-h-[{maxHeight}]"
+    class=`fixed top-0 left-0 right-0 w-full bg-transparent backdrop-blur-md border-b border-gray-200 border-opacity-50 dark:border-dark-border z-50`
 >
     <div
         class="max-w-[1200px] mx-auto flex justify-between items-center gap-2 sm:gap-4 px-2 sm:px-2 md:py-2"
