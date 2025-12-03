@@ -144,12 +144,12 @@ export default defineConfig({
     // ===================
     // TYPOGRAPHY
     // ===================
-    "heading-1": "text-5xl font-bold leading-tight text-gray-900 dark:text-dark-text",
-    "heading-2": "text-4xl font-bold leading-tight text-gray-900 dark:text-gray-400",
-    "heading-3": "text-3xl font-semibold leading-snug text-gray-900 dark:text-gray-400",
-    "heading-4": "text-2xl font-semibold leading-snug text-gray-700 dark:text-gray-400",
-    "heading-5": "text-xl font-semibold leading-normal text-gray-700 dark:text-dark-text",
-    "heading-6": "text-lg font-semibold leading-normal text-gray-700 dark:text-dark-text",
+    "heading-1": "text-3xl md:text-4xl font-bold leading-tight text-gray-900 dark:text-dark-text",
+    "heading-2": "text-2xl md:text-3xl font-bold leading-tight text-gray-900 dark:text-gray-400",
+    "heading-3": "text-xl  md:text-2xl font-semibold leading-snug text-gray-900 dark:text-gray-400",
+    "heading-4": "text-lg md:text-xl font-semibold leading-snug text-gray-700 dark:text-gray-400",
+    "heading-5": "text-base md:text-lg font-semibold leading-normal text-gray-700 dark:text-dark-text",
+    "heading-6": "text-base md:text-lg font-semibold leading-normal text-gray-700 dark:text-dark-text",
 
     "text-lead": "text-xl leading-relaxed text-gray-700 dark:text-dark-text-secondary",
     "text-body": "text-base leading-normal text-gray-900 dark:text-dark-text",
@@ -200,7 +200,7 @@ export default defineConfig({
     "badge": "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
     "badge-primary":
       "badge bg-brand-primary bg-opacity-10 text-brand-primary dark:bg-brand-primary-light dark:bg-opacity-20 dark:text-brand-primary-light",
-    "badge-secondary": "badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300",
+    "badge-secondary": "badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 outline outline-1 outline-gray-400",
     "badge-success":
       "badge bg-success bg-opacity-10 text-success-dark dark:bg-success dark:bg-opacity-20 dark:text-success",
     "badge-warning":

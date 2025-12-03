@@ -1,0 +1,99 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+
+import { Picture } from "astro:assets";
+import hero_photo from "@images/sw-headshot-2025.png";
+import { maxHeight } from "@components/index/navigation.astro";
+---
+
+<style define:vars={{ maxHeight }}>
+    .image-wrapper {
+        padding: 1rem;
+        max-width: 350px;
+        width: fit-content;
+        position: relative;
+    }
+
+    .image-wrapper::before {
+        content: "";
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        width: 150px;
+        height: 150px;
+        background-color: var(--color-brand-primary-dark);
+        z-index: -1;
+    }
+
+    .image-wrapper::after {
+        content: "";
+        position: absolute;
+        bottom: 0px;
+        left: -20px;
+        width: 100px;
+        height: 100px;
+        background-color: var(--color-brand-primary);
+        z-index: -1;
+    }
+
+    #hero-section {
+        width: 80%;
+        margin: 0 auto;
+
+        @media (orientation: portrait) {
+            width: 100%;
+            flex-direction: column;
+        }
+    }
+</style>
+
+<section id="hero-section" class="full-page-section pt-[var(--maxHeight)]">
+    <div class="flex flex-col gap-16 flex-1 p-2 items-center justify-center">
+        <div class="px-1 mt-12 md:mt-0">
+            <h2 class="heading-1 text-center">
+                I ship <span class="text-brand-primary italic">practical solutions</span> today
+                <br /> and <span class="text-brand-primary italic">reliable systems</span> tomorrow.
+            </h2>
+        </div>
+        <div
+            class="flex flex-col gap-4 bg-transparent backdrop-blur-sm p-4 rounded-lg border border-gray-200 max-w-[400px] mx-auto"
+        >
+            <div>
+                <span class="heading-5 text-gray-500"
+                    >Software Engineer, Creative, and Cyclist</span
+                >
+                <h1 class="heading-1">Shane Wade</h1>
+                <p class="text-body italic">"I want to help you build"</p>
+            </div>
+
+            <p class="flex gap-1 flex-wrap">
+                <span class="badge-secondary">AI Product Development</span>
+                <span class="badge-secondary">Full-Stack Systems</span>
+                <span class="badge-secondary">Workflow Automation</span>
+                <span class="badge-secondary">Creative Side Projects</span>
+            </p>
+        </div>
+        <div>
+            <button class="btn-primary btn-sm"
+                ><a href="#about-section"
+                    >Learn More <i class="ri-arrow-down-line"></i></a
+                ></button
+            >
+        </div>
+    </div>
+
+    <div
+        class="flex flex-1 items-center justify-center mb-8 md:mb-0 mt-12 md:mt-0"
+    >
+        <div class="image-wrapper">
+            <Picture
+                alt="Headshot of Shane Wade smiling"
+                loading="eager"
+                src={hero_photo}
+                class="hero-image"
+            />
+            <p class="text-body italic text-center">"Pleasure to meet you!"</p>
+        </div>
+    </div>
+</section>
