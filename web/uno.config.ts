@@ -253,6 +253,7 @@ export default defineConfig({
     "loading-spinner": "animate-spin rounded-full border-2 border-gray-300 border-t-brand-primary",
     "focus-ring":
       "focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 dark:focus:ring-brand-primary-light dark:focus:ring-offset-dark-bg",
-    "hero-image": "rounded-lg border border-gray-200 border-opacity-80 border-2",
+    "hero-image": "rounded-sm border border-gray-200 border-opacity-80 border-2",
+    "mobile-image": "w-full h-auto rounded-lg shadow-lg object-cover aspect-[1/1]",
   },
 })

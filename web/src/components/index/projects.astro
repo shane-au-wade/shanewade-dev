@@ -1,4 +1,6 @@
 ---
+import Carousel from "../carousel.astro";
+import { Image } from "astro:assets";
 import "@styles/components.css";
 import "@styles/colors.css";
 
@@ -48,29 +50,27 @@ const projects = [
 
 <div
     id="projects-section"
-    class="p-0 pt-32 max-w-[80rem] mx-auto flex flex-col"
+    class="p-0 pt-16 max-w-[80rem] mx-auto flex flex-col"
 >
-    <h2 class="heading-2 mt-0 px-8">Projects</h2>
-    <section
-        class="flex gap-4 overflow-x-auto p-8 scroll-smooth"
-        id="projects-scroll"
-    >
+    <h2 class="heading-2 px-2">Projects</h2>
+    <Carousel aria-label="Projects" class="p-1 gap-1">
         {
             projects.map((project) => (
-                <article class="card max-w-[25rem] min-w-[20rem] text-center cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-4px] hover:shadow-md">
+                <article class="card text-center cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-4px] hover:shadow-md md:min-w-[300px] min-w-[calc(50vw-10px)]">
                     <a
                         href={project.href}
                         target="_blank"
                         class="no-underline text-inherit"
                     >
-                        <img
+                        <Image
                             src={project.image}
                             alt={`${project.title}, main image`}
-                            class="w-[15rem] rounded-lg block mx-auto"
+                            class="mobile-image"
+                            inferSize={true}
                         />
-                        <div class="text-left py-4">
-                            <h3 class="heading-5 m-0 mb-4">{project.title}</h3>
-                            <p class="text-body m-0 leading-relaxed">
+                        <div class="text-left mt-2">
+                            <h3 class="heading-5">{project.title}</h3>
+                            <p class="text-body m-0 leading-relaxed line-clamp-3">
                                 {project.description}
                             </p>
                         </div>
@@ -78,42 +78,5 @@ const projects = [
                 </article>
             ))
         }
-    </section>
+    </Carousel>
 </div>
-
-<script>
-    // Add scroll animation when section comes into view
-    const projectsScroll = document.getElementById("projects-scroll");
-
-    if (projectsScroll) {
-        let hasAnimated = false;
-
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach((entry) => {
-                    if (entry.isIntersecting && !hasAnimated) {
-                        // Small animation to indicate scrollability
-                        setTimeout(() => {
-                            projectsScroll.scrollTo({
-                                left: 150,
-                                behavior: "smooth",
-                            });
-                            setTimeout(() => {
-                                projectsScroll.scrollTo({
-                                    left: 0,
-                                    behavior: "smooth",
-                                });
-                                hasAnimated = true;
-                            }, 500);
-                        }, 100);
-                    }
-                });
-            },
-            {
-                threshold: 0.75,
-            },
-        );
-
-        observer.observe(projectsScroll);
-    }
-</script>

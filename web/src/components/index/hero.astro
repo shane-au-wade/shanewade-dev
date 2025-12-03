@@ -5,6 +5,8 @@ import "@styles/components.css";
 import { Picture } from "astro:assets";
 import hero_photo from "@images/sw-headshot-2025.png";
 import { maxHeight } from "@components/index/navigation.astro";
+
+const iconSize = "32px";
 ---
 
 <style define:vars={{ maxHeight }}>
@@ -48,12 +50,16 @@ import { maxHeight } from "@components/index/navigation.astro";
     }
 </style>
 
-<section id="hero-section" class="full-page-section pt-[var(--maxHeight)]">
-    <div class="flex flex-col gap-16 flex-1 p-2 items-center justify-center">
+<section id="hero-section" class="full-page-section pt-[64px]">
+    <div class="flex flex-col gap-12 flex-1 p-2 items-center justify-center">
         <div class="px-1 mt-12 md:mt-0">
             <h2 class="heading-1 text-center">
-                I ship <span class="text-brand-primary italic">practical solutions</span> today
-                <br /> and <span class="text-brand-primary italic">reliable systems</span> tomorrow.
+                I ship <span class="text-brand-primary italic"
+                    >practical solutions</span
+                > today
+                <br /> and <span class="text-brand-primary italic"
+                    >reliable systems</span
+                > tomorrow.
             </h2>
         </div>
         <div
@@ -74,7 +80,32 @@ import { maxHeight } from "@components/index/navigation.astro";
                 <span class="badge-secondary">Creative Side Projects</span>
             </p>
         </div>
-        <div>
+        <div class="flex flex-col gap-2">
+            <div class="flex flex-row gap-1">
+                <button>
+                    <a
+                        href="https://github.com/shane-au-wade"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-ghost"
+                        aria-label="GitHub"
+                    >
+                        <i class=`ri-github-fill text-[${iconSize}]`></i>
+                    </a>
+                </button>
+                <button>
+                    <a
+                        href="https://www.linkedin.com/in/shane-au-wade"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn-ghost"
+                        aria-label="LinkedIn"
+                    >
+                        <i class=`ri-linkedin-box-fill text-[${iconSize}]`></i>
+                    </a>
+                </button>
+            </div>
+
             <button class="btn-primary btn-sm"
                 ><a href="#about-section"
                     >Learn More <i class="ri-arrow-down-line"></i></a

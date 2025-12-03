@@ -1,0 +1,56 @@
+---
+interface Props {
+    class?: string;
+    "aria-label"?: string;
+}
+
+const { class: className, "aria-label": ariaLabel } = Astro.props;
+const componentId = `carousel-${crypto.randomUUID()}`;
+---
+
+<section
+    id={componentId}
+    class:list={["flex overflow-x-auto scroll-smooth", className]}
+    aria-label={ariaLabel}
+>
+    <slot />
+</section>
+
+<script define:vars={{ componentId }}>
+    const carousel = document.getElementById(componentId);
+
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                const element = entry.target;
+                if (
+                    entry.isIntersecting &&
+                    element instanceof HTMLElement &&
+                    element.dataset.animated !== "true"
+                ) {
+                    // Small animation to indicate scrollability
+                    setTimeout(() => {
+                        element.scrollTo({
+                            left: 150,
+                            behavior: "smooth",
+                        });
+                        setTimeout(() => {
+                            element.scrollTo({
+                                left: 0,
+                                behavior: "smooth",
+                            });
+                            element.dataset.animated = "true";
+                        }, 500);
+                    }, 100);
+                }
+            });
+        },
+        {
+            threshold: 0.75,
+        },
+    );
+
+    if (carousel) {
+        observer.observe(carousel);
+    }
+</script>
