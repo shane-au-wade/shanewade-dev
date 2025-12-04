@@ -115,8 +115,7 @@ export default defineConfig({
     // BUTTONS
     // ===================
     "btn":
-      "px-4 py-2 rounded-md font-semibold transition-all duration-200 cursor-pointer border-none outline-none inline-flex items-center justify-center gap-2",
-
+      "px-2.5 py-1.5 rounded-sm font-semibold transition-all duration-200 cursor-pointer border-none outline-none inline-flex items-center justify-center gap-2 active:translate-y-[1px]",
     // Button variants
     "btn-primary":
       "btn bg-brand-primary text-white hover:bg-brand-primary-hover active:bg-brand-primary-dark shadow-sm hover:shadow-md dark:bg-brand-primary-light dark:hover:bg-brand-primary",
@@ -200,7 +199,8 @@ export default defineConfig({
     "badge": "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
     "badge-primary":
       "badge bg-brand-primary bg-opacity-10 text-brand-primary dark:bg-brand-primary-light dark:bg-opacity-20 dark:text-brand-primary-light",
-    "badge-secondary": "badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 outline outline-1 outline-gray-400",
+    "badge-secondary":
+      "badge bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 outline outline-1 outline-gray-400",
     "badge-success":
       "badge bg-success bg-opacity-10 text-success-dark dark:bg-success dark:bg-opacity-20 dark:text-success",
     "badge-warning":

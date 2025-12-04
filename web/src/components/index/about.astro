@@ -3,9 +3,7 @@ import "@styles/colors.css";
 import "@styles/components.css";
 import "remixicon/fonts/remixicon.css";
 
-import ShaneWadeHeadshotWhiteBg from "@images/sw-headshot-2025-white-bg.png";
-import ShaneWadeHeadshotRedBg from "@images/sw-headshot-2025-red-bg.png";
-import ShaneWadeHeadshot2020 from "@images/sw-headshot-2020.jpeg";
+import AboutImages from "./about-images.astro";
 ---
 
 <section
@@ -18,31 +16,61 @@ import ShaneWadeHeadshot2020 from "@images/sw-headshot-2020.jpeg";
         >
             About Me
         </p>
-        <h2 class="heading-2 mb-4">Engineer. Cyclist. Problem Solver.</h2>
+        <h2 class="heading-2 mb-4">Engineer. Adventurer. Collaborator.</h2>
 
         <div class="flex flex-col gap-24">
-            <!-- Block 1: General/Intro -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-14 items-center">
                 <div class="order-2 md:order-1">
                     <p class="text-lead">
                         With over {new Date().getFullYear() - 2020} years of experience
                         in software engineering, I specialize in building high-performance
-                        web apps and AI data pipelines for niche markets. My work
-                        spans geospatial data for autonomous semi-trucks, multi-UAV
-                        control systems, and enterprise procurment software — always
+                        web apps and data pipelines for emerging AI technologies.
+                        My work spans map data for autonomous semi-trucks, multi-UAV
+                        control systems, and automated procurment software — always
                         with a focus on high quality systems and thoughtful user
                         experiences.
                     </p>
+                    <p class="text-lead mt-3">
+                        Beyond the code, I love going on adventures and finding
+                        space for creativity. I love to build bikes (then ride
+                        them) and I host an annual camping trip with my friends.
+                    </p>
+                    <p class="text-lead mt-3">
+                        After going on a few adventures, its obvious that the
+                        key ingredient for success is the people. Startups,
+                        camping, bike rides, parties <span
+                            class="italic font-semibold"
+                            >- it's the people around you that make the
+                            difference.</span
+                        >
+                    </p>
+                    <div
+                        class="hidden md:flex flex-wrap justify-center md:justify-start gap-2 mt-4"
+                    >
+                        <a
+                            href="https://www.linkedin.com/in/shane-au-wade/details/experience/"
+                            target="_blank"
+                            class="btn-primary btn-sm"
+                        >
+                            <i class="ri-linkedin-box-fill"></i>
+                            Experience Details
+                        </a>
+                        <a
+                            href="/Shane-Wade-Software-Engineer.pdf"
+                            target="_blank"
+                            class="btn-primary btn-sm"
+                        >
+                            <i class="ri-download-line"></i>
+                            Download Resume
+                        </a>
+                    </div>
                 </div>
 
                 <div class="order-1 md:order-2">
-                    <!-- Placeholder: Replace with general work/coding photo -->
-                    <img
-                        src="https://lh3.googleusercontent.com/pw/AP1GczNhieGYFPVX9jR8C21CXqDRB873std2lhZhqAOUAOjPHEvLOkRPVnkrp6-NGpPH666dPkPXt3TZniuSrUrl1JBkEFdt2XWgEJjT3PwO6-0hpRVCMTypLFc1wKM16FHIOeXMOjYzF20K3G7t1DxQrI9h=w2474-h1856-s-no-gm?authuser=0"
-                        alt="Shane Wade"
-                        class="w-full h-auto rounded-2xl shadow-lg object-cover aspect-[16/10] mb-4"
-                    />
-                    <div class="flex flex-wrap justify-center gap-2">
+                    <AboutImages />
+                    <div
+                        class="flex md:hidden flex-wrap justify-center md:justify-start gap-2 mt-4"
+                    >
                         <a
                             href="https://www.linkedin.com/in/shane-au-wade/details/experience/"
                             target="_blank"
@@ -62,50 +90,7 @@ import ShaneWadeHeadshot2020 from "@images/sw-headshot-2020.jpeg";
                     </div>
                 </div>
             </div>
-
-            <!-- Block 2: Embark/UAV -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div class="order-1">
-                    <!-- Placeholder: Replace with specific project photo (Trucks/UAVs) -->
-                    <img
-                        src={ShaneWadeHeadshotRedBg.src}
-                        alt="Engineering Projects"
-                        class="w-full h-auto rounded-2xl shadow-lg object-cover aspect-[1]"
-                    />
-                </div>
-                <div class="order-2">
-                    <p class="text-lead mb-0">
-                        At Embark Trucks, I certified 500+ miles of US highway
-                        data for their autonomous vehicle system, contributing
-                        to zero on-road incidents. I designed and delivered a
-                        multi-UAV control system 10 days before Threshold UAV's
-                        debut at AgSmart 2023. I'm adaptable, self-motivated,
-                        and have a strong track record of delivering projects on
-                        time while exceeding expectations.
-                    </p>
-                </div>
-            </div>
-
-            <!-- Block 3: Cycling -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                <div class="order-2 md:order-1">
-                    <p class="text-lead mb-0">
-                        When I'm not coding, you'll find me on my bike—whether
-                        it's grinding up mountain passes, exploring gravel
-                        roads, or commuting through San Francisco. Cycling has
-                        taught me patience, persistence, and the value of steady
-                        progress—principles I bring to every project.
-                    </p>
-                </div>
-                <div class="order-1 md:order-2">
-                    <!-- Placeholder: Replace with cycling photo -->
-                    <img
-                        src={ShaneWadeHeadshot2020.src}
-                        alt="Cycling Adventures"
-                        class="w-full h-auto rounded-2xl shadow-lg object-cover aspect-[1]"
-                    />
-                </div>
-            </div>
+            <div class="md:hidden"></div>
         </div>
     </div>
 </section>

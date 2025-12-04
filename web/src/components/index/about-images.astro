@@ -1,0 +1,151 @@
+---
+import { Image } from "astro:assets";
+const images = [
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczOCqmDOIV11mtqhkeLDLBxC7FTMS6aQPa7jmG4AH7HinRWnDHczOMIucoJqfG-Aytgyr86z2x-i9M2RTbd-aZlmnSQeQ2YNd3MLHgrkLmcBzRZ8OL-KV3KDATuolKhSoB5qYEYbExCo9zSyRCRlgBe-=w1392-h1856-s-no-gm?authuser=0",
+        alt: "Shane Wade with Brandon Moak and Phil Haeusler at the Nasdaq for the Embark Trucks IPO",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczMg0CLM4eTbRZArJrZi6w8Ne_z4-qv3L2uj1GFknhAs2TMIaFAEf70Oig95i_DbKT2GQBjliYad3Trr63YEnbvyOdlOUA1R5AE5LCQJPGe0WKV2dBuI9PkcZ0pmNHpSO4eAYsfUio6167WTy2g-XuTv=w2148-h1718-s-no-gm?authuser=0",
+        alt: "Shane Wade at his 2020 internship at Motive (formerly Keep Trucking)",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczM-cB04vG6P2CGgPEbZEVBmiGWs0nLAD-QG5Uti2HRGUlWgI0yPvkXtv8GgEYdAQQVMYgvJ-7jp4_TLc9DaHdmAqTqWmV3whzOnYDILA8wJPwuUp1YiB3wXA2WU_8LvL0ClOS4uYNID_wgtI374UWw5=w2148-h1612-s-no-gm?authuser=0",
+        alt: "Shane Wade after a bike packing adventure in the Marin Headlands",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczMtZgvu9QxT9Fl3WiPYqgnaGlG0wD6xn1PC0hac4yNYfhNtSJbv3QA5Egbg2SiaUrOWN9ozWXQnbYBwemKkbAX94knEUv4j4_DvelBb2aSl7MMTiU9bvDbQfhMHTD1boam4c8OR_mG1-SZTCqkFWvPD=w2148-h1612-s-no-gm?authuser=0",
+        alt: "Shane Wade with the BRM Labs Team at their annual October Fest party, everyone is dressed in dirndl and lederhosen",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczOi_pB4xubTsi6l-27UctSdwi3ctImfCytUpaVieSbgWdCgcyS0t5piEIylYe43CSkFzJ8FaBALj1s2o8IDyk6GH2yF8kZ9iYqXSf3C4yMY3dXfNF5OFg0A9p3hX8bFUdVr3RPdVBJQWc-2rkL9NKze=w2148-h1718-s-no-gm?authuser=0",
+        alt: "Shane Wade with BRM Labs at the lunch table",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczNzDaLROHFGnj6iBV8_-WlTttNw15_cijoiPoBI67sWLLqbPjyJmrpbLTEDaqdBrVGMcAQao741-dWqn6VxHmyCx90yospoyY7RPXNuCtfBFRe3p0LZ8WA_jdvQ-dL6XcRV0ITelYgTe_h9gUojYSQT=w2148-h1612-s-no-gm?authuser=0",
+        alt: "Shane Wade at his yearly camping trip with friends",
+    },
+    {
+        src: "https://lh3.googleusercontent.com/pw/AP1GczMW3JqnBAV9XkwvpxRrYcM4_Y7eg4DHTpFMwNxNTzxGdOpoS6l8kOwRXILUCEYBt9sE1Xeg3v1ofSkb9OAEfha_8__24QAU5o_PlKr0dGMWWxi-H-v4i7sjJsUkfwBgLD4g_OllK-86junrRrWguVcJ=w2048-h1536-s-no-gm?authuser=0",
+        alt: "Shane Wade with Titantic's End at Burning Man 2025",
+    },
+];
+---
+
+<div class="flex flex-col">
+    <section
+        id="image-carousel"
+        data-interval="4000"
+        class="flex overflow-x-auto rounded-md snap-x snap-mandatory outline outline-1 outline-gray-200 mx-auto aspect-[5/4] max-w-[100vw]"
+    >
+        {
+            images.map((image) => (
+                <Image
+                    loading="lazy"
+                    width={1920}
+                    height={1080}
+                    src={image.src}
+                    alt={image.alt}
+                    class="aspect-[5/4] object-cover snap-center"
+                />
+            ))
+        }
+    </section>
+    <div class="flex justify-center p-4">
+        <div class="flex gap-2 items-center" id="carousel-dots">
+            {
+                images.map((_, index) => (
+                    <span
+                        class:list={[
+                            "carousel-dot rounded-full transition-all duration-300",
+                            index === 0
+                                ? "h-2.5 w-2.5 bg-brand-primary"
+                                : "h-2 w-2 bg-gray-400",
+                        ]}
+                    />
+                ))
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    const carousel = document.getElementById("image-carousel");
+    const dots = document.querySelectorAll(".carousel-dot");
+
+    if (carousel && dots.length > 0) {
+        let scrollInterval: ReturnType<typeof setInterval> | null = null;
+        const intervalTime = parseInt(carousel.dataset.interval || "4000");
+
+        const updateDots = () => {
+            const scrollLeft = carousel.scrollLeft;
+            const width = carousel.clientWidth;
+            const activeIndex = Math.round(scrollLeft / width);
+
+            dots.forEach((dot, index) => {
+                if (index === activeIndex) {
+                    // Active state
+                    dot.classList.remove("bg-gray-400", "h-2", "w-2");
+                    dot.classList.add("bg-brand-primary", "h-2.5", "w-2.5");
+                } else {
+                    // Inactive state
+                    dot.classList.remove("bg-brand-primary", "h-2.5", "w-2.5");
+                    dot.classList.add("bg-gray-400", "h-2", "w-2");
+                }
+            });
+        };
+
+        const nextSlide = () => {
+            const scrollLeft = carousel.scrollLeft;
+            const width = carousel.clientWidth;
+            const activeIndex = Math.round(scrollLeft / width);
+            const nextIndex = (activeIndex + 1) % dots.length;
+
+            carousel.scrollTo({
+                left: width * nextIndex,
+                behavior: "smooth",
+            });
+        };
+
+        const startLoop = () => {
+            if (scrollInterval) return;
+            scrollInterval = setInterval(nextSlide, intervalTime);
+        };
+
+        const stopLoop = () => {
+            if (scrollInterval) {
+                clearInterval(scrollInterval);
+                scrollInterval = null;
+            }
+        };
+
+        carousel.addEventListener("scroll", updateDots);
+
+        // Pause on interaction
+        carousel.addEventListener("mouseenter", stopLoop);
+        carousel.addEventListener("mouseleave", startLoop);
+        carousel.addEventListener("touchstart", stopLoop, { passive: true });
+        carousel.addEventListener("touchend", startLoop, { passive: true });
+
+        // Start the loop
+        startLoop();
+
+        // Optional: Add click handlers to dots to scroll to image
+        dots.forEach((dot, index) => {
+            dot.addEventListener("click", () => {
+                // Stop loop when manually navigating
+                stopLoop();
+
+                const width = carousel.clientWidth;
+                carousel.scrollTo({
+                    left: width * index,
+                    behavior: "smooth",
+                });
+
+                // Restart loop after a short delay or let mouseleave handle it
+                // If clicked via touch, mouseleave might not fire, so we rely on subsequent interaction or just restart
+                // But better to let user control it. If they hovered to click, mouseleave will restart it.
+            });
+        });
+    }
+</script>

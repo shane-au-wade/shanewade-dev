@@ -1,0 +1,63 @@
+---
+import "@styles/colors.css";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+import CopyButton from "@components/copy-button.astro";
+
+const email = "shane.au.wade@gmail.com";
+---
+
+<footer
+    id="contact-section"
+    class="bg-white dark:bg-dark-bg py-16 px-8 text-center border-t border-gray-200 dark:border-dark-border"
+>
+    <div class="max-w-[800px] mx-auto w-full flex flex-col gap-8">
+        <div class="space-y-2">
+            <h2 class="heading-3">Let's Connect</h2>
+            <p class="text-body text-gray-600 dark:text-dark-text-secondary">
+                Based in Dogpatch, San Francisco
+            </p>
+            <p class="text-small text-muted">
+                The best way to reach me is via email
+            </p>
+        </div>
+
+        <div class="flex flex-row items-center justify-center gap-4">
+            <a href={`mailto:${email}`} class="text-lead link">
+                {email}
+            </a>
+            <CopyButton text={email} class="btn-ghost btn-icon w-10" />
+        </div>
+
+        <div class="flex gap-4 justify-center items-center mt-2">
+            <a
+                href="https://github.com/shane-au-wade"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="GitHub"
+            >
+                <button class="btn-ghost btn-icon w-16">
+                    <i class=`ri-github-fill text-[32px]`></i>
+                </button>
+            </a>
+
+            <a
+                href="https://www.linkedin.com/in/shane-au-wade"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+            >
+                <button class="btn-ghost btn-icon w-16">
+                    <i class=`ri-linkedin-box-fill text-[32px]`></i>
+                </button>
+            </a>
+        </div>
+
+        <div
+            class="text-small text-muted pt-10 border-t border-gray-200 dark:border-dark-border/50"
+        >
+            &copy; {new Date().getFullYear()} Shane Wade
+        </div>
+    </div>
+</footer>
