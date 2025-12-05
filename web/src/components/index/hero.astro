@@ -4,6 +4,8 @@ import "@styles/components.css";
 
 import { Picture } from "astro:assets";
 import hero_photo from "@images/sw-headshot-2025.png";
+import BusinessCard from "./business-card.astro";
+import LearnMore from "./learn-more.astro";
 ---
 
 <style>
@@ -59,25 +61,9 @@ import hero_photo from "@images/sw-headshot-2025.png";
                 > tomorrow.
             </h2>
         </div>
-        <div
-            class="flex flex-col gap-4 bg-transparent backdrop-blur-sm p-4 rounded-lg border border-gray-200 max-w-[400px] mx-auto"
-        >
-            <div>
-                <span class="heading-5 text-gray-500"
-                    >Software Engineer and Creative</span
-                >
-                <h1 class="heading-1">Shane Wade</h1>
-                <p class="text-body italic">"I want to help you build"</p>
-            </div>
-
-            <p class="flex gap-1 flex-wrap">
-                <span class="badge-secondary">AI Product Development</span>
-                <span class="badge-secondary">Full-Stack Systems</span>
-                <span class="badge-secondary">Workflow Automation</span>
-                <span class="badge-secondary">Creative Side Projects</span>
-            </p>
-        </div>
+        <BusinessCard />
         <div class="flex flex-col gap-2 justify-center">
+            <LearnMore />
             <div class="flex flex-row gap-1">
                 <a
                     href="https://github.com/shane-au-wade"
@@ -85,7 +71,7 @@ import hero_photo from "@images/sw-headshot-2025.png";
                     rel="noopener noreferrer"
                     aria-label="GitHub"
                 >
-                    <button class="btn-ghost btn-icon w-16">
+                    <button class="btn-ghost-primary btn-icon w-16">
                         <i class=`ri-github-fill text-[32px]`></i>
                     </button>
                 </a>
@@ -96,17 +82,11 @@ import hero_photo from "@images/sw-headshot-2025.png";
                     rel="noopener noreferrer"
                     aria-label="LinkedIn"
                 >
-                    <button class="btn-ghost btn-icon w-16">
+                    <button class="btn-ghost-primary btn-icon w-16">
                         <i class=`ri-linkedin-box-fill text-[32px]`></i>
                     </button>
                 </a>
             </div>
-
-            <a href="#about-section" class="text-center">
-                <button class="btn-primary btn-sm md:btn-md">
-                    Learn More <i class="ri-arrow-down-line"></i>
-                </button>
-            </a>
         </div>
     </div>
 

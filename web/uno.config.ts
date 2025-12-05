@@ -124,9 +124,9 @@ export default defineConfig({
     "btn-default":
       "btn bg-gray-200 text-gray-600 hover:bg-gray-300 active:bg-gray-300 dark:bg-dark-bg-elevated dark:text-dark-text dark:hover:bg-dark-bg-hover",
     "btn-outline":
-      "btn border-2 border-brand-primary text-brand-primary bg-transparent hover:bg-brand-primary hover:text-white dark:border-brand-primary-light dark:text-brand-primary-light dark:hover:bg-brand-primary-light dark:hover:text-white",
-    "btn-ghost":
-      "btn bg-transparent text-brand-primary hover:bg-gray-100 dark:text-brand-primary-light dark:hover:bg-dark-bg-hover",
+      "btn border-2 border-brand-primary text-brand-p`rimary bg-transparent hover:bg-brand-primary hover:text-white dark:border-brand-primary-light dark:text-brand-primary-light dark:hover:bg-brand-primary-light dark:hover:text-white",
+    "btn-ghost": "btn bg-transparent hover:bg-gray-100 dark:hover:bg-dark-bg-hover dark:text-dark-text",
+    "btn-ghost-primary": "btn-ghost text-brand-primary dark:text-brand-primary-light",
     "btn-success": "btn bg-success text-white hover:bg-success-hover shadow-sm",
     "btn-warning": "btn bg-warning text-white hover:bg-warning-hover shadow-sm",
     "btn-error": "btn bg-error text-white hover:bg-error-hover shadow-sm",

@@ -1,0 +1,48 @@
+---
+import "remixicon/fonts/remixicon.css";
+
+interface Props {
+    interval?: number; // Total cycle duration in seconds
+    delay?: number; // Initial delay in seconds before animation starts
+}
+
+const { interval = 3, delay = 2 } = Astro.props;
+const animationDuration = `${interval}s`;
+const animationDelay = `${delay}s`;
+---
+
+<style define:vars={{ animationDuration, animationDelay }}>
+    @keyframes bounce-loop {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        10% {
+            transform: translateY(2px) rotate(-2deg);
+        }
+        20% {
+            transform: translateY(0);
+        }
+        30% {
+            transform: translateY(2px) rotate(2deg);
+        }
+        40% {
+            transform: translateY(0);
+        }
+    }
+
+    .learn-more-btn .icon {
+        display: inline-block;
+        animation: bounce-loop var(--animationDuration) ease-in-out infinite;
+        animation-delay: var(--animationDelay);
+        /* Ensure animation plays even if not hovered */
+    }
+</style>
+
+<a href="#about-section" class="text-center block w-fit mx-auto">
+    <button
+        class="learn-more-btn btn-primary btn-md md:btn-md flex items-center gap-2"
+    >
+        Learn More <i class="icon ri-arrow-down-line"></i>
+    </button>
+</a>

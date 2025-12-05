@@ -17,14 +17,6 @@ const navLinks: Array<{
         display_name: "Projects",
     },
     {
-        href: "#bikes-section",
-        display_name: "Bikes",
-    },
-    {
-        href: "#contact-section",
-        display_name: "Contact",
-    },
-    {
         href: "/sf-bike-lanes",
         display_name: "SF Bike Lane Map",
         icon: "ri-map-2-line",
@@ -47,7 +39,6 @@ const dropdownItems = navLinks.map((link) => ({
     label: link.display_name,
     icon: link.icon,
 }));
-
 ---
 
 <style>
@@ -102,6 +93,8 @@ const dropdownItems = navLinks.map((link) => ({
         // Add a class to the body when the navigation is fixed
         homeButton.addEventListener("click", (e) => {
             e.preventDefault();
+            // ensure the url is updated to the home page
+            window.history.pushState({}, "", "/");
             window.scrollTo({
                 top: 0,
                 behavior: "instant",

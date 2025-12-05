@@ -127,8 +127,19 @@ const images = [
         carousel.addEventListener("touchstart", stopLoop, { passive: true });
         carousel.addEventListener("touchend", startLoop, { passive: true });
 
-        // Start the loop
-        startLoop();
+        // Start the loop when element comes into view
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        startLoop();
+                        observer.disconnect();
+                    }
+                });
+            },
+            { threshold: 0.5 },
+        );
+        observer.observe(carousel);
 
         // Optional: Add click handlers to dots to scroll to image
         dots.forEach((dot, index) => {
