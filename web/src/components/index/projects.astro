@@ -57,24 +57,18 @@ const projects = [
         {
             projects.map((project) => (
                 <article class="card text-center cursor-pointer transition-all duration-200 ease-in-out hover:translate-y-[-4px] hover:shadow-md md:min-w-[300px] min-w-[calc(50vw-10px)]">
-                    <a
-                        href={project.href}
-                        target="_blank"
-                        class="no-underline text-inherit"
-                    >
-                        <Image
-                            src={project.image}
-                            alt={`${project.title}, main image`}
-                            class="mobile-image"
-                            inferSize={true}
-                        />
-                        <div class="text-left mt-2">
-                            <h3 class="heading-5">{project.title}</h3>
-                            <p class="text-body m-0 leading-relaxed line-clamp-3">
-                                {project.description}
-                            </p>
-                        </div>
-                    </a>
+                    <Image
+                        src={project.image}
+                        alt={`${project.title}, main image`}
+                        class="mobile-image"
+                        inferSize={true}
+                    />
+                    <div class="text-left mt-2">
+                        <h3 class="heading-5">{project.title}</h3>
+                        <p class="text-body m-0 leading-relaxed line-clamp-3">
+                            {project.description}
+                        </p>
+                    </div>
                 </article>
             ))
         }
