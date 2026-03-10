@@ -1,0 +1,443 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+---
+
+<html lang="en">
+    <Head title="Falling Sand Viz - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300 overflow-hidden font-sans"
+    >
+        <!-- Floating Controls Header -->
+        <header
+            class="fixed top-4 left-4 z-50 flex flex-col gap-2 p-4 bg-white/90 dark:bg-dark-bg-elevated/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border max-w-xs transition-opacity duration-300 hover:opacity-100 opacity-80"
+        >
+            <div class="flex items-center justify-between gap-4 mb-2">
+                <Breadcrumbs />
+                <ThemeToggle />
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block"
+                        >Brush Type</label
+                    >
+                    <div class="flex flex-wrap gap-2" id="brush-controls">
+                        <button
+                            class="btn-sm btn-primary active-brush"
+                            data-brush="sand">Sand</button
+                        >
+                        <button class="btn-sm btn-outline" data-brush="water"
+                            >Water</button
+                        >
+                        <button class="btn-sm btn-outline" data-brush="rock"
+                            >Stone</button
+                        >
+                        <button class="btn-sm btn-outline" data-brush="brick"
+                            >Brick</button
+                        >
+                        <button class="btn-sm btn-outline" data-brush="eraser"
+                            >Eraser</button
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block"
+                        >Brush Size</label
+                    >
+                    <input
+                        type="range"
+                        id="brush-size"
+                        min="1"
+                        max="20"
+                        value="5"
+                        class="w-full accent-brand-primary"
+                    />
+                </div>
+
+                <div
+                    class="pt-2 border-t border-gray-200 dark:border-gray-700 flex justify-between"
+                >
+                    <button
+                        id="clear-btn"
+                        class="btn-sm btn-ghost text-error hover:bg-error/10"
+                    >
+                        <i class="ri-delete-bin-line mr-1"></i> Clear
+                    </button>
+                    <button id="pause-btn" class="btn-sm btn-ghost">
+                        <i class="ri-pause-line mr-1"></i> Pause
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-xs text-muted mt-2">Click and drag to draw.</p>
+        </header>
+
+        <canvas
+            id="viz-canvas"
+            class="block w-full h-full touch-none cursor-crosshair"></canvas>
+    </body>
+</html>
+
+<style>
+    .active-brush {
+        @apply ring-2 ring-offset-1 ring-brand-primary dark:ring-offset-dark-bg;
+    }
+
+    /* Hide scrollbars */
+    body {
+        overscroll-behavior: none;
+    }
+</style>
+
+<script>
+    // Configuration
+    const CONFIG = {
+        cellSize: 4, // Visual size of each cell
+        cols: 0,
+        rows: 0,
+        width: 0,
+        height: 0,
+    };
+
+    // Cell Types
+    const EMPTY = 0;
+    const SAND = 1;
+    const WATER = 2;
+    const BRICK = 3; // Was STONE
+    const ROCK = 4; // New Gravity Rock
+
+    // Colors
+    const COLORS: Record<number, number[]> = {
+        [EMPTY]: [0, 0, 0, 0], // Transparent
+        [SAND]: [224, 205, 169], // #e0cda9
+        [WATER]: [52, 152, 219], // #3498db
+        [BRICK]: [192, 57, 43], // #c0392b (Reddish for Brick)
+        [ROCK]: [127, 140, 141], // #7f8c8d (Grey for Gravity Rock)
+    };
+
+    // State
+    let grid = new Uint8Array(0);
+    let isPaused = false;
+    let currentBrush = "sand";
+    let brushSize = 5;
+    let isDrawing = false;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    // Canvas setup
+    const canvas = document.getElementById("viz-canvas") as HTMLCanvasElement;
+    const ctx = canvas.getContext("2d", {
+        alpha: true,
+    }) as CanvasRenderingContext2D; // Enable alpha for transparency
+
+    function resize() {
+        const parent = canvas.parentElement;
+        if (!parent) return;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        CONFIG.width = canvas.width;
+        CONFIG.height = canvas.height;
+        CONFIG.cols = Math.floor(CONFIG.width / CONFIG.cellSize);
+        CONFIG.rows = Math.floor(CONFIG.height / CONFIG.cellSize);
+
+        // Preserve old grid if possible (simple resize: clear for now to avoid complexity)
+        grid = new Uint8Array(CONFIG.cols * CONFIG.rows).fill(EMPTY);
+    }
+
+    // Grid Helpers
+    function getIndex(x: number, y: number) {
+        return y * CONFIG.cols + x;
+    }
+
+    function inBounds(x: number, y: number) {
+        return x >= 0 && x < CONFIG.cols && y >= 0 && y < CONFIG.rows;
+    }
+
+    function setCell(x: number, y: number, type: number) {
+        if (inBounds(x, y)) {
+            grid[getIndex(x, y)] = type;
+        }
+    }
+
+    function getCell(x: number, y: number) {
+        if (!inBounds(x, y)) return BRICK; // Treat out of bounds as solid walls
+        return grid[getIndex(x, y)];
+    }
+
+    function isEmpty(x: number, y: number) {
+        return inBounds(x, y) && grid[getIndex(x, y)] === EMPTY;
+    }
+
+    // Update Logic
+    function update() {
+        if (isPaused) return;
+
+        // Process from bottom to top to handle falling correctly
+        for (let y = CONFIG.rows - 2; y >= 0; y--) {
+            // Randomize X direction to prevent bias
+            const leftToRight = Math.random() > 0.5;
+            const startX = leftToRight ? 0 : CONFIG.cols - 1;
+            const endX = leftToRight ? CONFIG.cols : -1;
+            const stepX = leftToRight ? 1 : -1;
+
+            for (let x = startX; x !== endX; x += stepX) {
+                const idx = getIndex(x, y);
+                const type = grid[idx];
+
+                if (type === EMPTY || type === BRICK) continue;
+
+                if (type === SAND) {
+                    updateSand(x, y);
+                } else if (type === WATER) {
+                    updateWater(x, y);
+                } else if (type === ROCK) {
+                    updateRock(x, y);
+                }
+            }
+        }
+    }
+
+    function updateSand(x: number, y: number) {
+        const below = y + 1;
+
+        // Try to move down
+        if (isEmpty(x, below)) {
+            moveCell(x, y, x, below);
+        }
+        // Try to move down-left or down-right
+        else {
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            const dl = x - dir;
+            const dr = x + dir;
+
+            if (isEmpty(dl, below)) {
+                moveCell(x, y, dl, below);
+            } else if (isEmpty(dr, below)) {
+                moveCell(x, y, dr, below);
+            }
+        }
+    }
+
+    // Rock behaves like sand but maybe we restrict diagonal movement or keep it same?
+    // User asked for "gravity rock" which implies falling.
+    // Usually rock implies heavier/sturdier, so maybe it only falls down?
+    // If I make it only fall down, it will stack in single columns, which looks weird for "loose rocks".
+    // I'll make it behave like sand (rolling down slopes) but maybe strictly heavier so it displaces water?
+    // For now, simpler simulation: same physics as sand.
+    function updateRock(x: number, y: number) {
+        updateSand(x, y);
+    }
+
+    function updateWater(x: number, y: number) {
+        const below = y + 1;
+
+        // Try to move down
+        if (isEmpty(x, below)) {
+            moveCell(x, y, x, below);
+        }
+        // Try to move down-left or down-right
+        else {
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            // Check diagonals
+            if (isEmpty(x - dir, below)) {
+                moveCell(x, y, x - dir, below);
+            } else if (isEmpty(x + dir, below)) {
+                moveCell(x, y, x + dir, below);
+            }
+            // Check sideways
+            else if (isEmpty(x - dir, y)) {
+                moveCell(x, y, x - dir, y);
+            } else if (isEmpty(x + dir, y)) {
+                moveCell(x, y, x + dir, y);
+            }
+        }
+    }
+
+    function moveCell(fromX: number, fromY: number, toX: number, toY: number) {
+        const fromIdx = getIndex(fromX, fromY);
+        const toIdx = getIndex(toX, toY);
+        const type = grid[fromIdx];
+
+        grid[toIdx] = type;
+        grid[fromIdx] = EMPTY;
+    }
+
+    // Drawing Logic
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < CONFIG.rows; y++) {
+            for (let x = 0; x < CONFIG.cols; x++) {
+                const type = grid[getIndex(x, y)];
+                if (type !== EMPTY) {
+                    const color = COLORS[type];
+                    // Add some variation
+                    if (type === SAND) {
+                        const noise = (Math.random() - 0.5) * 20;
+                        ctx.fillStyle = `rgb(${color[0] + noise}, ${color[1] + noise}, ${color[2] + noise})`;
+                    } else if (type === ROCK) {
+                        const noise = (Math.random() - 0.5) * 30; // More texture for rock
+                        ctx.fillStyle = `rgb(${color[0] + noise}, ${color[1] + noise}, ${color[2] + noise})`;
+                    } else if (type === WATER) {
+                        ctx.fillStyle = `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.6)`;
+                    } else {
+                        ctx.fillStyle = `rgb(${color[0]}, ${color[1]}, ${color[2]})`;
+                    }
+
+                    ctx.fillRect(
+                        x * CONFIG.cellSize,
+                        y * CONFIG.cellSize,
+                        CONFIG.cellSize,
+                        CONFIG.cellSize,
+                    );
+                }
+            }
+        }
+    }
+
+    // Loop
+    function loop() {
+        if (isDrawing) {
+            applyBrush();
+        }
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    // Input Handling
+    function applyBrush() {
+        const gx = Math.floor(mouseX / CONFIG.cellSize);
+        const gy = Math.floor(mouseY / CONFIG.cellSize);
+
+        const r = Math.floor(brushSize / 2); // Radius in cells
+
+        for (let y = -r; y <= r; y++) {
+            for (let x = -r; x <= r; x++) {
+                if (x * x + y * y <= r * r) {
+                    // Randomly skip some pixels for spray effect if sand/water/rock
+                    if (
+                        Math.random() > 0.8 &&
+                        currentBrush !== "brick" &&
+                        currentBrush !== "eraser"
+                    )
+                        continue;
+
+                    // Parse brush string to type integer
+                    let typeVal = EMPTY;
+                    if (currentBrush === "sand") typeVal = SAND;
+                    else if (currentBrush === "water") typeVal = WATER;
+                    else if (currentBrush === "rock") typeVal = ROCK;
+                    else if (currentBrush === "brick") typeVal = BRICK;
+                    else if (currentBrush === "eraser") typeVal = EMPTY;
+
+                    // If erasing or drawing brick, overwrite.
+                    // If drawing others, only overwrite empty (so we don't erase walls with sand)
+                    if (
+                        currentBrush === "brick" ||
+                        currentBrush === "eraser" ||
+                        isEmpty(gx + x, gy + y)
+                    ) {
+                        setCell(gx + x, gy + y, typeVal);
+                    }
+                }
+            }
+        }
+    }
+
+    // Event Listeners
+    window.addEventListener("resize", resize);
+
+    canvas.addEventListener("mousedown", (e) => {
+        isDrawing = true;
+        updateMouse(e);
+    });
+    canvas.addEventListener("mousemove", (e) => {
+        updateMouse(e);
+    });
+    window.addEventListener("mouseup", () => {
+        isDrawing = false;
+    });
+
+    // Touch support
+    canvas.addEventListener(
+        "touchstart",
+        (e) => {
+            isDrawing = true;
+            updateTouch(e);
+            e.preventDefault(); // Prevent scrolling
+        },
+        { passive: false },
+    );
+    canvas.addEventListener(
+        "touchmove",
+        (e) => {
+            updateTouch(e);
+            e.preventDefault();
+        },
+        { passive: false },
+    );
+    window.addEventListener("touchend", () => {
+        isDrawing = false;
+    });
+
+    function updateMouse(e: MouseEvent) {
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+    }
+
+    function updateTouch(e: TouchEvent) {
+        const rect = canvas.getBoundingClientRect();
+        const touch = e.touches[0];
+        mouseX = touch.clientX - rect.left;
+        mouseY = touch.clientY - rect.top;
+    }
+
+    // UI Controls
+    document.getElementById("reset-btn")?.addEventListener("click", () => {
+        grid.fill(EMPTY);
+    });
+
+    document.getElementById("pause-btn")?.addEventListener("click", (e) => {
+        isPaused = !isPaused;
+        const btn = e.currentTarget as HTMLButtonElement;
+        btn.innerHTML = isPaused
+            ? '<i class="ri-play-line mr-1"></i> Play'
+            : '<i class="ri-pause-line mr-1"></i> Pause';
+    });
+
+    const brushBtns = document.querySelectorAll("[data-brush]");
+    brushBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+            // Update UI
+            brushBtns.forEach((b) => {
+                b.classList.remove("btn-primary", "active-brush");
+                b.classList.add("btn-outline");
+            });
+            const target = e.currentTarget as HTMLButtonElement;
+            target.classList.remove("btn-outline");
+            target.classList.add("btn-primary", "active-brush");
+
+            // Update State
+            currentBrush = target.getAttribute("data-brush") || "sand";
+        });
+    });
+
+    document.getElementById("brush-size")?.addEventListener("input", (e) => {
+        brushSize = parseInt((e.target as HTMLInputElement).value);
+    });
+
+    // Init
+    resize();
+    loop();
+</script>
