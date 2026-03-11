@@ -1,0 +1,64 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+---
+
+<html lang="en">
+  <Head title="N64 Emulator - Shane Wade" />
+  <body
+    class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300 overflow-hidden font-sans"
+  >
+    <header
+      class="fixed top-4 left-4 z-50 flex flex-col gap-2 p-3 bg-white/90 dark:bg-dark-bg-elevated/90 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border max-w-xs transition-opacity duration-300 hover:opacity-100 opacity-80"
+    >
+      <div class="flex items-center justify-between gap-4">
+        <Breadcrumbs />
+        <ThemeToggle />
+      </div>
+      <div class="flex gap-2" id="mode-buttons">
+        <button
+          class="btn-primary btn-sm"
+          id="btn-training"
+          onclick="window.location.search = '?mode=training'"
+        >
+          Training Mode
+        </button>
+        <button
+          class="btn-default btn-sm hidden"
+          id="btn-freeplay"
+          onclick="window.location.href = window.location.pathname"
+        >
+          Free Play
+        </button>
+      </div>
+    </header>
+
+    <div style="width:100%;height:100vh;max-width:100%">
+      <div id="game"></div>
+    </div>
+
+    <script is:inline>
+      EJS_player = "#game";
+      EJS_core = "n64";
+      EJS_gameName = "SuperSmashBros";
+      EJS_color = "#0064ff";
+      EJS_pathtodata = "/4.2.3/data/";
+      EJS_gameUrl = "/roms/Super Smash Bros. (USA).zip";
+      EJS_disableAutoLang = true;
+
+      var params = new URLSearchParams(window.location.search);
+      if (params.get("mode") === "training") {
+        EJS_loadStateURL =
+          "/save-states/SuperSmashBros-TrainingMode-parallel_64.state";
+        document.getElementById("btn-training").classList.add("hidden");
+        document.getElementById("btn-freeplay").classList.remove("hidden");
+      }
+
+      EJS_startOnLoaded = true;
+    </script>
+    <script is:inline src="/4.2.3/data/loader.js"></script>
+  </body>
+</html>
