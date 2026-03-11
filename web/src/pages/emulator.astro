@@ -42,7 +42,7 @@ import "remixicon/fonts/remixicon.css";
 
     <script is:inline>
       EJS_player = "#game";
-      EJS_core = "n64";
+      EJS_core = "parallel_n64";
       EJS_gameName = "SuperSmashBros";
       EJS_color = "#0064ff";
       EJS_pathtodata = "/4.2.3/data/";
@@ -57,6 +57,7 @@ import "remixicon/fonts/remixicon.css";
         document.getElementById("btn-freeplay").classList.remove("hidden");
       }
 
+      EJS_defaultOptions = { shader: "crt-zfast" };
       EJS_startOnLoaded = true;
     </script>
     <script is:inline src="/4.2.3/data/loader.js"></script>
