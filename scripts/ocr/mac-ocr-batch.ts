@@ -31,7 +31,7 @@ async function performOCR(imagePath: string): Promise<{
 }> {
   const startTime = Date.now()
   const resolvedImagePath = resolve(imagePath)
-  const macOcrScriptPath = resolve("./mac-ocr")
+  const macOcrScriptPath = resolve("./mac-ocr.swift")
 
   // Check if the Swift OCR script exists
   try {

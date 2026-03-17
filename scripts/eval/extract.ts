@@ -1,6 +1,7 @@
 import { z } from "@zod/zod"
 import * as deps from "../../repl-env.ts"
 import { delay } from "@std/async/delay"
+import { encodeBase64 } from "@std/encoding/base64"
 import { insertRecipe } from "@shared/core/recipes/mutations"
 
 const { openai, supabase } = deps
@@ -95,6 +96,64 @@ async function loadRecipesWithOcr(): Promise<RecipeWithOcr[]> {
   })
 
   return recipesWithOcr
+}
+
+const RECIPE_IMAGE_DIRECTORY = "./local_data/recipes"
+
+async function reviewAndUpdateRecipe(recipe: RecipeWithOcr): Promise<RecipeWithOcr> {
+  const imageContents = await Promise.all(
+    recipe.pages.map(async (page) => {
+      const imagePath = `${RECIPE_IMAGE_DIRECTORY}/${page}`
+      const imageBuffer = await Deno.readFile(imagePath)
+      const base64 = encodeBase64(imageBuffer)
+      return {
+        type: "input_image" as const,
+        image_url: `data:image/png;base64,${base64}`,
+      }
+    }),
+  )
+
+  const response = await openai.responses.create({
+    model: "gpt-5.4-2026-03-05",
+    input: [
+      {
+        role: "system",
+        content: `You are an OCR correction assistant. You will receive:
+1. The original recipe card images
+2. Raw OCR text extracted from those images
+
+The OCR text often has errors, especially in tabular data like ingredient
+tables (quantities, units, serving columns get jumbled). Compare the OCR
+text against the images and produce a corrected version.
+
+Rules:
+- Preserve the overall structure and ordering of the text
+- Fix misread characters, merged/split words, and garbled table rows
+- Reconstruct tabular data so columns align correctly
+- Do not add information that isn't visible in the images
+- Return ONLY the corrected text, no commentary`,
+      },
+      {
+        role: "user",
+        content: [
+          ...imageContents,
+          { type: "input_text" as const, text: recipe.ocr_text },
+        ],
+      },
+    ],
+  })
+
+  const correctedText = response.output_text
+  if (!correctedText) {
+    console.warn(`[WARN] OCR review returned no output for recipe ${recipe.id}, using original text`)
+    return recipe
+  }
+
+  console.log(`[INFO] OCR text reviewed and corrected for recipe ${recipe.id}`)
+  return {
+    ...recipe,
+    ocr_text: correctedText,
+  }
 }
 
 const ingredientSchema = z.object({
@@ -503,14 +562,16 @@ if (import.meta.main) {
 
     console.log(`[INFO] Processing recipe ${recipe.id} (${recipe.name})`)
 
+    const reviewedRecipe: RecipeWithOcr = await reviewAndUpdateRecipe(recipe)
+
     // extract the recipe in parallel
     const [recipeInfoResult, ingredientsResult, stepsResult, miseEnPlaceStepsResult, cookingToolsResult] = await Promise
       .all([
-        extractRecipeInfoOpenai(recipe),
-        extractIngredientsOpenai(recipe),
-        extractStepsOpenai(recipe),
-        extractMiseEnPlaceStepsOpenai(recipe),
-        extractCookingToolsOpenai(recipe),
+        extractRecipeInfoOpenai(reviewedRecipe),
+        extractIngredientsOpenai(reviewedRecipe),
+        extractStepsOpenai(reviewedRecipe),
+        extractMiseEnPlaceStepsOpenai(reviewedRecipe),
+        extractCookingToolsOpenai(reviewedRecipe),
       ])
 
     if (
@@ -528,9 +589,9 @@ if (import.meta.main) {
       ...stepsResult.result,
       ...miseEnPlaceStepsResult.result,
       ...cookingToolsResult.result,
-      ocr_markdown: recipe.ocr_text, // Map ocr_text to ocr_markdown for database compatibility
-      ocr_results: recipe.ocr_results,
-      pages: recipe.pages,
+      ocr_markdown: reviewedRecipe.ocr_text,
+      ocr_results: reviewedRecipe.ocr_results,
+      pages: reviewedRecipe.pages,
     }
 
     // Deno.writeTextFileSync("./save-complete-recipe.json", JSON.stringify(completeRecipe, null, 2))
