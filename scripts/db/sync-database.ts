@@ -1,7 +1,7 @@
 /**
  * Database Sync Script
  *
- * Syncs recipes from one Supabase database to another.
+ * Syncs recipes and recipe iterations from one Supabase database to another.
  * Useful for migrating data between environments (local -> production, staging -> production, etc.)
  *
  * Environment Variables:
@@ -16,7 +16,7 @@
 
 import { load } from "@std/dotenv"
 import { assert } from "@std/assert"
-import { createSupabaseClient } from "@shared/core/db/client"
+import { createSupabaseClient, type Supabase } from "@shared/core/db/client"
 import { getAllRecipes, getRecipe } from "@shared/core/recipes/queries"
 import { uploadRecipe } from "@shared/core/recipes/mutations"
 
@@ -48,22 +48,49 @@ console.log(`📤 Source: ${env.FROM_SUPABASE_URL}`)
 console.log(`📥 Destination: ${env.TO_SUPABASE_URL}`)
 console.log()
 
-/**
- * Sync all recipes from source to destination
- */
-async function syncRecipes() {
+async function getAllIterations(supabase: Supabase, recipeId: string) {
+  const { data, error } = await supabase
+    .from("recipe_iterations")
+    .select("*")
+    .eq("recipe_id", recipeId)
+    .order("version", { ascending: true })
+
+  if (error) {
+    throw new Error(`Failed to fetch iterations: ${error.message}`)
+  }
+
+  return data ?? []
+}
+
+async function upsertIterations(
+  supabase: Supabase,
+  iterations: Awaited<ReturnType<typeof getAllIterations>>,
+) {
+  if (iterations.length === 0) return 0
+
+  const { error } = await supabase
+    .from("recipe_iterations")
+    .upsert(iterations, { onConflict: "id" })
+
+  if (error) {
+    throw new Error(`Failed to upsert iterations: ${error.message}`)
+  }
+
+  return iterations.length
+}
+
+async function syncAll() {
   try {
-    // Get all recipe IDs from source
     console.log("📋 Fetching recipes from source database...")
     const recipes = await getAllRecipes(fromClient)
     console.log(`✅ Found ${recipes.length} recipes to sync`)
     console.log()
 
-    let successCount = 0
-    let errorCount = 0
+    let recipeSuccessCount = 0
+    let recipeErrorCount = 0
+    let iterationTotal = 0
     const errors: Array<{ recipeId: string; title: string; error: string }> = []
 
-    // Sync each recipe
     for (let i = 0; i < recipes.length; i++) {
       const recipeSummary = recipes[i]
       const recipeNum = i + 1
@@ -73,20 +100,23 @@ async function syncRecipes() {
           `[${recipeNum}/${recipes.length}] Syncing: ${recipeSummary.title}`,
         )
 
-        // Get full recipe data from source
         const recipe = await getRecipe(fromClient, recipeSummary.id)
 
         if (!recipe) {
           throw new Error(`Recipe not found: ${recipeSummary.id}`)
         }
 
-        // Upload to destination
         await uploadRecipe(toClient, recipe)
 
-        successCount++
-        console.log(`  ✅ Successfully synced`)
+        const iterations = await getAllIterations(fromClient, recipeSummary.id)
+        const iterationCount = await upsertIterations(toClient, iterations)
+        iterationTotal += iterationCount
+
+        recipeSuccessCount++
+        const iterMsg = iterationCount > 0 ? ` (${iterationCount} iterations)` : ""
+        console.log(`  ✅ Successfully synced${iterMsg}`)
       } catch (error) {
-        errorCount++
+        recipeErrorCount++
         const errorMessage = error instanceof Error ? error.message : String(error)
         console.log(`  ❌ Failed: ${errorMessage}`)
         errors.push({
@@ -99,13 +129,13 @@ async function syncRecipes() {
       console.log()
     }
 
-    // Print summary
     console.log("=".repeat(60))
     console.log("📊 Sync Summary")
     console.log("=".repeat(60))
     console.log(`Total recipes: ${recipes.length}`)
-    console.log(`✅ Successful: ${successCount}`)
-    console.log(`❌ Failed: ${errorCount}`)
+    console.log(`✅ Successful: ${recipeSuccessCount}`)
+    console.log(`❌ Failed: ${recipeErrorCount}`)
+    console.log(`🔄 Iterations synced: ${iterationTotal}`)
     console.log()
 
     if (errors.length > 0) {
@@ -125,5 +155,4 @@ async function syncRecipes() {
   }
 }
 
-// Run the sync
-await syncRecipes()
+await syncAll()

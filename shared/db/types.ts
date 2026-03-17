@@ -145,6 +145,41 @@ export type Database = {
           },
         ]
       }
+      recipe_iterations: {
+        Row: {
+          created_at: string
+          id: string
+          prompt: string
+          recipe_data: Json
+          recipe_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          prompt: string
+          recipe_data: Json
+          recipe_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          prompt?: string
+          recipe_data?: Json
+          recipe_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_iterations_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           company_name: string | null

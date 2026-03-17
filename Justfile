@@ -63,6 +63,11 @@ ocr:
 extract:
     deno run -A scripts/eval/extract.ts
 
+[doc('Iterate on a recipe with an AI prompt')]
+[group('recipes')]
+iterate recipe_id +prompt:
+    deno run -A scripts/recipes/iterate.ts {{recipe_id}} "{{prompt}}"
+
 [doc('Run full recipe pipeline: OCR then extract')]
 [group('recipes')]
 recipe-pipeline: ocr extract
