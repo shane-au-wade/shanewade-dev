@@ -42,5 +42,6 @@
     "react/": "npm:/react@^19.2.0/",
     "sharp": "npm:sharp@^0.34.4",
     "zod": "npm:zod@^4.1.12"
-  }
+  },
+  "allowScripts": ["npm:esbuild@0.25.12", "npm:fsevents@2.3.3", "npm:sharp@0.34.5"]
 }
