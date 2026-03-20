@@ -2,7 +2,7 @@
 import "@styles/colors.css";
 import "@styles/components.css";
 
-import { Picture } from "astro:assets";
+// import { Image } from "astro:assets";
 import hero_photo from "@images/sw-headshot-2025.png";
 import BusinessCard from "./business-card.astro";
 import LearnMore from "./learn-more.astro";
@@ -94,10 +94,10 @@ import LearnMore from "./learn-more.astro";
         class="flex flex-1 items-center justify-center mb-8 md:mb-0 mt-12 md:mt-0"
     >
         <div class="image-wrapper">
-            <Picture
+            <img
                 alt="Headshot of Shane Wade smiling"
                 loading="eager"
-                src={hero_photo}
+                src={hero_photo.src}
                 class="hero-image"
             />
             <p class="text-body italic text-center">"Pleasure to meet you!"</p>
