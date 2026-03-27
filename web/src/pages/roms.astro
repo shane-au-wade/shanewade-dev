@@ -1,0 +1,74 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+const links = [
+  {
+    name: "Nintendo DS Box Art",
+    description: "Box art scans, cartridge photos, and manual scans for Nintendo DS games.",
+    url: "https://archive.org/details/CG_Nintendo_DS",
+    badge: "Internet Archive",
+  },
+  {
+    name: "No-Intro ROM Sets (2024)",
+    description: "Proper No-Intro ROM sets matching official DAT file hashes across many platforms.",
+    url: "https://archive.org/details/ni-romsets",
+    badge: "Internet Archive",
+  },
+  {
+    name: "PSP US Collection",
+    description: "US region PSP ISO collection.",
+    url: "https://archive.org/download/def-jam-vendetta-u",
+    badge: "Internet Archive",
+  },
+  {
+    name: "Myrient No-Intro",
+    description: "No-Intro verified ROM sets hosted on Myrient. Shutting down 31 March 2026.",
+    url: "https://myrient.erista.me/files/No-Intro/",
+    badge: "Myrient",
+  },
+];
+---
+
+<html lang="en">
+  <Head title="ROMs - Shane Wade" />
+  <body
+    class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+  >
+    <header
+      class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+    >
+      <div class="container py-2 flex items-center justify-between">
+        <Breadcrumbs />
+        <ThemeToggle />
+      </div>
+    </header>
+
+    <div class="container py-8">
+      <h1 class="heading-2 mb-2">ROMs</h1>
+      <p class="text-muted mb-8">External links to ROM archives and collections.</p>
+
+      <div class="space-y-4 max-w-2xl">
+        {links.map((link) => (
+          <a
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="card-hover block no-underline"
+          >
+            <div class="card-body">
+              <div class="flex items-center justify-between mb-1">
+                <h2 class="heading-5">{link.name}</h2>
+                <span class="badge-secondary">{link.badge}</span>
+              </div>
+              <p class="text-small text-muted">{link.description}</p>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </body>
+</html>
