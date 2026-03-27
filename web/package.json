@@ -3,12 +3,12 @@
   "type": "module",
   "version": "0.0.1",
   "dependencies": {
-    "@astrojs/react": "4.4.2",
+    "@astrojs/react": "5.0.2",
     "@supabase/supabase-js": "^2.80.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@unocss/preset-wind4": "^66.5.5",
-    "astro": "5.15.9",
+    "astro": "^5.15.1",
     "ol": "^10.7.0",
     "papaparse": "^5.5.3",
     "react": "^19.2.0",
@@ -16,6 +16,7 @@
     "remixicon": "^4.7.0"
   },
   "devDependencies": {
+    "@unocss/astro": "^66.5.5",
     "@unocss/reset": "^66.5.5",
     "patch-package": "^8.0.1",
     "unocss": "^66.5.5"
