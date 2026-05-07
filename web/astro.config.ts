@@ -9,7 +9,7 @@ export default defineConfig({
   adapter: deno({
     start: true,
   }),
-  outDir: "../dist",
+  outDir: "./dist",
   integrations: [
     react(),
     UnoCSS(

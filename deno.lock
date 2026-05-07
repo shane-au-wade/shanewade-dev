@@ -3549,19 +3549,11 @@
       "jsr:@std/cli@^1.0.23",
       "jsr:@std/dotenv@~0.225.5",
       "jsr:@std/encoding@^1.0.10",
-      "jsr:@std/http@^1.1.0",
       "jsr:@std/path@^1.1.4",
       "jsr:@supabase/supabase-js@^2.58.0",
       "jsr:@zod/zod@^4.1.12",
       "npm:@anthropic-ai/sdk@0.68",
-      "npm:@astrojs/react@5.0.3",
-      "npm:@deno/astro-adapter@~0.5.1",
       "npm:@mistralai/mistralai@^1.10.0",
-      "npm:astro@6.1.5",
-      "npm:minisearch@^7.2.0",
-      "npm:react-dom@^19.2.0",
-      "npm:react@^19.2.0",
-      "npm:sharp@~0.34.4",
       "npm:zod@^4.1.12"
     ],
     "members": {
@@ -3571,6 +3563,20 @@
         ]
       },
       "web": {
+        "dependencies": [
+          "jsr:@std/http@^1.1.0",
+          "jsr:@std/path@^1.1.4",
+          "jsr:@supabase/supabase-js@^2.58.0",
+          "jsr:@zod/zod@^4.1.12",
+          "npm:@astrojs/react@5.0.3",
+          "npm:@deno/astro-adapter@~0.5.1",
+          "npm:astro@6.1.5",
+          "npm:minisearch@^7.2.0",
+          "npm:react-dom@^19.2.0",
+          "npm:react@^19.2.0",
+          "npm:sharp@~0.34.4",
+          "npm:zod@^4.1.12"
+        ],
         "packageJson": {
           "dependencies": [
             "npm:@astrojs/react@5.0.3",

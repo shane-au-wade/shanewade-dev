@@ -3,9 +3,26 @@
   "version": "0.1.0",
   "tasks": {
     "dev": "deno -A astro dev",
-    "build": "deno -A astro build",
-    "preview": "deno -A astro preview",
+    "build": "deno -A astro build && deno cache jsr:@std/http@^1.1.0/file-server jsr:@std/path@^1.1.4",
+    "preview": "deno run -A dist/server/entry.mjs",
     "astro": "astro"
+  },
+  "imports": {
+    "@astrojs/react": "npm:@astrojs/react@5.0.3",
+    "@deno/astro-adapter": "npm:@deno/astro-adapter@^0.5.1",
+    "@std/http": "jsr:@std/http@^1.1.0",
+    "@std/http/": "jsr:/@std/http@^1.1.0/",
+    "@std/path": "jsr:@std/path@^1.1.4",
+    "@supabase/supabase-js": "jsr:@supabase/supabase-js@^2.58.0",
+    "@zod/zod": "jsr:@zod/zod@^4.1.12",
+    "astro": "npm:astro@6.1.5",
+    "minisearch": "npm:minisearch@^7.2.0",
+    "react": "npm:react@^19.2.0",
+    "react-dom": "npm:react-dom@^19.2.0",
+    "react-dom/": "npm:/react-dom@^19.2.0/",
+    "react/": "npm:/react@^19.2.0/",
+    "sharp": "npm:sharp@^0.34.4",
+    "zod": "npm:zod@^4.1.12"
   },
   "exports": {}
 }
