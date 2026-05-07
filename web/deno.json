@@ -2,8 +2,8 @@
   "name": "@web/astro",
   "version": "0.1.0",
   "tasks": {
-    "dev": "deno -A astro dev",
-    "build": "deno -A astro build && deno cache jsr:@std/http@^1.1.0/file-server jsr:@std/path@^1.1.4",
+    "dev": "deno run -A npm:astro dev",
+    "build": "deno run -A npm:astro build && deno cache jsr:@std/http@^1.1.0/file-server jsr:@std/path@^1.1.4",
     "preview": "deno run -A dist/server/entry.mjs",
     "astro": "astro"
   },
