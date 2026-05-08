@@ -1,0 +1,334 @@
+---
+export const prerender = false;
+import TimerButton from "@components/timer-button.astro";
+import Head from "@components/head.astro";
+
+import { getRecipe } from "@lib/recipes/queries";
+import { getLatestIteration, type IterativeRecipeData } from "@lib/recipes/iterations";
+import { supabase } from "../../lib/db/supabase-client";
+
+const { id } = Astro.params;
+
+if (!id) {
+    return new Response("Recipe ID is required", {
+        status: 400,
+        statusText: "Bad Request",
+    });
+}
+
+let recipe;
+try {
+    recipe = await getRecipe(supabase, id);
+} catch (error) {
+    console.error("Error fetching recipe:", error);
+    return new Response("Error fetching recipe", {
+        status: 500,
+        statusText: "Internal Server Error",
+    });
+}
+
+if (!recipe) {
+    return new Response("Recipe not found", {
+        status: 404,
+        statusText: "Not Found",
+    });
+}
+
+const iteration = await getLatestIteration(supabase, id);
+const viewOriginal = Astro.url.searchParams.get("view") === "original";
+const hasIteration = !!iteration;
+const showIteration = hasIteration && !viewOriginal;
+
+const iterationData = showIteration
+    ? (iteration!.recipe_data as unknown as IterativeRecipeData)
+    : null;
+
+const display = {
+    title: iterationData?.title ?? recipe.title,
+    subtitle: iterationData?.subtitle ?? recipe.subtitle,
+    company_name: iterationData?.company_name ?? recipe.company_name,
+    servings: iterationData?.servings ?? recipe.servings,
+    cook_time_minutes: iterationData?.cook_time_minutes ?? recipe.cook_time_minutes,
+    cooking_tips: iterationData?.cooking_tips ?? recipe.cooking_tips,
+    ingredients: iterationData?.ingredients ?? recipe.ingredients,
+    steps: iterationData?.steps ?? recipe.steps,
+    mise_en_place_steps: iterationData?.mise_en_place_steps ?? recipe.mise_en_place_steps,
+    cooking_tools: iterationData?.cooking_tools ?? recipe.cooking_tools,
+};
+---
+
+<html lang="en">
+    <Head title={`${display.title} - Recipe`} description={display.subtitle || ""} />
+    <body class="bg-page dark:bg-dark-bg font-sans m-0 p-0 md:overflow-hidden">
+        {hasIteration && (
+            <div class="fixed top-0 left-0 right-0 z-50 px-4 py-2 flex items-center justify-between bg-info bg-opacity-15 border-b border-info dark:border-info">
+                <div class="flex items-center gap-2">
+                    <span class="badge-info">v{iteration!.version}</span>
+                    <span class="text-small text-gray-700 dark:text-dark-text-secondary truncate max-w-md">
+                        {showIteration ? iteration!.prompt : "Viewing original recipe"}
+                    </span>
+                </div>
+                <a
+                    href={showIteration ? `?view=original` : Astro.url.pathname}
+                    class="btn btn-sm btn-outline"
+                >
+                    {showIteration ? "View Original" : "View Iteration"}
+                </a>
+            </div>
+        )}
+
+        <!-- Screen 1: Recipe Info & Ingredients -->
+        <div
+            class={`w-full md:w-screen min-h-screen md:h-screen p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 md:cursor-pointer ${hasIteration ? "pt-14 md:pt-14" : ""}`}
+            id="screen1"
+        >
+            <!-- Sidebar -->
+            <div
+                class="w-full md:w-96 md:h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-4 md:p-6 md:overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+            >
+                <span class="badge-secondary mb-3">{display.company_name}</span>
+                <h1 class="heading-2 mb-2">{display.title}</h1>
+                <p
+                    class="text-lead mb-4 text-gray-600 dark:text-dark-text-secondary"
+                >
+                    {display.subtitle}
+                </p>
+                <div class="flex gap-3 mb-6">
+                    <span class="badge-info"
+                        >⏱️ {display.cook_time_minutes} min</span
+                    >
+                    <span class="badge-secondary"
+                        >🍽️ {display.servings} servings</span
+                    >
+                </div>
+                <div class="alert-info">
+                    <h3 class="heading-6 mb-2">Cooking Tips</h3>
+                    <p class="text-small">{display.cooking_tips}</p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="flex-1 md:overflow-y-auto">
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Ingredients</h2>
+                <ul
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 md:gap-3 mb-6 md:mb-8 list-none"
+                >
+                    {
+                        display.ingredients.map((ingredient: any) => (
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-3 md:px-4 py-2 md:py-3 rounded text-xs sm:text-sm">
+                                <strong class="text-gray-900 dark:text-dark-text mr-1">
+                                    {ingredient.quantity}{" "}
+                                    {ingredient.unit || ""}
+                                </strong>
+                                <span class="text-gray-700 dark:text-dark-text-secondary">
+                                    {ingredient.display_name}
+                                </span>
+                            </li>
+                        ))
+                    }
+                </ul>
+
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Tools</h2>
+                <ul
+                    class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-4 list-none"
+                >
+                    {
+                        display.cooking_tools.map((tool: any) => (
+                            <li class="bg-gray-100 dark:bg-dark-bg-elevated border-l-4 border-brand-primary-dark dark:border-brand-primary px-3 md:px-4 py-2 md:py-3 rounded text-xs sm:text-sm text-gray-700 dark:text-dark-text-secondary">
+                                {tool.display_name}
+                            </li>
+                        ))
+                    }
+                </ul>
+            </div>
+
+            <!-- Navigation Hint (Desktop Only) -->
+            <div
+                class="hidden md:flex fixed bottom-6 right-8 items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+            >
+                <span>Click anywhere to see instructions</span>
+                <span class="text-brand-primary">→</span>
+            </div>
+        </div>
+
+        <!-- Screen 2: Steps -->
+        <div
+            class={`w-full md:w-screen min-h-screen md:h-screen p-2 md:p-4 flex flex-col md:flex-row gap-3 md:gap-4 md:cursor-pointer hidden ${hasIteration ? "pt-14 md:pt-14" : ""}`}
+            id="screen2"
+        >
+            <!-- Sidebar with condensed info -->
+            <div
+                class="w-full md:w-96 md:h-full border-2 border-brand-primary-dark dark:border-brand-primary rounded-2xl p-4 md:p-6 md:overflow-y-auto bg-white dark:bg-dark-bg-elevated"
+            >
+                <span class="badge-secondary mb-3">{display.company_name}</span>
+                <h1 class="heading-3 mb-2">{display.title}</h1>
+                <p
+                    class="text-body text-sm mb-4 text-gray-600 dark:text-dark-text-secondary"
+                >
+                    {display.subtitle}
+                </p>
+                <div class="flex gap-3 mb-6">
+                    <span class="badge-info"
+                        >⏱️ {display.cook_time_minutes} min</span
+                    >
+                    <span class="badge-secondary"
+                        >🍽️ {display.servings} servings</span
+                    >
+                </div>
+
+                <div class="alert-info mb-6">
+                    <h3 class="heading-6 mb-2">Cooking Tips</h3>
+                    <p class="text-small">{display.cooking_tips}</p>
+                </div>
+
+                <h3 class="heading-6 uppercase mb-2 md:mb-3">Ingredients</h3>
+                <ul
+                    class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4 md:mb-6 list-none text-2xs md:text-xs"
+                >
+                    {
+                        display.ingredients.map((ingredient: any) => (
+                            <li class="bg-gray-100 dark:bg-dark-bg border-l-3 border-brand-primary px-2 py-1.5 md:py-2 rounded">
+                                <strong class="text-gray-900 dark:text-dark-text mr-1">
+                                    {ingredient.quantity}{" "}
+                                    {ingredient.unit || ""}
+                                </strong>
+                                <span class="text-gray-600 dark:text-dark-text-secondary">
+                                    {ingredient.display_name}
+                                </span>
+                            </li>
+                        ))
+                    }
+                </ul>
+
+                <h3 class="heading-6 uppercase mb-2 md:mb-3">Tools</h3>
+                <div class="flex flex-wrap gap-1.5 md:gap-2">
+                    {
+                        display.cooking_tools.map((tool: any) => (
+                            <span class="badge-secondary text-2xs md:text-xs">
+                                {tool.display_name}
+                            </span>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <!-- Cooking Steps Content -->
+            <div class="flex-1 md:overflow-y-auto">
+                {
+                    display.mise_en_place_steps &&
+                        display.mise_en_place_steps.length > 0 && (
+                            <>
+                                <h2 class="heading-4 uppercase mb-3 md:mb-4">
+                                    Mise en Place
+                                </h2>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 mb-6 md:mb-8">
+                                    {display.mise_en_place_steps.map(
+                                        (step: any, index: number) => (
+                                            <div class="card bg-success bg-opacity-10 border-l-4 border-success">
+                                                <div class="card-body">
+                                                    <div class="flex items-start gap-3 mb-2">
+                                                        <span class="badge-success">
+                                                            {index + 1}
+                                                        </span>
+                                                        <h3 class="heading-6 flex-1">
+                                                            {step.title}
+                                                        </h3>
+                                                    </div>
+                                                    <p
+                                                        class="text-small text-gray-700 dark:text-dark-text-secondary leading-relaxed"
+                                                        set:html={step.details}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ),
+                                    )}
+                                </div>
+                            </>
+                        )
+                }
+
+                <h2 class="heading-4 uppercase mb-3 md:mb-4">Cooking Steps</h2>
+                <div
+                    class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5"
+                >
+                    {
+                        display.steps.map((step: any, index: number) => (
+                            <div class="card border-l-4 border-brand-primary-dark dark:border-brand-primary flex flex-col">
+                                <div class="card-body flex-grow">
+                                    <div class="flex items-start gap-3 mb-2">
+                                        <span class="badge-primary">
+                                            {index + 1}
+                                        </span>
+                                        <h3 class="heading-6 flex-1">
+                                            {step.title}
+                                        </h3>
+                                    </div>
+                                    <p
+                                        class="text-small text-gray-700 dark:text-dark-text-secondary leading-relaxed"
+                                        set:html={step.details}
+                                    />
+                                </div>
+                                <div class="card-footer flex justify-end">
+                                    <TimerButton />
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <!-- Navigation Hint (Desktop Only) -->
+            <div
+                class="hidden md:flex fixed bottom-6 right-8 items-center gap-2 text-sm text-gray-500 dark:text-dark-text-muted animate-pulse"
+            >
+                <span class="text-brand-primary">←</span>
+                <span>Click anywhere to see ingredients</span>
+            </div>
+        </div>
+    </body>
+</html>
+
+<script>
+    const screen1 = document.getElementById("screen1");
+    const screen2 = document.getElementById("screen2");
+
+    if (screen1 && screen2) {
+        // Function to check if screen is desktop size (768px+)
+        const isDesktop = () => window.matchMedia("(min-width: 768px)").matches;
+
+        const toggleScreens = () => {
+            // Only toggle screens on desktop
+            if (isDesktop()) {
+                screen1!.classList.toggle("hidden");
+                screen2!.classList.toggle("hidden");
+            }
+        };
+
+        // Add click handlers
+        screen1.addEventListener("click", toggleScreens);
+        screen2.addEventListener("click", toggleScreens);
+
+        // Handle screen resize - ensure both screens are visible on mobile
+        const handleResize = () => {
+            if (!isDesktop()) {
+                // On mobile, remove hidden class from both screens to show all content
+                screen1!.classList.remove("hidden");
+                screen2!.classList.remove("hidden");
+            } else {
+                // On desktop, ensure only screen1 is visible by default
+                if (
+                    !screen1!.classList.contains("hidden") &&
+                    !screen2!.classList.contains("hidden")
+                ) {
+                    screen2!.classList.add("hidden");
+                }
+            }
+        };
+
+        // Listen for resize events
+        window.addEventListener("resize", handleResize);
+
+        // Run once on load
+        handleResize();
+    }
+</script>

@@ -2,36 +2,31 @@ set dotenv-load
 
 # Development
 
-[doc('Run web dev server')]
+[doc('Run dev server')]
 [group('dev')]
 dev:
-    deno task web
+    npm run dev
 
-[doc('Run API dev server')]
-[group('dev')]
-api:
-    deno task api
+# Build / Preview
 
-[doc('Open interactive REPL')]
-[group('dev')]
-repl:
-    deno task repl
-
-# Build / Deploy
-
-[doc('Build the Astro site')]
+[doc('Build for production')]
 [group('build')]
 build:
-    deno task build
+    npm run build
 
 [doc('Preview production build')]
 [group('build')]
 preview:
-    deno task preview
+    npm run preview
+
+[doc('Type-check the project')]
+[group('build')]
+typecheck:
+    npm run typecheck
 
 # Database
 
-[doc('Start local Postgres container')]
+[doc('Start local Supabase')]
 [group('db')]
 db:
     supabase start
@@ -39,49 +34,16 @@ db:
 [doc('Open Supabase Studio')]
 [group('db')]
 studio:
-    deno task supabase-studio
+    open 'http://127.0.0.1:54323/'
 
 [doc('Regenerate TypeScript types from DB schema')]
 [group('db')]
 db-typegen:
-    deno task db-typegen
-
-[doc('Sync recipes to production')]
-[group('db')]
-db-sync:
-    deno run -A scripts/db/sync-database.ts
-
-# Recipe Pipeline
-
-[doc('Run macOS Vision OCR on recipe images')]
-[group('recipes')]
-ocr:
-    deno run -A scripts/ocr/mac-ocr-batch.ts
-
-[doc('Extract structured recipes from OCR results into DB')]
-[group('recipes')]
-extract:
-    deno run -A scripts/eval/extract.ts
-
-[doc('Iterate on a recipe with an AI prompt')]
-[group('recipes')]
-iterate recipe_id +prompt:
-    deno run -A scripts/recipes/iterate.ts {{recipe_id}} "{{prompt}}"
-
-[doc('Run full recipe pipeline: OCR then extract')]
-[group('recipes')]
-recipe-pipeline: ocr extract
-
-# Infrastructure
-
-[doc('Start ChromaDB container')]
-[group('infra')]
-chroma:
-    deno task chroma
+    supabase gen types typescript --local > src/lib/db/types.ts
 
 # Formatting
 
-[doc('Run deno fmt')]
+[doc('Run prettier')]
 [group('fmt')]
 fmt:
-    deno fmt
+    npm run format 2>/dev/null || npx prettier --write .
