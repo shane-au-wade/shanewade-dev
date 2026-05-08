@@ -2,9 +2,11 @@ dist
 .vercel
 .astro
 
+
 rattlsnek-web
 
-*.env
+.env
+.env.vercel
 
 local_data/
 chroma-data/
