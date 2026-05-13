@@ -1,0 +1,334 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+
+type Palette = {
+    name: string;
+    description?: string;
+    colors: string[];
+};
+
+const ourPalette: Palette = {
+    name: "Our Palette",
+    description:
+        "Natural Palette with the lighter red swapped for the darker burgundy from the dark Classy Palette, plus a slate blue accent.",
+    colors: ["#470012", "#BD8180", "#FFF5F4", "#F3EED9", "#2F4858"],
+};
+
+const palettes: Palette[] = [
+    {
+        name: "Generic Gradient",
+        description: "Deep burgundy fading through plum to slate blue.",
+        colors: [
+            "#470012",
+            "#49102D",
+            "#422243",
+            "#373151",
+            "#2E3E57",
+            "#2F4858",
+        ],
+    },
+    {
+        name: "Generic Gradient",
+        description: "Warmer burgundy-to-navy gradient.",
+        colors: [
+            "#800020",
+            "#781444",
+            "#622B5D",
+            "#463B68",
+            "#304464",
+            "#2F4858",
+        ],
+    },
+    {
+        name: "Classy Palette",
+        description: "Burgundy, dusty rose, taupe, and olive greens.",
+        colors: ["#800020", "#BFA5A4", "#897171", "#2F4400", "#60750A"],
+    },
+    {
+        name: "Natural Palette",
+        description: "Burgundy with soft rose and warm neutrals.",
+        colors: ["#800020", "#BD8180", "#FFF5F4", "#F3EED9"],
+    },
+    {
+        name: "Classy Palette",
+        description: "Deep burgundy with mauve, taupe, and dark olives.",
+        colors: ["#470012", "#BFA5A6", "#897172", "#212200", "#4A4E13"],
+    },
+];
+---
+
+<html lang="en">
+    <Head title="Wedding Colors - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-small text-muted">Wedding color palette options</p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <div class="container py-4">
+            <section class="section">
+                <h1 class="heading-3 mb-1">Wedding Colors</h1>
+                <p class="text-small text-muted mb-4 max-w-2xl">
+                    Candidate palettes — click any swatch or hex to copy.
+                </p>
+
+                <div class="palette-stack mb-6">
+                    <div class="palette-card our-palette">
+                        <div class="palette-header">
+                            <h2 class="palette-title">{ourPalette.name}</h2>
+                            {ourPalette.description && (
+                                <p class="palette-desc">
+                                    {ourPalette.description}
+                                </p>
+                            )}
+                        </div>
+
+                        <div class="palette-row">
+                            {ourPalette.colors.map((hex, i) => (
+                                <div class="swatch-item">
+                                    <button
+                                        class="swatch"
+                                        style={`background-color: ${hex};`}
+                                        data-copy={hex}
+                                        aria-label={`Copy ${hex}`}
+                                    />
+                                    <code
+                                        class="swatch-label"
+                                        data-copy={hex}
+                                    >
+                                        {hex.toUpperCase()}
+                                    </code>
+                                    {i === ourPalette.colors.length - 1 && (
+                                        <span class="swatch-tag">accent</span>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <h3 class="heading-5 mb-2 mt-4">Candidates</h3>
+                <div class="palette-stack">
+                    {
+                        palettes.map((palette) => (
+                            <div class="palette-card">
+                                <div class="palette-header">
+                                    <h2 class="palette-title">
+                                        {palette.name}
+                                    </h2>
+                                    {palette.description && (
+                                        <p class="palette-desc">
+                                            {palette.description}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div class="palette-row">
+                                    {palette.colors.map((hex) => (
+                                        <div class="swatch-item">
+                                            <button
+                                                class="swatch"
+                                                style={`background-color: ${hex};`}
+                                                data-copy={hex}
+                                                aria-label={`Copy ${hex}`}
+                                            />
+                                            <code
+                                                class="swatch-label"
+                                                data-copy={hex}
+                                            >
+                                                {hex.toUpperCase()}
+                                            </code>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+        </div>
+
+        <div
+            id="copy-toast"
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-brand-primary text-white px-4 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 z-50"
+        >
+            Copied!
+        </div>
+
+        <style>
+            .palette-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 0.75rem;
+            }
+
+            .palette-card {
+                padding: 0.75rem 1rem;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                border-radius: 10px;
+                background: white;
+            }
+
+            :global(.dark) .palette-card {
+                background: var(--color-dark-bg-elevated, #1f2937);
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .palette-card.our-palette {
+                border: 2px solid #470012;
+                background: linear-gradient(
+                    180deg,
+                    rgba(243, 238, 217, 0.35),
+                    rgba(255, 245, 244, 0.35)
+                );
+                padding: 1rem 1.25rem;
+            }
+
+            :global(.dark) .palette-card.our-palette {
+                background: linear-gradient(
+                    180deg,
+                    rgba(71, 0, 18, 0.25),
+                    rgba(47, 72, 88, 0.25)
+                );
+                border-color: #bd8180;
+            }
+
+            .our-palette .palette-title {
+                font-size: 1.1rem;
+            }
+
+            .swatch-tag {
+                font-size: 0.6rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #2f4858;
+                background: rgba(47, 72, 88, 0.12);
+                padding: 0.05rem 0.4rem;
+                border-radius: 999px;
+                margin-top: 0.1rem;
+            }
+
+            :global(.dark) .swatch-tag {
+                color: #bcd2dd;
+                background: rgba(47, 72, 88, 0.4);
+            }
+
+            .palette-header {
+                display: flex;
+                align-items: baseline;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                margin-bottom: 0.5rem;
+            }
+
+            .palette-title {
+                font-size: 0.95rem;
+                font-weight: 700;
+                margin: 0;
+            }
+
+            .palette-desc {
+                font-size: 0.75rem;
+                color: #6b7280;
+                margin: 0;
+            }
+
+            :global(.dark) .palette-desc {
+                color: #9ca3af;
+            }
+
+            .palette-row {
+                display: grid;
+                grid-template-columns: repeat(
+                    auto-fit,
+                    minmax(64px, 1fr)
+                );
+                gap: 0.5rem;
+                align-items: start;
+            }
+
+            .swatch-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+            .swatch {
+                width: 100%;
+                aspect-ratio: 1 / 1;
+                border-radius: 8px;
+                border: none;
+                cursor: pointer;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+                transition:
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease;
+            }
+
+            .swatch:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            }
+
+            .swatch-label {
+                font-size: 0.65rem;
+                letter-spacing: 0.03em;
+                color: #6b7280;
+                cursor: pointer;
+                background: transparent;
+                padding: 0;
+            }
+
+            :global(.dark) .swatch-label {
+                color: #9ca3af;
+            }
+
+            #copy-toast.show {
+                opacity: 1;
+            }
+        </style>
+
+        <script>
+            const toast = document.getElementById("copy-toast");
+            let toastTimer: number | undefined;
+
+            function showToast(message: string) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add("show");
+                if (toastTimer) window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 1500);
+            }
+
+            document.querySelectorAll<HTMLElement>("[data-copy]").forEach(
+                (el) => {
+                    el.addEventListener("click", async () => {
+                        const value = el.dataset.copy;
+                        if (!value) return;
+                        try {
+                            await navigator.clipboard.writeText(value);
+                            showToast(`Copied ${value.toUpperCase()}`);
+                        } catch {
+                            showToast("Copy failed");
+                        }
+                    });
+                },
+            );
+        </script>
+    </body>
+</html>
