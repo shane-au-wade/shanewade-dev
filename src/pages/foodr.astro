@@ -1,0 +1,1055 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import Modal from "@components/modal.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+const foods: string[] = [
+    "Pizza",
+    "Tacos",
+    "Sushi",
+    "Ramen",
+    "Cheeseburger",
+    "Caesar salad",
+    "Pho",
+    "Fried chicken",
+    "Pad thai",
+    "Burrito",
+    "Spaghetti carbonara",
+    "Thai curry",
+    "Ice cream",
+    "Dumplings",
+    "BBQ ribs",
+    "Chips & salsa",
+    "Pancakes",
+    "Bagel & lox",
+    "Fish & chips",
+    "Poke bowl",
+    "Banh mi",
+    "Falafel",
+    "Gyro",
+    "Steak frites",
+    "Mac & cheese",
+    "Chicken tikka masala",
+    "Bibimbap",
+    "Mexican street corn",
+    "Hot wings",
+    "Avocado toast",
+    "Croissant",
+    "Cold brew",
+    "Smoothie bowl",
+    "Charcuterie board",
+    "Grilled cheese",
+    "Tomato soup",
+    "Clam chowder",
+    "Lobster roll",
+    "Margherita pizza",
+    "Carnitas",
+    "Beef pho",
+    "Chicken shawarma",
+    "Eggs benedict",
+    "Breakfast burrito",
+    "Donuts",
+    "Cinnamon roll",
+    "Cheesecake",
+    "Chocolate chip cookie",
+    "Mochi",
+    "Boba tea",
+];
+---
+
+<html lang="en">
+    <Head title="foodr - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <!-- ── Header ── -->
+        <header
+            class="sticky top-0 z-40 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-2 flex items-center justify-between gap-2">
+                <div class="min-w-0 flex-1 flex items-center gap-2">
+                    <button
+                        id="back-btn"
+                        class="btn-ghost btn-sm btn-icon hidden"
+                        aria-label="Back to menu"
+                    >
+                        <i class="ri-arrow-left-line text-lg"></i>
+                    </button>
+                    <div class="min-w-0">
+                        <Breadcrumbs />
+                        <p class="text-small text-muted hidden sm:block">
+                            Find what to eat
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                    <button
+                        id="results-btn"
+                        class="btn-outline btn-sm whitespace-nowrap"
+                        data-modal-open="results-modal"
+                    >
+                        <i class="ri-list-check"></i>
+                        <span class="hidden sm:inline">Results</span>
+                        <span
+                            id="results-counter"
+                            class="ml-1 text-xs text-muted whitespace-nowrap"
+                        >
+                            0/0
+                        </span>
+                    </button>
+                    <ThemeToggle />
+                </div>
+            </div>
+        </header>
+
+        <!-- ── Landing screen ── -->
+        <div id="screen-landing" class="container py-8">
+            <div class="text-center mb-8">
+                <h1 class="heading-2 mb-1">foodr</h1>
+                <p class="text-muted">What are you in the mood for?</p>
+            </div>
+
+            <div class="foodr-mode-grid">
+                <!-- Browse mode -->
+                <button id="mode-browse" class="foodr-mode-card">
+                    <i class="ri-shuffle-line foodr-mode-icon"></i>
+                    <span class="foodr-mode-title">Browse</span>
+                    <span class="foodr-mode-desc"
+                        >Swipe through everything. No pressure.</span
+                    >
+                </button>
+
+                <!-- Top Choice mode -->
+                <div class="foodr-mode-card foodr-mode-card-tc">
+                    <i class="ri-trophy-line foodr-mode-icon"></i>
+                    <span class="foodr-mode-title">Top Choice</span>
+                    <span class="foodr-mode-desc"
+                        >Bracket face-offs until one winner remains.</span
+                    >
+
+                    <div class="foodr-pool-picker">
+                        <span class="foodr-pool-label">Pool size</span>
+                        <div class="foodr-pool-controls" role="group">
+                            {
+                                [8, 16, 32].map((n) => (
+                                    <button
+                                        class={`foodr-pool-btn${n === 16 ? " is-selected" : ""}`}
+                                        data-pool={n}
+                                    >
+                                        {n}
+                                    </button>
+                                ))
+                            }
+                        </div>
+                    </div>
+
+                    <button id="mode-bracket" class="btn-primary mt-4 w-full">
+                        Start tournament
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Browse screen ── -->
+        <div id="screen-browse" class="container py-6 hidden">
+            <div class="foodr-stage">
+                <div class="foodr-stack">
+                    <div class="foodr-card foodr-card-back" aria-hidden="true">
+                    </div>
+                    <div class="foodr-card foodr-card-front" id="food-card">
+                        <span class="foodr-eyebrow">Right now I want…</span>
+                        <span class="foodr-name" id="food-name">
+                            {foods[0]}
+                        </span>
+                        <span class="foodr-counter" id="food-progress">
+                            1 / {foods.length}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="foodr-actions">
+                    <button
+                        id="nope-btn"
+                        class="foodr-action foodr-action-no"
+                        aria-label="Nope"
+                    >
+                        <i class="ri-close-line"></i>
+                    </button>
+                    <button
+                        id="yum-btn"
+                        class="foodr-action foodr-action-yes"
+                        aria-label="Yum"
+                    >
+                        <i class="ri-heart-line"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-muted text-center mt-4">
+                    Tap <strong>Nope</strong> or <strong>Yum</strong>. Deck
+                    loops forever — open Results to see what you've swiped.
+                </p>
+            </div>
+        </div>
+
+        <!-- ── Bracket screen ── -->
+        <div id="screen-bracket" class="container py-6 hidden">
+            <!-- Active match view -->
+            <div id="bracket-match">
+                <div class="text-center mb-4">
+                    <p
+                        id="bracket-round-label"
+                        class="text-small font-semibold uppercase tracking-widest text-muted"
+                    >
+                    </p>
+                    <div class="foodr-progress-bar mt-2">
+                        <div id="bracket-progress-fill" class="foodr-progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+
+                <div class="foodr-bracket-grid">
+                    <button
+                        id="bracket-card-a"
+                        class="foodr-card foodr-bracket-card"
+                        aria-label="Pick option A"
+                    >
+                        <span class="foodr-name" id="bracket-name-a"></span>
+                    </button>
+
+                    <div class="foodr-vs" aria-hidden="true">VS</div>
+
+                    <button
+                        id="bracket-card-b"
+                        class="foodr-card foodr-bracket-card"
+                        aria-label="Pick option B"
+                    >
+                        <span class="foodr-name" id="bracket-name-b"></span>
+                    </button>
+                </div>
+
+                <p class="text-xs text-muted text-center mt-5">
+                    Tap the food you want <em>more</em> right now.
+                </p>
+            </div>
+
+            <!-- Champion view (hidden until tournament ends) -->
+            <div id="bracket-champion" class="foodr-champion hidden">
+                <i class="ri-trophy-fill foodr-trophy-icon"></i>
+                <p class="foodr-eyebrow mt-4">Tonight's winner</p>
+                <p class="foodr-name mt-2" id="champion-name"></p>
+                <div class="flex gap-3 mt-8 justify-center flex-wrap">
+                    <button id="champ-back-btn" class="btn-default">
+                        Back to menu
+                    </button>
+                    <button id="champ-rematch-btn" class="btn-primary">
+                        <i class="ri-refresh-line"></i> Rematch
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Browse results modal ── -->
+        <Modal id="results-modal" title="Your swipes" size="md">
+            <div class="foodr-tabs" role="tablist">
+                <button
+                    class="foodr-tab is-active"
+                    data-tab="liked"
+                    role="tab"
+                    aria-selected="true"
+                >
+                    <i class="ri-heart-fill text-success"></i>
+                    Liked
+                    <span class="foodr-tab-count" id="liked-count">0</span>
+                </button>
+                <button
+                    class="foodr-tab"
+                    data-tab="disliked"
+                    role="tab"
+                    aria-selected="false"
+                >
+                    <i class="ri-close-circle-fill text-error"></i>
+                    Nope
+                    <span class="foodr-tab-count" id="disliked-count">0</span>
+                </button>
+            </div>
+
+            <div class="foodr-tab-panel" data-panel="liked" role="tabpanel">
+                <ul id="liked-list" class="foodr-list"></ul>
+                <p
+                    id="liked-empty"
+                    class="text-small text-muted text-center py-6"
+                >
+                    No likes yet. Swipe Yum on something tasty.
+                </p>
+            </div>
+
+            <div
+                class="foodr-tab-panel hidden"
+                data-panel="disliked"
+                role="tabpanel"
+            >
+                <ul id="disliked-list" class="foodr-list"></ul>
+                <p
+                    id="disliked-empty"
+                    class="text-small text-muted text-center py-6"
+                >
+                    No nopes yet.
+                </p>
+            </div>
+
+            <div slot="footer">
+                <button id="clear-btn" class="btn-default">Clear</button>
+                <button class="btn-primary" data-modal-close="results-modal">
+                    Done
+                </button>
+            </div>
+        </Modal>
+
+        <!-- ── Styles ── -->
+        <style>
+            /* ---- Landing ---- */
+            .foodr-mode-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                max-width: 36rem;
+                margin: 0 auto;
+            }
+
+            @media (min-width: 540px) {
+                .foodr-mode-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+            }
+
+            .foodr-mode-card {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 2rem 1.5rem;
+                border-radius: 1.25rem;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                background: white;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                cursor: pointer;
+                transition:
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease;
+            }
+
+            .foodr-mode-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+            }
+
+            :global(.dark) .foodr-mode-card {
+                background: var(--color-dark-bg-elevated, #1f2937);
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .foodr-mode-card-tc {
+                cursor: default;
+            }
+
+            .foodr-mode-card-tc:hover {
+                transform: none;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+            }
+
+            .foodr-mode-icon {
+                font-size: 2.5rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .foodr-mode-title {
+                font-size: 1.2rem;
+                font-weight: 700;
+                margin-bottom: 0.35rem;
+            }
+
+            .foodr-mode-desc {
+                font-size: 0.82rem;
+                color: #6b7280;
+                line-height: 1.4;
+            }
+
+            :global(.dark) .foodr-mode-desc {
+                color: #9ca3af;
+            }
+
+            /* Pool size picker */
+            .foodr-pool-picker {
+                margin-top: 1.25rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+            }
+
+            .foodr-pool-label {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: #9ca3af;
+            }
+
+            .foodr-pool-controls {
+                display: flex;
+                gap: 0.4rem;
+            }
+
+            .foodr-pool-btn {
+                padding: 0.3rem 0.8rem;
+                border-radius: 999px;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                background: transparent;
+                font-size: 0.85rem;
+                cursor: pointer;
+                transition: background 0.12s, border-color 0.12s;
+            }
+
+            :global(.dark) .foodr-pool-btn {
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+
+            .foodr-pool-btn.is-selected {
+                background: #111827;
+                color: white;
+                border-color: #111827;
+            }
+
+            :global(.dark) .foodr-pool-btn.is-selected {
+                background: white;
+                color: #111827;
+                border-color: white;
+            }
+
+            /* ---- Shared card ---- */
+            .foodr-card {
+                border-radius: 1.25rem;
+                background: white;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                text-align: center;
+            }
+
+            :global(.dark) .foodr-card {
+                background: var(--color-dark-bg-elevated, #1f2937);
+                border-color: rgba(255, 255, 255, 0.08);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+            }
+
+            /* ---- Browse screen ---- */
+            .foodr-stage {
+                max-width: 28rem;
+                margin: 0 auto;
+            }
+
+            .foodr-stack {
+                position: relative;
+                height: 22rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .foodr-stack .foodr-card {
+                position: absolute;
+                inset: 0;
+            }
+
+            .foodr-card-back {
+                transform: translateY(12px) scale(0.96);
+                opacity: 0.55;
+                z-index: 0;
+            }
+
+            .foodr-card-front {
+                z-index: 1;
+                transition:
+                    transform 0.2s ease,
+                    opacity 0.2s ease;
+            }
+
+            .foodr-card-front.swipe-left {
+                transform: translateX(-120%) rotate(-12deg);
+                opacity: 0;
+            }
+
+            .foodr-card-front.swipe-right {
+                transform: translateX(120%) rotate(12deg);
+                opacity: 0;
+            }
+
+            .foodr-eyebrow {
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                color: #6b7280;
+                margin-bottom: 0.75rem;
+            }
+
+            :global(.dark) .foodr-eyebrow {
+                color: #9ca3af;
+            }
+
+            .foodr-name {
+                font-size: 2rem;
+                font-weight: 700;
+                line-height: 1.15;
+            }
+
+            .foodr-counter {
+                margin-top: 1rem;
+                font-size: 0.75rem;
+                color: #9ca3af;
+            }
+
+            .foodr-actions {
+                display: flex;
+                justify-content: center;
+                gap: 2.5rem;
+            }
+
+            .foodr-action {
+                width: 4rem;
+                height: 4rem;
+                border-radius: 9999px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.75rem;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition:
+                    transform 0.12s ease,
+                    box-shadow 0.12s ease;
+                box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+            }
+
+            .foodr-action:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 18px rgba(0, 0, 0, 0.18);
+            }
+
+            .foodr-action:active {
+                transform: translateY(0);
+            }
+
+            .foodr-action-no {
+                background: white;
+                color: #dc2626;
+                border-color: #fecaca;
+            }
+
+            .foodr-action-yes {
+                background: white;
+                color: #16a34a;
+                border-color: #bbf7d0;
+            }
+
+            :global(.dark) .foodr-action-no,
+            :global(.dark) .foodr-action-yes {
+                background: var(--color-dark-bg-elevated, #1f2937);
+            }
+
+            /* ---- Bracket screen ---- */
+            .foodr-progress-bar {
+                height: 4px;
+                background: rgba(0, 0, 0, 0.07);
+                border-radius: 99px;
+                overflow: hidden;
+                max-width: 24rem;
+                margin: 0 auto;
+            }
+
+            :global(.dark) .foodr-progress-bar {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .foodr-progress-fill {
+                height: 100%;
+                background: #111827;
+                border-radius: 99px;
+                transition: width 0.3s ease;
+            }
+
+            :global(.dark) .foodr-progress-fill {
+                background: white;
+            }
+
+            .foodr-bracket-grid {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.75rem;
+                max-width: 36rem;
+                margin: 0 auto;
+            }
+
+            @media (min-width: 540px) {
+                .foodr-bracket-grid {
+                    flex-direction: row;
+                    align-items: stretch;
+                }
+            }
+
+            .foodr-bracket-card {
+                width: 100%;
+                min-height: 12rem;
+                cursor: pointer;
+                transition:
+                    transform 0.15s ease,
+                    box-shadow 0.15s ease,
+                    border-color 0.15s ease;
+            }
+
+            .foodr-bracket-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 16px 36px rgba(0, 0, 0, 0.16);
+            }
+
+            @media (min-width: 540px) {
+                .foodr-bracket-card {
+                    flex: 1;
+                }
+            }
+
+            .foodr-bracket-card.is-winner {
+                border-color: #16a34a;
+                animation: winner-pulse 0.35s ease;
+            }
+
+            @keyframes winner-pulse {
+                0% { transform: scale(1); }
+                40% { transform: scale(1.04); }
+                100% { transform: scale(1); }
+            }
+
+            .foodr-vs {
+                font-size: 0.8rem;
+                font-weight: 800;
+                letter-spacing: 0.1em;
+                color: #9ca3af;
+                padding: 0.25rem 0.6rem;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                border-radius: 999px;
+                background: white;
+                flex-shrink: 0;
+            }
+
+            :global(.dark) .foodr-vs {
+                background: var(--color-dark-bg-elevated, #1f2937);
+                border-color: rgba(255, 255, 255, 0.1);
+            }
+
+            /* ---- Champion screen ---- */
+            .foodr-champion {
+                max-width: 28rem;
+                margin: 4rem auto 0;
+                text-align: center;
+            }
+
+            .foodr-trophy-icon {
+                font-size: 4rem;
+                color: #ca8a04;
+            }
+
+            /* ---- Results modal tabs ---- */
+            .foodr-tabs {
+                display: flex;
+                gap: 0.25rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+                margin-bottom: 0.75rem;
+            }
+
+            :global(.dark) .foodr-tabs {
+                border-bottom-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .foodr-tab {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.5rem 0.9rem;
+                font-size: 0.85rem;
+                font-weight: 500;
+                color: #6b7280;
+                background: transparent;
+                border: none;
+                border-bottom: 2px solid transparent;
+                cursor: pointer;
+                margin-bottom: -1px;
+            }
+
+            .foodr-tab:hover {
+                color: inherit;
+            }
+
+            .foodr-tab.is-active {
+                color: inherit;
+                border-bottom-color: currentColor;
+            }
+
+            .foodr-tab-count {
+                font-size: 0.7rem;
+                background: rgba(0, 0, 0, 0.06);
+                padding: 0.05rem 0.4rem;
+                border-radius: 999px;
+            }
+
+            :global(.dark) .foodr-tab-count {
+                background: rgba(255, 255, 255, 0.1);
+            }
+
+            .foodr-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                max-height: 18rem;
+                overflow-y: auto;
+            }
+
+            .foodr-list li {
+                padding: 0.5rem 0.25rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+                font-size: 0.95rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            :global(.dark) .foodr-list li {
+                border-bottom-color: rgba(255, 255, 255, 0.05);
+            }
+
+            .foodr-list li:last-child {
+                border-bottom: none;
+            }
+
+            .foodr-list-meta {
+                font-size: 0.7rem;
+                color: #9ca3af;
+            }
+        </style>
+
+        <!-- ── Client script ── -->
+        <script define:vars={{ foods }}>
+            /* ---------- screen routing ---------- */
+            const screens = {
+                landing: document.getElementById("screen-landing"),
+                browse: document.getElementById("screen-browse"),
+                bracket: document.getElementById("screen-bracket"),
+            };
+            const backBtn = document.getElementById("back-btn");
+            const resultsBtn = document.getElementById("results-btn");
+
+            function showScreen(name) {
+                Object.entries(screens).forEach(([key, el]) => {
+                    el.classList.toggle("hidden", key !== name);
+                });
+                backBtn.classList.toggle("hidden", name === "landing");
+                resultsBtn.classList.toggle("hidden", name !== "browse");
+            }
+
+            backBtn.addEventListener("click", () => showScreen("landing"));
+
+            /* ---------- pool-size picker ---------- */
+            let poolSize = 16;
+            document.querySelectorAll(".foodr-pool-btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    document
+                        .querySelectorAll(".foodr-pool-btn")
+                        .forEach((b) => b.classList.remove("is-selected"));
+                    btn.classList.add("is-selected");
+                    poolSize = Number(btn.getAttribute("data-pool"));
+                });
+            });
+
+            /* ---------- landing mode buttons ---------- */
+            document
+                .getElementById("mode-browse")
+                .addEventListener("click", () => showScreen("browse"));
+
+            document
+                .getElementById("mode-bracket")
+                .addEventListener("click", () => startBracket());
+
+            /* ============================================================
+               BROWSE mode
+            ============================================================ */
+            const nameEl = document.getElementById("food-name");
+            const progressEl = document.getElementById("food-progress");
+            const cardEl = document.getElementById("food-card");
+            const counterEl = document.getElementById("results-counter");
+            const likedCountEl = document.getElementById("liked-count");
+            const dislikedCountEl = document.getElementById("disliked-count");
+            const likedListEl = document.getElementById("liked-list");
+            const dislikedListEl = document.getElementById("disliked-list");
+            const likedEmptyEl = document.getElementById("liked-empty");
+            const dislikedEmptyEl = document.getElementById("disliked-empty");
+
+            let browseIndex = 0;
+            const liked = [];
+            const disliked = [];
+
+            function currentFood() {
+                return foods[browseIndex % foods.length];
+            }
+
+            function renderBrowse() {
+                nameEl.textContent = currentFood();
+                progressEl.textContent = `${(browseIndex % foods.length) + 1} / ${foods.length}`;
+                counterEl.textContent = `${liked.length}/${liked.length + disliked.length}`;
+                likedCountEl.textContent = String(liked.length);
+                dislikedCountEl.textContent = String(disliked.length);
+            }
+
+            function advanceBrowse(direction) {
+                const food = currentFood();
+                if (direction === "yes") liked.push(food);
+                else disliked.push(food);
+
+                const cls =
+                    direction === "yes" ? "swipe-right" : "swipe-left";
+                cardEl.classList.add(cls);
+
+                window.setTimeout(() => {
+                    browseIndex += 1;
+                    cardEl.classList.remove(cls);
+                    renderBrowse();
+                }, 180);
+            }
+
+            document
+                .getElementById("yum-btn")
+                .addEventListener("click", () => advanceBrowse("yes"));
+            document
+                .getElementById("nope-btn")
+                .addEventListener("click", () => advanceBrowse("no"));
+
+            window.addEventListener("keydown", (e) => {
+                if (
+                    screens.browse.classList.contains("hidden") ||
+                    e.target instanceof HTMLInputElement
+                )
+                    return;
+                if (e.key === "ArrowRight") advanceBrowse("yes");
+                if (e.key === "ArrowLeft") advanceBrowse("no");
+            });
+
+            /* Results modal */
+            const tabs = document.querySelectorAll(".foodr-tab");
+            const tabPanels = document.querySelectorAll(".foodr-tab-panel");
+            tabs.forEach((tab) => {
+                tab.addEventListener("click", () => {
+                    const target = tab.getAttribute("data-tab");
+                    tabs.forEach((t) => {
+                        const active = t.getAttribute("data-tab") === target;
+                        t.classList.toggle("is-active", active);
+                        t.setAttribute(
+                            "aria-selected",
+                            active ? "true" : "false",
+                        );
+                    });
+                    tabPanels.forEach((p) => {
+                        p.classList.toggle(
+                            "hidden",
+                            p.getAttribute("data-panel") !== target,
+                        );
+                    });
+                });
+            });
+
+            function renderList(listEl, emptyEl, items) {
+                listEl.innerHTML = "";
+                if (items.length === 0) {
+                    emptyEl.classList.remove("hidden");
+                    return;
+                }
+                emptyEl.classList.add("hidden");
+                items.forEach((item, i) => {
+                    const li = document.createElement("li");
+                    const name = document.createElement("span");
+                    name.textContent = item;
+                    const meta = document.createElement("span");
+                    meta.className = "foodr-list-meta";
+                    meta.textContent = `#${i + 1}`;
+                    li.appendChild(name);
+                    li.appendChild(meta);
+                    listEl.appendChild(li);
+                });
+            }
+
+            resultsBtn.addEventListener("click", () => {
+                renderList(likedListEl, likedEmptyEl, liked);
+                renderList(dislikedListEl, dislikedEmptyEl, disliked);
+            });
+
+            document.getElementById("clear-btn").addEventListener("click", () => {
+                liked.length = 0;
+                disliked.length = 0;
+                renderBrowse();
+                renderList(likedListEl, likedEmptyEl, liked);
+                renderList(dislikedListEl, dislikedEmptyEl, disliked);
+            });
+
+            renderBrowse();
+
+            /* ============================================================
+               BRACKET (Top Choice) mode
+            ============================================================ */
+            const roundLabelEl = document.getElementById("bracket-round-label");
+            const progressFill = document.getElementById("bracket-progress-fill");
+            const cardAEl = document.getElementById("bracket-card-a");
+            const cardBEl = document.getElementById("bracket-card-b");
+            const nameAEl = document.getElementById("bracket-name-a");
+            const nameBEl = document.getElementById("bracket-name-b");
+            const matchView = document.getElementById("bracket-match");
+            const champView = document.getElementById("bracket-champion");
+            const champNameEl = document.getElementById("champion-name");
+
+            let pool = [];
+            let nextRound = [];
+            let roundIndex = 0;
+            let totalRounds = 0;
+            let matchesInRound = 0;
+            let matchesDone = 0;
+            let lastPoolSize = 16;
+
+            function shuffle(arr) {
+                const a = [...arr];
+                for (let i = a.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a;
+            }
+
+            function roundLabel(remaining) {
+                if (remaining <= 2) return "Final";
+                if (remaining <= 4) return "Semifinal";
+                if (remaining <= 8) return "Quarterfinal";
+                return `Round of ${remaining}`;
+            }
+
+            function startBracket(reusePool) {
+                lastPoolSize = poolSize;
+                pool = reusePool || shuffle(foods).slice(0, lastPoolSize);
+                nextRound = [];
+                roundIndex = 0;
+                totalRounds = Math.ceil(Math.log2(lastPoolSize));
+                matchesInRound = Math.floor(pool.length / 2);
+                matchesDone = 0;
+
+                matchView.classList.remove("hidden");
+                champView.classList.add("hidden");
+                showScreen("bracket");
+                nextPair();
+            }
+
+            function nextPair() {
+                // Handle byes when pool has odd count
+                while (pool.length === 1 && nextRound.length > 0) {
+                    nextRound.push(pool.shift());
+                    advanceRound();
+                    return;
+                }
+
+                // Tournament done
+                if (pool.length === 1 && nextRound.length === 0) {
+                    showChampion(pool[0]);
+                    return;
+                }
+
+                // Start new round
+                if (pool.length === 0) {
+                    advanceRound();
+                    return;
+                }
+
+                const a = pool.shift();
+                const b = pool.shift();
+                nameAEl.textContent = a;
+                nameBEl.textContent = b;
+                cardAEl.dataset.food = a;
+                cardBEl.dataset.food = b;
+                cardAEl.classList.remove("is-winner");
+                cardBEl.classList.remove("is-winner");
+
+                const totalMatches = matchesInRound;
+                const pct = totalMatches > 0 ? (matchesDone / totalMatches) * 100 : 0;
+                progressFill.style.width = `${pct}%`;
+                roundLabelEl.textContent = `${roundLabel(matchesInRound * 2)} — match ${matchesDone + 1} of ${totalMatches}`;
+            }
+
+            function advanceRound() {
+                pool = nextRound;
+                nextRound = [];
+                roundIndex += 1;
+                matchesInRound = Math.floor(pool.length / 2);
+                matchesDone = 0;
+
+                if (pool.length <= 1) {
+                    if (pool.length === 1) showChampion(pool[0]);
+                    return;
+                }
+                nextPair();
+            }
+
+            function pickWinner(winnerEl, loserEl, winnerName) {
+                winnerEl.classList.add("is-winner");
+                // briefly disable both to prevent double-tap
+                cardAEl.disabled = true;
+                cardBEl.disabled = true;
+
+                window.setTimeout(() => {
+                    nextRound.push(winnerName);
+                    matchesDone += 1;
+                    cardAEl.disabled = false;
+                    cardBEl.disabled = false;
+                    nextPair();
+                }, 350);
+            }
+
+            cardAEl.addEventListener("click", () => {
+                if (cardAEl.disabled) return;
+                pickWinner(cardAEl, cardBEl, cardAEl.dataset.food);
+            });
+
+            cardBEl.addEventListener("click", () => {
+                if (cardBEl.disabled) return;
+                pickWinner(cardBEl, cardAEl, cardBEl.dataset.food);
+            });
+
+            function showChampion(name) {
+                champNameEl.textContent = name;
+                progressFill.style.width = "100%";
+                matchView.classList.add("hidden");
+                champView.classList.remove("hidden");
+            }
+
+            document.getElementById("champ-back-btn").addEventListener("click", () => {
+                showScreen("landing");
+            });
+
+            document.getElementById("champ-rematch-btn").addEventListener("click", () => {
+                startBracket(); // new shuffle, same pool size
+            });
+
+            /* Start on landing */
+            showScreen("landing");
+        </script>
+
+        <script>
+            import "../lib/modal-data-attrs";
+        </script>
+    </body>
+</html>
