@@ -151,17 +151,71 @@ import "remixicon/fonts/remixicon.css";
             <p class="text-xs text-muted">Click <strong>Record</strong> to begin capturing audio.</p>
         </header>
 
-        <!-- Frequency Axis Labels (right side) -->
-        <div id="freq-labels" class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col justify-between h-64 pointer-events-none">
-            <span class="text-xs text-muted font-mono">20kHz</span>
-            <span class="text-xs text-muted font-mono">5kHz</span>
-            <span class="text-xs text-muted font-mono">1kHz</span>
-            <span class="text-xs text-muted font-mono">250Hz</span>
-            <span class="text-xs text-muted font-mono">60Hz</span>
-        </div>
+        <!-- Projected frequency axis overlay (populated by JS) -->
+        <svg
+            id="axis-overlay"
+            class="fixed inset-0 z-30 pointer-events-none"
+            width="100%"
+            height="100%"
+            aria-hidden="true"
+        ></svg>
 
         <!-- Three.js mount point -->
         <div id="spectrogram-mount" class="w-full h-screen"></div>
+
+        <!-- Scrub Bar (hidden until recording begins) -->
+        <div
+            id="scrub-bar"
+            class="hidden fixed bottom-0 left-0 right-0 z-40 bg-black/80 backdrop-blur-md border-t border-white/10 px-4 py-2.5"
+        >
+            <div class="flex items-center gap-3">
+                <!-- Left timestamp (oldest visible slice) -->
+                <span id="scrub-time-left" class="text-xs font-mono text-white/50 w-12 shrink-0 text-right">00:00</span>
+
+                <!-- Timeline track -->
+                <div class="relative flex-1 group">
+                    <!-- Background track -->
+                    <div class="absolute inset-0 flex items-center pointer-events-none">
+                        <div class="w-full h-1 bg-white/10 rounded-full"></div>
+                    </div>
+                    <!-- Viewport window indicator (positioned by JS) -->
+                    <div
+                        id="scrub-window"
+                        class="absolute top-1/2 -translate-y-1/2 h-1 bg-white/25 rounded-full pointer-events-none transition-none"
+                        style="left: 0%; width: 100%"
+                    ></div>
+                    <!-- Range input (transparent, sits on top) -->
+                    <input
+                        type="range"
+                        id="scrub-input"
+                        min="0"
+                        max="0"
+                        value="0"
+                        step="1"
+                        class="relative w-full h-5 cursor-pointer"
+                        aria-label="Scrub timeline"
+                    />
+                </div>
+
+                <!-- Right timestamp (newest available) -->
+                <span id="scrub-time-right" class="text-xs font-mono text-white/50 w-12 shrink-0">00:00</span>
+
+                <!-- Live button -->
+                <button
+                    id="btn-live"
+                    class="hidden btn-primary btn-sm shrink-0 flex items-center gap-1"
+                    title="Jump to live (End key)"
+                >
+                    <span class="w-1.5 h-1.5 rounded-full bg-red-400 recording-dot inline-block"></span>
+                    Live
+                </button>
+            </div>
+
+            <!-- Current viewport position label -->
+            <div class="flex justify-center mt-0.5">
+                <span id="scrub-time-current" class="text-xs font-mono text-white/30">──</span>
+            </div>
+        </div>
 
         <!-- No mic alert -->
         <div
@@ -181,6 +235,31 @@ import "remixicon/fonts/remixicon.css";
 
     #spectrogram-mount canvas {
         display: block;
+    }
+
+    /* Scrub range input: invisible track/thumb — the visual track is in the DOM */
+    #scrub-input {
+        -webkit-appearance: none;
+        appearance: none;
+        background: transparent;
+    }
+    #scrub-input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.7);
+        cursor: grab;
+        border: 2px solid rgba(255,255,255,0.3);
+        box-shadow: 0 0 4px rgba(0,0,0,0.5);
+        opacity: 1;
+    }
+    #scrub-input:active::-webkit-slider-thumb {
+        cursor: grabbing;
+        background: white;
+    }
+    #scrub-input::-webkit-slider-runnable-track {
+        background: transparent;
     }
 
     button:disabled {
@@ -211,10 +290,13 @@ import "remixicon/fonts/remixicon.css";
     // ─── Config ──────────────────────────────────────────────────────────────────
 
     const FREQ_SAMPLES = 512;      // Y resolution (frequency bins)
-    const TIME_SAMPLES = 900;      // X resolution (time slices visible)
+    const TIME_SAMPLES = 900;      // X resolution (time slices visible in mesh)
     const N_VERTICES = (FREQ_SAMPLES + 1) * (TIME_SAMPLES + 1);
     const XSIZE = 32;
     const YSIZE = 18;
+
+    // Ring buffer: ~9 min of history at 60fps. 32400 × 512 ≈ 16.6 MB
+    const MAX_HISTORY = 32400;
 
     // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -222,7 +304,6 @@ import "remixicon/fonts/remixicon.css";
     let analyser: AnalyserNode | null = null;
     let micSource: MediaStreamAudioSourceNode | null = null;
     let playbackSource: AudioBufferSourceNode | null = null;
-    let playbackAnalyser: AnalyserNode | null = null;
     let mediaRecorder: MediaRecorder | null = null;
     let recordedChunks: Blob[] = [];
     let recordedBlob: Blob | null = null;
@@ -237,7 +318,22 @@ import "remixicon/fonts/remixicon.css";
     let cameraAngle = 2; // degrees of elevation above the flat front view
 
     const DATA = new Uint8Array(FREQ_SAMPLES);
-    let heights = new Uint8Array(N_VERTICES);
+    const heights = new Uint8Array(N_VERTICES);
+
+    // ─── Ring Buffer State ────────────────────────────────────────────────────────
+
+    const ringBuffer = new Uint8Array(MAX_HISTORY * FREQ_SAMPLES);
+    let ringHead = 0;        // next write slot (wraps mod MAX_HISTORY)
+    let totalSlices = 0;     // monotonic count of slices written during recording
+    let isLive = true;       // when true, viewport pins to the newest slice
+
+    // ─── Playback State ───────────────────────────────────────────────────────────
+
+    let recordedSlices = 0;          // snapshot of totalSlices at stopRecording()
+    let recordedDurationMs = 0;      // wall-clock duration of the recording
+    let cachedAudioBuffer: AudioBuffer | null = null;
+    let playbackStartCtxTime = 0;    // audioCtx.currentTime when current play() began
+    let playbackStartSlice = 0;      // absolute slice index where playback started
 
     // ─── Three.js Setup ──────────────────────────────────────────────────────────
 
@@ -390,36 +486,300 @@ import "remixicon/fonts/remixicon.css";
 
     updateCamera(cameraAngle);
 
-    // ─── Geometry Update ──────────────────────────────────────────────────────────
+    // ─── Frequency Axis Overlay ───────────────────────────────────────────────────
 
-    function getActiveData(): Uint8Array {
-        if (analyser && isRecording) {
-            analyser.getByteFrequencyData(DATA);
-        } else if (playbackAnalyser && isPlaying) {
-            playbackAnalyser.getByteFrequencyData(DATA);
-        } else {
-            // Decay toward zero when idle
-            for (let i = 0; i < DATA.length; i++) {
-                DATA[i] = Math.max(0, DATA[i] - 8);
-            }
-        }
-        return DATA;
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    // Updated to audioCtx.sampleRate once audio starts; default covers most hardware
+    let sampleRate = 48000;
+
+    // Key frequencies relevant to CNC audio analysis
+    const TICK_FREQS: { hz: number; label: string; major: boolean }[] = [
+        { hz: 60,    label: "60 Hz",   major: false },
+        { hz: 120,   label: "120 Hz",  major: false },
+        { hz: 250,   label: "250 Hz",  major: true  },
+        { hz: 500,   label: "500 Hz",  major: false },
+        { hz: 1000,  label: "1 kHz",   major: true  },
+        { hz: 2000,  label: "2 kHz",   major: false },
+        { hz: 4000,  label: "4 kHz",   major: true  },
+        { hz: 8000,  label: "8 kHz",   major: false },
+        { hz: 12000, label: "12 kHz",  major: true  },
+    ];
+
+    // Convert a frequency in Hz to the world-space Y of its vertex row.
+    // Returns null if the frequency is out of the captured FFT range.
+    function freqToWorldY(hz: number): number | null {
+        const fftSize = 4 * FREQ_SAMPLES; // e.g. 2048
+        const binHz = sampleRate / fftSize;
+        const binIndex = Math.round(hz / binHz);
+        if (binIndex < 0 || binIndex >= FREQ_SAMPLES) return null;
+        // Mirror of the geometry construction loop
+        const powr = ((ysegments - binIndex) / ysegments) * ypow_max;
+        return -Math.pow(ybase, powr) + yhalfSize + 1;
     }
 
-    function updateGeometry() {
-        getActiveData();
+    // Project a world-space point to screen pixel coordinates via the active camera.
+    function worldToScreen(worldX: number, worldY: number, worldZ = 0): { x: number; y: number } {
+        const vec = new THREE.Vector3(worldX, worldY, worldZ);
+        vec.project(camera); // NDC: x,y ∈ [-1, 1]
+        return {
+            x: (vec.x * 0.5 + 0.5) * window.innerWidth,
+            y: (-vec.y * 0.5 + 0.5) * window.innerHeight,
+        };
+    }
 
+    function updateAxisOverlay() {
+        const svg = document.getElementById("axis-overlay") as unknown as SVGSVGElement | null;
+        if (!svg) return;
+
+        // Wipe and resize
+        svg.innerHTML = "";
+        svg.setAttribute("width", String(window.innerWidth));
+        svg.setAttribute("height", String(window.innerHeight));
+
+        // Avoid drawing over the control panel on the left
+        const LEFT_CLAMP = 296;
+        const maxFreq = sampleRate / 4; // Nyquist of our captured bins
+
+        for (const { hz, label, major } of TICK_FREQS) {
+            if (hz > maxFreq) continue;
+
+            const worldY = freqToWorldY(hz);
+            if (worldY === null) continue;
+
+            // Project the left and right mesh edges at this frequency row.
+            // This gives perspective-correct angled tick lines that follow the mesh geometry.
+            const leftPt  = worldToScreen(-xhalfSize, worldY);
+            const rightPt = worldToScreen( xhalfSize, worldY);
+
+            // Clamp left edge to avoid the controls panel
+            const x1 = Math.max(LEFT_CLAMP, leftPt.x);
+            const y1 = leftPt.y + (rightPt.y - leftPt.y) *
+                       ((x1 - leftPt.x) / (rightPt.x - leftPt.x || 1));
+
+            // Skip if both edges are off-screen vertically
+            if (rightPt.y < -20 || rightPt.y > window.innerHeight + 20) continue;
+
+            // ── Tick line across the mesh ────────────────────────────────────────
+            const line = document.createElementNS(SVG_NS, "line");
+            line.setAttribute("x1", x1.toFixed(1));
+            line.setAttribute("y1", y1.toFixed(1));
+            line.setAttribute("x2", rightPt.x.toFixed(1));
+            line.setAttribute("y2", rightPt.y.toFixed(1));
+            line.setAttribute("stroke", major ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.10)");
+            line.setAttribute("stroke-width", major ? "1" : "0.75");
+            line.setAttribute("stroke-dasharray", major ? "6 5" : "3 6");
+            svg.appendChild(line);
+
+            // ── Right-edge tick nub ──────────────────────────────────────────────
+            const nub = document.createElementNS(SVG_NS, "line");
+            nub.setAttribute("x1", rightPt.x.toFixed(1));
+            nub.setAttribute("y1", rightPt.y.toFixed(1));
+            nub.setAttribute("x2", (rightPt.x + 8).toFixed(1));
+            nub.setAttribute("y2", rightPt.y.toFixed(1));
+            nub.setAttribute("stroke", major ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.40)");
+            nub.setAttribute("stroke-width", major ? "1.5" : "1");
+            svg.appendChild(nub);
+
+            // ── Frequency label ──────────────────────────────────────────────────
+            const text = document.createElementNS(SVG_NS, "text");
+            text.setAttribute("x", (rightPt.x + 14).toFixed(1));
+            text.setAttribute("y", (rightPt.y + 4).toFixed(1));
+            text.setAttribute("fill", major ? "rgba(255,255,255,0.80)" : "rgba(255,255,255,0.45)");
+            text.setAttribute("font-size", major ? "11" : "10");
+            text.setAttribute("font-family", "ui-monospace, 'Cascadia Code', monospace");
+            text.setAttribute("font-weight", major ? "500" : "400");
+            text.textContent = label;
+            svg.appendChild(text);
+        }
+    }
+
+    // Ensures camera matrices are current before projecting.
+    function refreshAxisOverlay() {
+        camera.updateProjectionMatrix();
+        camera.updateMatrixWorld();
+        updateAxisOverlay();
+    }
+
+    // Initial draw happens after the first render frame so matrices are warm.
+    requestAnimationFrame(refreshAxisOverlay);
+
+    // ─── Scrub Bar ────────────────────────────────────────────────────────────────
+
+    const scrubBar      = document.getElementById("scrub-bar")!;
+    const scrubInput    = document.getElementById("scrub-input") as HTMLInputElement;
+    const scrubWindow   = document.getElementById("scrub-window")!;
+    const scrubTimeLeft = document.getElementById("scrub-time-left")!;
+    const scrubTimeRight= document.getElementById("scrub-time-right")!;
+    const scrubTimeCurrent = document.getElementById("scrub-time-current")!;
+    const btnLive       = document.getElementById("btn-live") as HTMLButtonElement;
+
+    // Single source of truth: the "current slice" is an absolute index from recording start.
+    // The scrub thumb's position represents this slice; the viewport extends LEFT from there.
+    // During recording, "live" pins us to the most recent slice. During playback, this advances
+    // automatically with audio time. While paused/scrubbing, the user controls it directly.
+
+    function formatTimeSec(sec: number): string {
+        if (!isFinite(sec) || sec < 0) sec = 0;
+        const m = Math.floor(sec / 60).toString().padStart(2, "0");
+        const s = Math.floor(sec % 60).toString().padStart(2, "0");
+        return `${m}:${s}`;
+    }
+
+    function getRecordingDurationSec(): number {
+        if (recordedDurationMs > 0) return recordedDurationMs / 1000;
+        if (isRecording) return Math.max(0, (Date.now() - recordingStartTime) / 1000);
+        return 0;
+    }
+
+    function getSlicesPerSec(): number {
+        const sliceCount = recordedSlices > 0 ? recordedSlices : totalSlices;
+        const dur = getRecordingDurationSec();
+        if (sliceCount > 0 && dur > 0) return sliceCount / dur;
+        return 60; // fallback estimate (60fps)
+    }
+
+    function getCurrentAbsoluteSlice(): number {
+        if (isRecording && isLive) {
+            return Math.max(0, totalSlices - 1);
+        }
+        if (isPlaying && audioCtx && recordedSlices > 0) {
+            const elapsedSec = audioCtx.currentTime - playbackStartCtxTime;
+            const sps = getSlicesPerSec();
+            return Math.max(0, Math.min(recordedSlices - 1, Math.floor(playbackStartSlice + elapsedSec * sps)));
+        }
+        // Scrubbed / idle: read from the input. Convert scrubValue (0..available-1) to absolute.
+        const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+        return oldestAvail + (parseInt(scrubInput.value) || 0);
+    }
+
+    function absoluteSliceToScrubValue(absSlice: number): number {
+        const available = Math.min(totalSlices, MAX_HISTORY);
+        if (available < 1) return 0;
+        const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+        return Math.max(0, Math.min(available - 1, absSlice - oldestAvail));
+    }
+
+    function updateScrubBar(currentAbsSlice: number) {
+        const available = Math.min(totalSlices, MAX_HISTORY);
+        if (available < 1) return;
+
+        scrubBar.classList.remove("hidden");
+
+        const maxValue = available - 1;
+        scrubInput.max = String(maxValue);
+
+        // Sync thumb to current slice when recording-live or playing
+        if ((isRecording && isLive) || isPlaying) {
+            scrubInput.value = String(absoluteSliceToScrubValue(currentAbsSlice));
+        }
+
+        const scrubValue = parseInt(scrubInput.value) || 0;
+
+        // Viewport window: TIME_SAMPLES wide, right edge at scrubValue
+        const viewRight = scrubValue + 1; // exclusive
+        const viewLeft = Math.max(0, viewRight - TIME_SAMPLES);
+        const leftFrac = viewLeft / available;
+        const widthFrac = (viewRight - viewLeft) / available;
+
+        scrubWindow.style.left  = `${(leftFrac * 100).toFixed(2)}%`;
+        scrubWindow.style.width = `${(widthFrac * 100).toFixed(2)}%`;
+
+        // Time labels
+        const sps = getSlicesPerSec();
+        const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+        const newestAbs = Math.max(0, (recordedSlices > 0 ? recordedSlices : totalSlices) - 1);
+        scrubTimeLeft.textContent = formatTimeSec(oldestAvail / sps);
+        scrubTimeRight.textContent = formatTimeSec(newestAbs / sps);
+
+        if (isPlaying) {
+            scrubTimeCurrent.textContent = `▶ ${formatTimeSec(currentAbsSlice / sps)}`;
+        } else if (isRecording && isLive) {
+            scrubTimeCurrent.textContent = "● live";
+        } else {
+            scrubTimeCurrent.textContent = formatTimeSec(currentAbsSlice / sps);
+        }
+    }
+
+    function goLive() {
+        // "Live" means: jump to the newest slice. During recording, also re-pin tracking.
+        isLive = true;
+        if (isPlaying) stopPlayback();
+        btnLive.classList.add("hidden");
+        const available = Math.min(totalSlices, MAX_HISTORY);
+        if (available > 0) {
+            scrubInput.value = String(available - 1);
+        }
+        const cur = getCurrentAbsoluteSlice();
+        renderViewport(cur);
+        updateScrubBar(cur);
+    }
+
+    scrubInput.addEventListener("input", () => {
+        isLive = false;
+        btnLive.classList.remove("hidden");
+
+        const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+        const newAbsSlice = oldestAvail + (parseInt(scrubInput.value) || 0);
+
+        if (isPlaying && cachedAudioBuffer) {
+            // Re-seek the audio (AudioBufferSourceNode can't be seeked in-place)
+            startPlaybackFromSlice(newAbsSlice);
+        } else {
+            renderViewport(newAbsSlice);
+            updateScrubBar(newAbsSlice);
+        }
+    });
+
+    btnLive.addEventListener("click", goLive);
+
+    // ─── Geometry Update ──────────────────────────────────────────────────────────
+
+    // Render the mesh so its RIGHT edge corresponds to viewportRightAbsSlice.
+    // Slices that fall outside available data (too old or future) are rendered as zeros.
+    function renderViewport(viewportRightAbsSlice: number) {
         const stride = FREQ_SAMPLES + 1;
-        const endVal = N_VERTICES - stride;
+        const available = Math.min(totalSlices, MAX_HISTORY);
+        const oldestAvailable = Math.max(0, totalSlices - MAX_HISTORY);
+        const oldestRingIndex = (ringHead - available + MAX_HISTORY * 2) % MAX_HISTORY;
 
-        // Shift left by one time column
-        heights.copyWithin(0, stride, N_VERTICES + 1);
+        for (let i = 0; i < TIME_SAMPLES; i++) {
+            const destBase = i * stride;
+            // i=0 is leftmost column, i=TIME_SAMPLES-1 is rightmost (most recent)
+            const colAbs = viewportRightAbsSlice - (TIME_SAMPLES - 1 - i);
 
-        // Write new column at the right
-        heights.set(DATA, endVal - stride);
+            if (colAbs < oldestAvailable || colAbs >= totalSlices) {
+                heights.fill(0, destBase, destBase + FREQ_SAMPLES);
+            } else {
+                const slotInRing = colAbs - oldestAvailable;
+                const ringSlice = (oldestRingIndex + slotInRing) % MAX_HISTORY;
+                heights.set(
+                    ringBuffer.subarray(ringSlice * FREQ_SAMPLES, ringSlice * FREQ_SAMPLES + FREQ_SAMPLES),
+                    destBase,
+                );
+            }
+        }
 
         geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
         uniforms.uSensitivity.value = sensitivity;
+    }
+
+    function updateGeometry() {
+        // Push new FFT frames ONLY during recording — never during playback (which would
+        // corrupt the recorded history with a recomputed live FFT of the same audio).
+        if (isRecording && analyser) {
+            analyser.getByteFrequencyData(DATA);
+            ringBuffer.set(DATA, ringHead * FREQ_SAMPLES);
+            ringHead = (ringHead + 1) % MAX_HISTORY;
+            totalSlices++;
+        }
+
+        const currentAbsSlice = getCurrentAbsoluteSlice();
+        renderViewport(currentAbsSlice);
+
+        if (totalSlices > 0) {
+            updateScrubBar(currentAbsSlice);
+        }
     }
 
     // ─── Animation Loop ───────────────────────────────────────────────────────────
@@ -438,6 +798,7 @@ import "remixicon/fonts/remixicon.css";
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
+        refreshAxisOverlay();
     });
 
     // ─── Audio Setup ──────────────────────────────────────────────────────────────
@@ -481,7 +842,20 @@ import "remixicon/fonts/remixicon.css";
 
             micStream = await navigator.mediaDevices.getUserMedia(constraints);
 
+            // Reset ring buffer + playback caches for the new session
+            ringBuffer.fill(0);
+            ringHead           = 0;
+            totalSlices        = 0;
+            recordedSlices     = 0;
+            recordedDurationMs = 0;
+            cachedAudioBuffer  = null;
+            isLive             = true;
+            btnLive.classList.add("hidden");
+            scrubBar.classList.add("hidden");
+            scrubInput.value = "0";
+
             audioCtx = new AudioContext();
+            sampleRate = audioCtx.sampleRate; // lock tick positions to actual hardware rate
             analyser = audioCtx.createAnalyser();
             analyser.fftSize = 4 * FREQ_SAMPLES;
             analyser.smoothingTimeConstant = parseFloat(
@@ -511,8 +885,9 @@ import "remixicon/fonts/remixicon.css";
             startDurationTimer();
             setButtonState("recording");
 
-            // Refresh device list now that we have permission
+            // Refresh device list and axis ticks now that we have real sample rate
             getAudioDevices();
+            refreshAxisOverlay();
         } catch (err) {
             console.error("Microphone error:", err);
             document.getElementById("no-mic-alert")!.classList.remove("hidden");
@@ -533,44 +908,93 @@ import "remixicon/fonts/remixicon.css";
         }
         analyser = null;
         isRecording = false;
+
+        // Snapshot the recording for playback math
+        recordedSlices = totalSlices;
+        recordedDurationMs = Math.max(1, Date.now() - recordingStartTime);
+        cachedAudioBuffer = null; // force re-decode on first play
+
         stopDurationTimer();
     }
 
-    async function playRecording() {
-        if (!recordedBlob || !audioCtx) return;
+    // Internal: (re)start audio playback from a specific absolute slice index.
+    // Used by Play, scrub-while-playing, and arrow-key seeks during playback.
+    function startPlaybackFromSlice(absSlice: number) {
+        if (!audioCtx || !cachedAudioBuffer || recordedSlices < 1) return;
 
-        isPlaying = true;
-        setButtonState("playing");
-        startDurationTimer();
+        // Tear down any existing source
+        if (playbackSource) {
+            try {
+                playbackSource.onended = null;
+                playbackSource.stop();
+            } catch {}
+            try { playbackSource.disconnect(); } catch {}
+            playbackSource = null;
+        }
 
-        const arrayBuffer = await recordedBlob.arrayBuffer();
-        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-
-        playbackAnalyser = audioCtx.createAnalyser();
-        playbackAnalyser.fftSize = 4 * FREQ_SAMPLES;
-        playbackAnalyser.smoothingTimeConstant = 0.7;
+        const sps = getSlicesPerSec();
+        const startTimeSec = Math.max(0, Math.min(cachedAudioBuffer.duration, absSlice / sps));
 
         playbackSource = audioCtx.createBufferSource();
-        playbackSource.buffer = audioBuffer;
-        playbackSource.connect(playbackAnalyser);
-        playbackAnalyser.connect(audioCtx.destination);
-        playbackSource.start();
+        playbackSource.buffer = cachedAudioBuffer;
+        playbackSource.connect(audioCtx.destination);
 
+        playbackStartCtxTime = audioCtx.currentTime;
+        playbackStartSlice = absSlice;
+
+        const localSource = playbackSource;
         playbackSource.onended = () => {
+            // Ignore the onended that fires from our own stop() during a re-seek
+            if (localSource !== playbackSource) return;
             isPlaying = false;
-            playbackAnalyser = null;
             stopDurationTimer();
             setButtonState("stopped");
         };
+
+        playbackSource.start(0, startTimeSec);
+
+        isPlaying = true;
+        isLive = false;
+        btnLive.classList.remove("hidden");
+        setButtonState("playing");
+    }
+
+    async function playRecording() {
+        if (!recordedBlob) return;
+        if (!audioCtx) audioCtx = new AudioContext();
+
+        if (!cachedAudioBuffer) {
+            const arrayBuffer = await recordedBlob.arrayBuffer();
+            cachedAudioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+            // Refine duration with the precise decoded value
+            recordedDurationMs = Math.max(recordedDurationMs, cachedAudioBuffer.duration * 1000);
+        }
+
+        // Determine where to start: current scrub position, but jump to the beginning
+        // if the thumb is at the end (or in live mode) so Play always plays SOMETHING.
+        const available = Math.min(totalSlices, MAX_HISTORY);
+        const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+        const maxValue = Math.max(0, available - 1);
+        const scrubValue = parseInt(scrubInput.value) || 0;
+
+        let startSlice = oldestAvail + scrubValue;
+        if (isLive || scrubValue >= maxValue - 1) {
+            startSlice = oldestAvail;
+        }
+
+        startPlaybackFromSlice(startSlice);
+        startDurationTimer();
     }
 
     function stopPlayback() {
         if (playbackSource) {
-            playbackSource.stop();
-            playbackSource.disconnect();
+            try {
+                playbackSource.onended = null;
+                playbackSource.stop();
+            } catch {}
+            try { playbackSource.disconnect(); } catch {}
             playbackSource = null;
         }
-        playbackAnalyser = null;
         isPlaying = false;
         stopDurationTimer();
         setButtonState("stopped");
@@ -679,9 +1103,6 @@ import "remixicon/fonts/remixicon.css";
     });
 
     document.getElementById("btn-play")!.addEventListener("click", () => {
-        if (!audioCtx) {
-            audioCtx = new AudioContext();
-        }
         playRecording();
     });
 
@@ -708,27 +1129,56 @@ import "remixicon/fonts/remixicon.css";
         setSensitivity(sensitivity + 0.1);
     });
 
-    // Keyboard shortcuts: [ to decrease, ] to increase (skip if typing in an input)
+    // Keyboard shortcuts: [ / ] sensitivity, ← / → scrub, End = live
     document.addEventListener("keydown", (e) => {
         if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
         if (e.key === "[") {
             e.preventDefault();
             setSensitivity(sensitivity - 0.1);
         } else if (e.key === "]") {
             e.preventDefault();
             setSensitivity(sensitivity + 0.1);
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+            e.preventDefault();
+            const available = Math.min(totalSlices, MAX_HISTORY);
+            if (available < 1) return;
+
+            const step = Math.round(getSlicesPerSec()); // ~1 second
+            const maxValue = available - 1;
+            const current = parseInt(scrubInput.value) || 0;
+            const next = e.key === "ArrowLeft"
+                ? Math.max(0, current - step)
+                : Math.min(maxValue, current + step);
+
+            isLive = false;
+            btnLive.classList.remove("hidden");
+            scrubInput.value = String(next);
+
+            const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
+            const newAbsSlice = oldestAvail + next;
+
+            if (isPlaying && cachedAudioBuffer) {
+                startPlaybackFromSlice(newAbsSlice);
+            } else {
+                renderViewport(newAbsSlice);
+                updateScrubBar(newAbsSlice);
+            }
+        } else if (e.key === "End") {
+            e.preventDefault();
+            goLive();
         }
     });
 
     document.getElementById("smoothing")!.addEventListener("input", (e) => {
         const val = parseFloat((e.target as HTMLInputElement).value);
         if (analyser) analyser.smoothingTimeConstant = val;
-        if (playbackAnalyser) playbackAnalyser.smoothingTimeConstant = val;
     });
 
     document.getElementById("camera-angle")!.addEventListener("input", (e) => {
         cameraAngle = parseInt((e.target as HTMLInputElement).value);
         updateCamera(cameraAngle);
+        refreshAxisOverlay();
     });
 
     // ─── Init ─────────────────────────────────────────────────────────────────────
