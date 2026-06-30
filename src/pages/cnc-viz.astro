@@ -467,7 +467,13 @@ import "remixicon/fonts/remixicon.css";
         fragmentShader,
     });
 
-    geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
+    // Create once — updated each frame via needsUpdate = true (avoids per-frame GC allocs).
+    // NOTE: must use base BufferAttribute (not Uint8BufferAttribute) so the attribute
+    // REFERENCES `heights` directly. Uint8BufferAttribute copies the array (new Uint8Array),
+    // which would freeze the GPU data at its initial zero state.
+    const dispAttr = new THREE.BufferAttribute(heights, 1);
+    dispAttr.setUsage(THREE.DynamicDrawUsage); // hint: buffer updates every frame
+    geometry.setAttribute("displacement", dispAttr);
 
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
@@ -661,6 +667,15 @@ import "remixicon/fonts/remixicon.css";
         return Math.max(0, Math.min(available - 1, absSlice - oldestAvail));
     }
 
+    // Scrub bar DOM state cache — avoids thrashing the DOM at 60fps
+    let _scrubMaxValue = -1;
+    let _scrubThumbValue = -1;
+    let _scrubWindowLeft = "";
+    let _scrubWindowWidth = "";
+    let _scrubLabelLeft = "";
+    let _scrubLabelRight = "";
+    let _scrubLabelCurrent = "";
+
     function updateScrubBar(currentAbsSlice: number) {
         const available = Math.min(totalSlices, MAX_HISTORY);
         if (available < 1) return;
@@ -668,37 +683,49 @@ import "remixicon/fonts/remixicon.css";
         scrubBar.classList.remove("hidden");
 
         const maxValue = available - 1;
-        scrubInput.max = String(maxValue);
+        if (maxValue !== _scrubMaxValue) {
+            scrubInput.max = String(maxValue);
+            _scrubMaxValue = maxValue;
+        }
 
         // Sync thumb to current slice when recording-live or playing
         if ((isRecording && isLive) || isPlaying) {
-            scrubInput.value = String(absoluteSliceToScrubValue(currentAbsSlice));
+            const thumbVal = absoluteSliceToScrubValue(currentAbsSlice);
+            if (thumbVal !== _scrubThumbValue) {
+                scrubInput.value = String(thumbVal);
+                _scrubThumbValue = thumbVal;
+            }
         }
 
         const scrubValue = parseInt(scrubInput.value) || 0;
 
-        // Viewport window: TIME_SAMPLES wide, right edge at scrubValue
-        const viewRight = scrubValue + 1; // exclusive
+        // Viewport window indicator
+        const viewRight = scrubValue + 1;
         const viewLeft = Math.max(0, viewRight - TIME_SAMPLES);
         const leftFrac = viewLeft / available;
         const widthFrac = (viewRight - viewLeft) / available;
+        const newLeft  = `${(leftFrac * 100).toFixed(2)}%`;
+        const newWidth = `${(widthFrac * 100).toFixed(2)}%`;
+        if (newLeft !== _scrubWindowLeft) { scrubWindow.style.left = newLeft; _scrubWindowLeft = newLeft; }
+        if (newWidth !== _scrubWindowWidth) { scrubWindow.style.width = newWidth; _scrubWindowWidth = newWidth; }
 
-        scrubWindow.style.left  = `${(leftFrac * 100).toFixed(2)}%`;
-        scrubWindow.style.width = `${(widthFrac * 100).toFixed(2)}%`;
-
-        // Time labels
+        // Time labels — only update once per second (sps changes rarely)
         const sps = getSlicesPerSec();
         const oldestAvail = Math.max(0, totalSlices - MAX_HISTORY);
         const newestAbs = Math.max(0, (recordedSlices > 0 ? recordedSlices : totalSlices) - 1);
-        scrubTimeLeft.textContent = formatTimeSec(oldestAvail / sps);
-        scrubTimeRight.textContent = formatTimeSec(newestAbs / sps);
+        const newLabelLeft  = formatTimeSec(oldestAvail / sps);
+        const newLabelRight = formatTimeSec(newestAbs / sps);
+        if (newLabelLeft  !== _scrubLabelLeft)  { scrubTimeLeft.textContent  = newLabelLeft;  _scrubLabelLeft  = newLabelLeft;  }
+        if (newLabelRight !== _scrubLabelRight) { scrubTimeRight.textContent = newLabelRight; _scrubLabelRight = newLabelRight; }
 
-        if (isPlaying) {
-            scrubTimeCurrent.textContent = `▶ ${formatTimeSec(currentAbsSlice / sps)}`;
-        } else if (isRecording && isLive) {
-            scrubTimeCurrent.textContent = "● live";
-        } else {
-            scrubTimeCurrent.textContent = formatTimeSec(currentAbsSlice / sps);
+        const newCurrent = isPlaying
+            ? `▶ ${formatTimeSec(currentAbsSlice / sps)}`
+            : isRecording && isLive
+                ? "● live"
+                : formatTimeSec(currentAbsSlice / sps);
+        if (newCurrent !== _scrubLabelCurrent) {
+            scrubTimeCurrent.textContent = newCurrent;
+            _scrubLabelCurrent = newCurrent;
         }
     }
 
@@ -778,7 +805,7 @@ import "remixicon/fonts/remixicon.css";
             }
         }
 
-        geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
+        dispAttr.needsUpdate = true;
         uniforms.uSensitivity.value = sensitivity;
     }
 
@@ -871,6 +898,10 @@ import "remixicon/fonts/remixicon.css";
             btnLive.classList.add("hidden");
             scrubBar.classList.add("hidden");
             scrubInput.value = "0";
+            // Reset scrub bar DOM cache so first-frame writes aren't skipped
+            _scrubMaxValue = -1; _scrubThumbValue = -1;
+            _scrubWindowLeft = ""; _scrubWindowWidth = "";
+            _scrubLabelLeft = ""; _scrubLabelRight = ""; _scrubLabelCurrent = "";
 
             audioCtx = new AudioContext();
             sampleRate = audioCtx.sampleRate; // lock tick positions to actual hardware rate
