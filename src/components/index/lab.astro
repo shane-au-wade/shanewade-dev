@@ -1,0 +1,80 @@
+---
+import "@styles/components.css";
+import "@styles/colors.css";
+import "remixicon/fonts/remixicon.css";
+
+const experiments = [
+    {
+        title: "Falling Sand",
+        href: "/canvas-viz",
+        icon: "ri-drop-fill",
+        description: "Particle physics sandbox built on Canvas 2D.",
+    },
+    {
+        title: "CNC Spectrogram",
+        href: "/cnc-viz",
+        icon: "ri-pulse-fill",
+        description: "Real-time frequency visualization of CNC machine audio.",
+    },
+    {
+        title: "N64 Emulator",
+        href: "/emulator",
+        icon: "ri-gamepad-fill",
+        description: "Super Smash Bros. 64 running in the browser.",
+    },
+    {
+        title: "Realtime Chat",
+        href: "/realtime",
+        icon: "ri-message-3-fill",
+        description: "Live multi-user chat demo using WebSockets.",
+    },
+    {
+        title: "Typing Test",
+        href: "/typing-test",
+        icon: "ri-keyboard-box-fill",
+        description: "WPM tracker with accuracy stats. Still evolving.",
+    },
+    {
+        title: "Wedding Colors",
+        href: "/wedding-colors",
+        icon: "ri-palette-fill",
+        description: "Color palette explorer built for wedding planning.",
+    },
+    {
+        title: "Foodr",
+        href: "/foodr",
+        icon: "ri-restaurant-fill",
+        description: "Tinder-style food decision app.",
+    },
+];
+---
+
+<section
+    id="lab-section"
+    class="pt-16 pb-4 px-4 max-w-[80rem] mx-auto"
+>
+    <div class="mb-6">
+        <p class="uppercase tracking-wider text-sm text-brand-primary font-medium mb-1">
+            Experiments
+        </p>
+        <h2 class="heading-2">The Lab</h2>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {
+            experiments.map((item) => (
+                <a href={item.href} class="no-underline group">
+                    <div class="card-hover h-full flex flex-col gap-2 p-4">
+                        <i
+                            class={`${item.icon} text-2xl text-brand-primary`}
+                        />
+                        <h3 class="heading-6 leading-tight">{item.title}</h3>
+                        <p class="text-small text-muted leading-snug m-0">
+                            {item.description}
+                        </p>
+                    </div>
+                </a>
+            ))
+        }
+    </div>
+</section>
