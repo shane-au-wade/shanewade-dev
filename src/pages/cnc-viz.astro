@@ -1,0 +1,738 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+---
+
+<html lang="en">
+    <Head title="CNC Spectrogram - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300 overflow-hidden font-sans"
+    >
+        <!-- Floating Controls Header -->
+        <header
+            id="controls-panel"
+            class="fixed top-4 left-4 z-50 flex flex-col gap-3 p-4 bg-white/92 dark:bg-dark-bg-elevated/92 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border w-72 transition-opacity duration-300 hover:opacity-100 opacity-85"
+        >
+            <div class="flex items-center justify-between gap-2">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-xs text-muted mt-0.5">CNC Audio Analyzer</p>
+                </div>
+                <ThemeToggle />
+            </div>
+
+            <!-- Status Badge -->
+            <div class="flex items-center gap-2">
+                <span id="status-badge" class="badge-secondary flex items-center gap-1.5">
+                    <span id="status-dot" class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                    <span id="status-text">Idle</span>
+                </span>
+                <span id="duration-display" class="text-xs text-muted font-mono ml-auto hidden">00:00.0</span>
+            </div>
+
+            <!-- Transport Controls -->
+            <div class="flex gap-2">
+                <button
+                    id="btn-record"
+                    class="btn-primary btn-sm flex-1 flex items-center justify-center gap-1.5"
+                    title="Start recording"
+                >
+                    <i class="ri-record-circle-line"></i>
+                    Record
+                </button>
+                <button
+                    id="btn-stop"
+                    class="btn-default btn-sm flex-1 flex items-center justify-center gap-1.5"
+                    disabled
+                    title="Stop"
+                >
+                    <i class="ri-stop-circle-line"></i>
+                    Stop
+                </button>
+            </div>
+
+            <div class="flex gap-2">
+                <button
+                    id="btn-play"
+                    class="btn-outline btn-sm flex-1 flex items-center justify-center gap-1.5"
+                    disabled
+                    title="Play recording"
+                >
+                    <i class="ri-play-circle-line"></i>
+                    Play
+                </button>
+                <button
+                    id="btn-download"
+                    class="btn-ghost btn-sm flex-1 flex items-center justify-center gap-1.5"
+                    disabled
+                    title="Download recording"
+                >
+                    <i class="ri-download-line"></i>
+                    Save
+                </button>
+            </div>
+
+            <!-- Visualization Controls -->
+            <div class="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2.5">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider" for="sensitivity">
+                            Sensitivity
+                        </label>
+                        <span class="text-xs text-muted font-mono">[ / ]</span>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        <button
+                            id="sensitivity-dec"
+                            class="btn-default btn-sm btn-icon w-7 h-7 flex items-center justify-center shrink-0 text-base leading-none"
+                            aria-label="Decrease sensitivity"
+                            title="Decrease ([ key)"
+                        >−</button>
+                        <input
+                            type="number"
+                            id="sensitivity"
+                            min="0.1"
+                            max="20"
+                            step="0.1"
+                            value="0.6"
+                            class="input text-center font-mono text-sm h-7 px-1 flex-1 min-w-0"
+                        />
+                        <button
+                            id="sensitivity-inc"
+                            class="btn-default btn-sm btn-icon w-7 h-7 flex items-center justify-center shrink-0 text-base leading-none"
+                            aria-label="Increase sensitivity"
+                            title="Increase (] key)"
+                        >+</button>
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">
+                        Smoothing
+                    </label>
+                    <input
+                        type="range"
+                        id="smoothing"
+                        min="0"
+                        max="0.95"
+                        step="0.05"
+                        value="0.7"
+                        class="w-full accent-brand-primary"
+                    />
+                </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">
+                        Camera Angle
+                    </label>
+                    <input
+                        type="range"
+                        id="camera-angle"
+                        min="0"
+                        max="45"
+                        step="1"
+                        value="3"
+                        class="w-full accent-brand-primary"
+                    />
+                </div>
+            </div>
+
+            <!-- Mic selector -->
+            <div>
+                <label class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">
+                    Input Device
+                </label>
+                <select id="mic-select" class="select text-sm w-full">
+                    <option value="">Default Microphone</option>
+                </select>
+            </div>
+
+            <p class="text-xs text-muted">Click <strong>Record</strong> to begin capturing audio.</p>
+        </header>
+
+        <!-- Frequency Axis Labels (right side) -->
+        <div id="freq-labels" class="fixed right-4 top-1/2 -translate-y-1/2 z-40 flex flex-col justify-between h-64 pointer-events-none">
+            <span class="text-xs text-muted font-mono">20kHz</span>
+            <span class="text-xs text-muted font-mono">5kHz</span>
+            <span class="text-xs text-muted font-mono">1kHz</span>
+            <span class="text-xs text-muted font-mono">250Hz</span>
+            <span class="text-xs text-muted font-mono">60Hz</span>
+        </div>
+
+        <!-- Three.js mount point -->
+        <div id="spectrogram-mount" class="w-full h-screen"></div>
+
+        <!-- No mic alert -->
+        <div
+            id="no-mic-alert"
+            class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 alert-warning z-50 max-w-md text-center"
+        >
+            <i class="ri-mic-off-line mr-1"></i>
+            Microphone access denied or unavailable. Please allow microphone permissions and refresh.
+        </div>
+    </body>
+</html>
+
+<style>
+    body {
+        overscroll-behavior: none;
+    }
+
+    #spectrogram-mount canvas {
+        display: block;
+    }
+
+    button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.2; }
+    }
+
+    .recording-dot {
+        animation: pulse-dot 1s ease-in-out infinite;
+        background-color: #ef4444 !important;
+    }
+
+    .playing-dot {
+        animation: pulse-dot 0.6s ease-in-out infinite;
+        background-color: #22c55e !important;
+    }
+</style>
+
+<script>
+    import * as THREE from "three";
+
+    // ─── Config ──────────────────────────────────────────────────────────────────
+
+    const FREQ_SAMPLES = 512;      // Y resolution (frequency bins)
+    const TIME_SAMPLES = 900;      // X resolution (time slices visible)
+    const N_VERTICES = (FREQ_SAMPLES + 1) * (TIME_SAMPLES + 1);
+    const XSIZE = 32;
+    const YSIZE = 18;
+
+    // ─── State ────────────────────────────────────────────────────────────────────
+
+    let audioCtx: AudioContext | null = null;
+    let analyser: AnalyserNode | null = null;
+    let micSource: MediaStreamAudioSourceNode | null = null;
+    let playbackSource: AudioBufferSourceNode | null = null;
+    let playbackAnalyser: AnalyserNode | null = null;
+    let mediaRecorder: MediaRecorder | null = null;
+    let recordedChunks: Blob[] = [];
+    let recordedBlob: Blob | null = null;
+    let micStream: MediaStream | null = null;
+
+    let isRecording = false;
+    let isPlaying = false;
+    let recordingStartTime = 0;
+    let durationTimer: ReturnType<typeof setInterval> | null = null;
+
+    let sensitivity = 0.6;
+    let cameraAngle = 2; // degrees of elevation above the flat front view
+
+    const DATA = new Uint8Array(FREQ_SAMPLES);
+    let heights = new Uint8Array(N_VERTICES);
+
+    // ─── Three.js Setup ──────────────────────────────────────────────────────────
+
+    const mount = document.getElementById("spectrogram-mount")!;
+
+    const camera = new THREE.PerspectiveCamera(27, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0a0a0f);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    mount.appendChild(renderer.domElement);
+
+    // ─── Geometry ────────────────────────────────────────────────────────────────
+
+    const xsegments = TIME_SAMPLES;
+    const ysegments = FREQ_SAMPLES;
+    const xhalfSize = XSIZE / 2;
+    const yhalfSize = YSIZE / 2;
+    const xsegmentSize = XSIZE / xsegments;
+
+    // Logarithmic Y spacing to match human pitch perception
+    const ypow_max = Math.log(YSIZE);
+    const ybase = Math.E;
+
+    const geometry = new THREE.BufferGeometry();
+    const vertices: number[] = [];
+    const indices: number[] = [];
+
+    for (let i = 0; i <= xsegments; i++) {
+        const x = i * xsegmentSize - xhalfSize;
+        for (let j = 0; j <= ysegments; j++) {
+            const powr = ((ysegments - j) / ysegments) * ypow_max;
+            const y = -Math.pow(ybase, powr) + yhalfSize + 1;
+            vertices.push(x, y, 0);
+        }
+    }
+
+    for (let i = 0; i < xsegments; i++) {
+        for (let j = 0; j < ysegments; j++) {
+            const a = i * (ysegments + 1) + (j + 1);
+            const b = i * (ysegments + 1) + j;
+            const c = (i + 1) * (ysegments + 1) + j;
+            const d = (i + 1) * (ysegments + 1) + (j + 1);
+            indices.push(a, b, d);
+            indices.push(b, c, d);
+        }
+    }
+
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(vertices, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+
+    // ─── Turbo Colormap LUT ───────────────────────────────────────────────────────
+    // A perceptually uniform colormap: black → deep blue → cyan → green → yellow → red → white
+
+    function buildTurboLUT(): THREE.Vector3[] {
+        // Compact turbo colormap: 32 control points, interpolated to 256
+        const keyframes: [number, number, number][] = [
+            [0.18995, 0.07176, 0.23217],
+            [0.24427, 0.60937, 0.99697],
+            [0.13886, 0.76279, 0.89550],
+            [0.09320, 0.87211, 0.75237],
+            [0.17377, 0.94053, 0.61938],
+            [0.38127, 0.98909, 0.42386],
+            [0.57357, 0.99817, 0.27712],
+            [0.74617, 0.95593, 0.20406],
+            [0.90605, 0.84337, 0.22188],
+            [0.98986, 0.69382, 0.21043],
+            [0.99672, 0.60977, 0.17842],
+            [0.98108, 0.48104, 0.12332],
+            [0.92623, 0.32473, 0.05837],
+            [0.81608, 0.18462, 0.01809],
+            [0.63082, 0.06868, 0.00401],
+            [0.47960, 0.01583, 0.01055],
+        ];
+
+        const lut: THREE.Vector3[] = [];
+        for (let n = 0; n < 256; n++) {
+            const t = n / 255;
+            const scaledT = t * (keyframes.length - 1);
+            const lo = Math.floor(scaledT);
+            const hi = Math.min(lo + 1, keyframes.length - 1);
+            const alpha = scaledT - lo;
+            const r = keyframes[lo][0] + alpha * (keyframes[hi][0] - keyframes[lo][0]);
+            const g = keyframes[lo][1] + alpha * (keyframes[hi][1] - keyframes[lo][1]);
+            const b = keyframes[lo][2] + alpha * (keyframes[hi][2] - keyframes[lo][2]);
+            lut.push(new THREE.Vector3(r, g, b));
+        }
+        return lut;
+    }
+
+    const lut = buildTurboLUT();
+
+    // ─── Shaders ─────────────────────────────────────────────────────────────────
+
+    const vertexShader = /* glsl */`
+        attribute float displacement;
+        uniform float uSensitivity;
+        uniform vec3 vLut[256];
+        varying vec3 vColor;
+
+        void main() {
+            float d = clamp(displacement * uSensitivity, 0.0, 255.0);
+            int index = int(d);
+            vColor = vLut[index];
+            vec3 newPosition = position + normal * d / 28.0;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+        }
+    `;
+
+    const fragmentShader = /* glsl */`
+        varying vec3 vColor;
+
+        void main() {
+            gl_FragColor = vec4(vColor, 1.0);
+        }
+    `;
+
+    const uniforms = {
+        vLut: { value: lut },
+        uSensitivity: { value: sensitivity },
+    };
+
+    const material = new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader,
+        fragmentShader,
+    });
+
+    geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
+
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+
+    // ─── Camera Position ──────────────────────────────────────────────────────────
+
+    function updateCamera(angleDeg: number) {
+        // angleDeg=0: camera dead-on along Z axis (flat front view of frequency×time plane)
+        // angleDeg>0: slight upward elevation to reveal 3D amplitude displacement
+        const rad = THREE.MathUtils.degToRad(angleDeg);
+        const dist = 50;
+        camera.position.set(0, Math.sin(rad) * dist, Math.cos(rad) * dist);
+        // Offset lookAt slightly downward so mesh is vertically centered at this elevation
+        camera.lookAt(0, -Math.sin(rad) * 2, 0);
+    }
+
+    updateCamera(cameraAngle);
+
+    // ─── Geometry Update ──────────────────────────────────────────────────────────
+
+    function getActiveData(): Uint8Array {
+        if (analyser && isRecording) {
+            analyser.getByteFrequencyData(DATA);
+        } else if (playbackAnalyser && isPlaying) {
+            playbackAnalyser.getByteFrequencyData(DATA);
+        } else {
+            // Decay toward zero when idle
+            for (let i = 0; i < DATA.length; i++) {
+                DATA[i] = Math.max(0, DATA[i] - 8);
+            }
+        }
+        return DATA;
+    }
+
+    function updateGeometry() {
+        getActiveData();
+
+        const stride = FREQ_SAMPLES + 1;
+        const endVal = N_VERTICES - stride;
+
+        // Shift left by one time column
+        heights.copyWithin(0, stride, N_VERTICES + 1);
+
+        // Write new column at the right
+        heights.set(DATA, endVal - stride);
+
+        geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
+        uniforms.uSensitivity.value = sensitivity;
+    }
+
+    // ─── Animation Loop ───────────────────────────────────────────────────────────
+
+    function animate() {
+        requestAnimationFrame(animate);
+        updateGeometry();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // ─── Window Resize ────────────────────────────────────────────────────────────
+
+    window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // ─── Audio Setup ──────────────────────────────────────────────────────────────
+
+    async function getAudioDevices() {
+        try {
+            // Request permission first so we can enumerate labeled devices
+            const tempStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            tempStream.getTracks().forEach((t) => t.stop());
+
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const micSelect = document.getElementById("mic-select") as HTMLSelectElement;
+            micSelect.innerHTML = "";
+
+            devices
+                .filter((d) => d.kind === "audioinput")
+                .forEach((d, i) => {
+                    const opt = document.createElement("option");
+                    opt.value = d.deviceId;
+                    opt.textContent = d.label || `Microphone ${i + 1}`;
+                    micSelect.appendChild(opt);
+                });
+        } catch {
+            // Permissions not granted yet — will ask on Record
+        }
+    }
+
+    async function startRecording() {
+        const micSelect = document.getElementById("mic-select") as HTMLSelectElement;
+        const deviceId = micSelect.value;
+
+        try {
+            const constraints: MediaStreamConstraints = {
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                    ...(deviceId ? { deviceId: { exact: deviceId } } : {}),
+                },
+            };
+
+            micStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            audioCtx = new AudioContext();
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 4 * FREQ_SAMPLES;
+            analyser.smoothingTimeConstant = parseFloat(
+                (document.getElementById("smoothing") as HTMLInputElement).value
+            );
+
+            micSource = audioCtx.createMediaStreamSource(micStream);
+            micSource.connect(analyser);
+
+            // MediaRecorder for saving audio
+            recordedChunks = [];
+            const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
+                ? "audio/webm;codecs=opus"
+                : "audio/webm";
+            mediaRecorder = new MediaRecorder(micStream, { mimeType });
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) recordedChunks.push(e.data);
+            };
+            mediaRecorder.onstop = () => {
+                recordedBlob = new Blob(recordedChunks, { type: mimeType });
+                setButtonState("stopped");
+            };
+            mediaRecorder.start(250);
+
+            isRecording = true;
+            recordingStartTime = Date.now();
+            startDurationTimer();
+            setButtonState("recording");
+
+            // Refresh device list now that we have permission
+            getAudioDevices();
+        } catch (err) {
+            console.error("Microphone error:", err);
+            document.getElementById("no-mic-alert")!.classList.remove("hidden");
+        }
+    }
+
+    function stopRecording() {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+        }
+        if (micSource) {
+            micSource.disconnect();
+            micSource = null;
+        }
+        if (micStream) {
+            micStream.getTracks().forEach((t) => t.stop());
+            micStream = null;
+        }
+        analyser = null;
+        isRecording = false;
+        stopDurationTimer();
+    }
+
+    async function playRecording() {
+        if (!recordedBlob || !audioCtx) return;
+
+        isPlaying = true;
+        setButtonState("playing");
+        startDurationTimer();
+
+        const arrayBuffer = await recordedBlob.arrayBuffer();
+        const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
+
+        playbackAnalyser = audioCtx.createAnalyser();
+        playbackAnalyser.fftSize = 4 * FREQ_SAMPLES;
+        playbackAnalyser.smoothingTimeConstant = 0.7;
+
+        playbackSource = audioCtx.createBufferSource();
+        playbackSource.buffer = audioBuffer;
+        playbackSource.connect(playbackAnalyser);
+        playbackAnalyser.connect(audioCtx.destination);
+        playbackSource.start();
+
+        playbackSource.onended = () => {
+            isPlaying = false;
+            playbackAnalyser = null;
+            stopDurationTimer();
+            setButtonState("stopped");
+        };
+    }
+
+    function stopPlayback() {
+        if (playbackSource) {
+            playbackSource.stop();
+            playbackSource.disconnect();
+            playbackSource = null;
+        }
+        playbackAnalyser = null;
+        isPlaying = false;
+        stopDurationTimer();
+        setButtonState("stopped");
+    }
+
+    function downloadRecording() {
+        if (!recordedBlob) return;
+        const url = URL.createObjectURL(recordedBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        a.download = `cnc-recording-${ts}.webm`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    // ─── UI State Management ──────────────────────────────────────────────────────
+
+    type AppState = "idle" | "recording" | "stopped" | "playing";
+
+    function setButtonState(state: AppState) {
+        const btnRecord = document.getElementById("btn-record") as HTMLButtonElement;
+        const btnStop = document.getElementById("btn-stop") as HTMLButtonElement;
+        const btnPlay = document.getElementById("btn-play") as HTMLButtonElement;
+        const btnDownload = document.getElementById("btn-download") as HTMLButtonElement;
+        const statusBadge = document.getElementById("status-badge")!;
+        const statusDot = document.getElementById("status-dot")!;
+        const statusText = document.getElementById("status-text")!;
+        const durationDisplay = document.getElementById("duration-display")!;
+
+        // Reset classes
+        statusDot.className = "w-1.5 h-1.5 rounded-full inline-block";
+        statusBadge.className = "badge-secondary flex items-center gap-1.5";
+
+        if (state === "idle") {
+            btnRecord.disabled = false;
+            btnStop.disabled = true;
+            btnPlay.disabled = true;
+            btnDownload.disabled = true;
+            statusText.textContent = "Idle";
+            statusDot.classList.add("bg-gray-400");
+            durationDisplay.classList.add("hidden");
+        } else if (state === "recording") {
+            btnRecord.disabled = true;
+            btnStop.disabled = false;
+            btnPlay.disabled = true;
+            btnDownload.disabled = true;
+            statusBadge.className = "badge-error flex items-center gap-1.5";
+            statusText.textContent = "Recording";
+            statusDot.classList.add("recording-dot");
+            durationDisplay.classList.remove("hidden");
+        } else if (state === "stopped") {
+            btnRecord.disabled = false;
+            btnStop.disabled = true;
+            btnPlay.disabled = false;
+            btnDownload.disabled = false;
+            statusBadge.className = "badge-secondary flex items-center gap-1.5";
+            statusText.textContent = "Ready";
+            statusDot.classList.add("bg-gray-400");
+            durationDisplay.classList.remove("hidden");
+        } else if (state === "playing") {
+            btnRecord.disabled = true;
+            btnStop.disabled = false;
+            btnPlay.disabled = true;
+            btnDownload.disabled = false;
+            statusBadge.className = "badge-success flex items-center gap-1.5";
+            statusText.textContent = "Playing";
+            statusDot.classList.add("playing-dot");
+            durationDisplay.classList.remove("hidden");
+        }
+    }
+
+    // ─── Duration Timer ───────────────────────────────────────────────────────────
+
+    function startDurationTimer() {
+        stopDurationTimer();
+        recordingStartTime = Date.now();
+        durationTimer = setInterval(updateDurationDisplay, 100);
+    }
+
+    function stopDurationTimer() {
+        if (durationTimer) {
+            clearInterval(durationTimer);
+            durationTimer = null;
+        }
+    }
+
+    function updateDurationDisplay() {
+        const elapsed = (Date.now() - recordingStartTime) / 1000;
+        const mins = Math.floor(elapsed / 60).toString().padStart(2, "0");
+        const secs = (elapsed % 60).toFixed(1).padStart(4, "0");
+        const el = document.getElementById("duration-display");
+        if (el) el.textContent = `${mins}:${secs}`;
+    }
+
+    // ─── Event Listeners ──────────────────────────────────────────────────────────
+
+    document.getElementById("btn-record")!.addEventListener("click", () => {
+        if (isPlaying) stopPlayback();
+        startRecording();
+    });
+
+    document.getElementById("btn-stop")!.addEventListener("click", () => {
+        if (isRecording) stopRecording();
+        else if (isPlaying) stopPlayback();
+    });
+
+    document.getElementById("btn-play")!.addEventListener("click", () => {
+        if (!audioCtx) {
+            audioCtx = new AudioContext();
+        }
+        playRecording();
+    });
+
+    document.getElementById("btn-download")!.addEventListener("click", downloadRecording);
+
+    const sensitivityInput = document.getElementById("sensitivity") as HTMLInputElement;
+
+    function setSensitivity(val: number) {
+        const clamped = Math.max(0.1, Math.min(20, parseFloat(val.toFixed(1))));
+        sensitivity = clamped;
+        sensitivityInput.value = clamped.toString();
+    }
+
+    sensitivityInput.addEventListener("input", () => {
+        const v = parseFloat(sensitivityInput.value);
+        if (!isNaN(v)) setSensitivity(v);
+    });
+
+    document.getElementById("sensitivity-dec")!.addEventListener("click", () => {
+        setSensitivity(sensitivity - 0.1);
+    });
+
+    document.getElementById("sensitivity-inc")!.addEventListener("click", () => {
+        setSensitivity(sensitivity + 0.1);
+    });
+
+    // Keyboard shortcuts: [ to decrease, ] to increase (skip if typing in an input)
+    document.addEventListener("keydown", (e) => {
+        if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+        if (e.key === "[") {
+            e.preventDefault();
+            setSensitivity(sensitivity - 0.1);
+        } else if (e.key === "]") {
+            e.preventDefault();
+            setSensitivity(sensitivity + 0.1);
+        }
+    });
+
+    document.getElementById("smoothing")!.addEventListener("input", (e) => {
+        const val = parseFloat((e.target as HTMLInputElement).value);
+        if (analyser) analyser.smoothingTimeConstant = val;
+        if (playbackAnalyser) playbackAnalyser.smoothingTimeConstant = val;
+    });
+
+    document.getElementById("camera-angle")!.addEventListener("input", (e) => {
+        cameraAngle = parseInt((e.target as HTMLInputElement).value);
+        updateCamera(cameraAngle);
+    });
+
+    // ─── Init ─────────────────────────────────────────────────────────────────────
+
+    setButtonState("idle");
+    getAudioDevices();
+</script>

@@ -16,6 +16,7 @@
     "@supabase/supabase-js": "^2.80.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/three": "^0.185.0",
     "@unocss/preset-wind4": "^66.5.5",
     "@unocss/reset": "^66.5.5",
     "astro": "^6.1.5",
@@ -26,6 +27,7 @@
     "react-dom": "^19.2.0",
     "remixicon": "^4.7.0",
     "sharp": "^0.34.5",
+    "three": "^0.185.0",
     "typescript": "^5.9.3",
     "zod": "^4.1.12"
   },
