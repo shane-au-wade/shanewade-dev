@@ -118,7 +118,7 @@ import "remixicon/fonts/remixicon.css";
                         min="0"
                         max="0.95"
                         step="0.05"
-                        value="0.7"
+                        value="0"
                         class="w-full accent-brand-primary"
                     />
                 </div>
@@ -316,6 +316,7 @@ import "remixicon/fonts/remixicon.css";
 
     let sensitivity = 0.6;
     let cameraAngle = 2; // degrees of elevation above the flat front view
+    let smoothing = 0; // matches the default slider value (crisp viz)
 
     const DATA = new Uint8Array(FREQ_SAMPLES);
     const heights = new Uint8Array(N_VERTICES);
@@ -760,6 +761,23 @@ import "remixicon/fonts/remixicon.css";
             }
         }
 
+        // Apply temporal smoothing across columns when we're NOT live-recording.
+        // During live capture the AnalyserNode already smooths data on the way INTO
+        // the ring buffer (via smoothingTimeConstant), so re-applying here would
+        // double-smooth. During playback/scrub we read raw recorded slices, so this
+        // is where the smoothing slider takes effect.
+        if (!(isRecording && isLive) && smoothing > 0) {
+            const alpha = smoothing;
+            const inv = 1 - alpha;
+            for (let i = 1; i < TIME_SAMPLES; i++) {
+                const curBase = i * stride;
+                const prevBase = (i - 1) * stride;
+                for (let j = 0; j < FREQ_SAMPLES; j++) {
+                    heights[curBase + j] = (alpha * heights[prevBase + j] + inv * heights[curBase + j]) | 0;
+                }
+            }
+        }
+
         geometry.setAttribute("displacement", new THREE.Uint8BufferAttribute(heights, 1));
         uniforms.uSensitivity.value = sensitivity;
     }
@@ -858,9 +876,10 @@ import "remixicon/fonts/remixicon.css";
             sampleRate = audioCtx.sampleRate; // lock tick positions to actual hardware rate
             analyser = audioCtx.createAnalyser();
             analyser.fftSize = 4 * FREQ_SAMPLES;
-            analyser.smoothingTimeConstant = parseFloat(
+            smoothing = parseFloat(
                 (document.getElementById("smoothing") as HTMLInputElement).value
             );
+            analyser.smoothingTimeConstant = smoothing;
 
             micSource = audioCtx.createMediaStreamSource(micStream);
             micSource.connect(analyser);
@@ -1172,6 +1191,7 @@ import "remixicon/fonts/remixicon.css";
 
     document.getElementById("smoothing")!.addEventListener("input", (e) => {
         const val = parseFloat((e.target as HTMLInputElement).value);
+        smoothing = val;
         if (analyser) analyser.smoothingTimeConstant = val;
     });
 
