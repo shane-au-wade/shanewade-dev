@@ -3,8 +3,10 @@ import type { Guest } from "./types";
 const accepted = "accepted" as const;
 const pending = "pending" as const;
 
+const glutenFree = "gluten-free"
+
 export const guests: Guest[] = [
-    { name: "Heng Duong", table: 1, rsvp: accepted, dietary: [] },
+    { name: "Heng Duong", table: 1, rsvp: accepted, dietary: [glutenFree] },
     { name: "Siv Ngoy", table: 1, rsvp: accepted, dietary: [] },
     { name: "Niy Pierce", table: 1, rsvp: accepted, dietary: [] },
     { name: "Lonnie Pierce", table: 1, rsvp: accepted, dietary: [] },
@@ -47,7 +49,7 @@ export const guests: Guest[] = [
     { name: "Sepehr Fard", table: 5, rsvp: pending, dietary: [] },
     { name: "Sabrina Kazem", table: 5, rsvp: pending, dietary: [] },
     { name: "Paul Ashbourne", table: 6, rsvp: pending, dietary: [] },
-    { name: "Frida Vizcaino", table: 6, rsvp: pending, dietary: [] },
+    { name: "Frida Vizcaino", table: 6, rsvp: pending, dietary: [glutenFree] },
     { name: "Kote Mushegiani", table: 6, rsvp: accepted, dietary: [] },
     { name: "Stevi Dunn", table: 6, rsvp: pending, dietary: [] },
     { name: "Jade Tuan", table: 6, rsvp: accepted, dietary: [] },

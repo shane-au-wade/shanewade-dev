@@ -20,6 +20,7 @@
     "@unocss/preset-wind4": "^66.5.5",
     "@unocss/reset": "^66.5.5",
     "astro": "^6.1.5",
+    "jsbarcode": "^3.12.3",
     "jszip": "^3.10.1",
     "minisearch": "^7.2.0",
     "ol": "^10.7.0",

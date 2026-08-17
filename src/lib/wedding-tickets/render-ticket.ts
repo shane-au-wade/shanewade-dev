@@ -1,6 +1,11 @@
+import JsBarcode from "jsbarcode";
+import QRCode from "../qrcodejs/qrcode";
 import {
+    TICKET_BRIDGE,
     TICKET_EVENT,
     TICKET_PRINT,
+    TICKET_QR_URL,
+    chunkGuestsIntoSheets,
     formatDietary,
     guestSerial,
     type Guest,
@@ -8,10 +13,32 @@ import {
 
 const PRIMARY = "#470012";
 const WHITE = "#ffffff";
+
+let bridgeImage: HTMLImageElement | null = null;
+let bridgeImageLoad: Promise<HTMLImageElement> | null = null;
+
+function loadBridgeImage(): Promise<HTMLImageElement> {
+    if (bridgeImage) return Promise.resolve(bridgeImage);
+    if (!bridgeImageLoad) {
+        bridgeImageLoad = new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                bridgeImage = img;
+                resolve(img);
+            };
+            img.onerror = () =>
+                reject(new Error(`Failed to load ${TICKET_BRIDGE.src}`));
+            img.src = TICKET_BRIDGE.src;
+        });
+    }
+    return bridgeImageLoad;
+}
+
 const FONT =
     '"Helvetica Neue", Helvetica, Arial, ui-sans-serif, system-ui, sans-serif';
 const MONO = "ui-monospace, SFMono-Regular, Menlo, monospace";
 const CSS_DPI = 96;
+const PHI = 1.618;
 
 function px(inches: number): number {
     return inches * TICKET_PRINT.dpi;
@@ -21,6 +48,18 @@ function px(inches: number): number {
 function rem(n: number): number {
     return n * 16 * (TICKET_PRINT.dpi / CSS_DPI);
 }
+
+/** φ-based scale — matches --space-* in the design system. */
+const SPACE_MD = rem(1);
+const SPACE = {
+    "2xs": SPACE_MD / PHI ** 3,
+    xs: SPACE_MD / PHI ** 2,
+    sm: SPACE_MD / PHI,
+    md: SPACE_MD,
+    lg: SPACE_MD * PHI,
+    xl: SPACE_MD * PHI ** 2,
+    "2xl": SPACE_MD * PHI ** 3,
+} as const;
 
 function upper(value: string): string {
     return value.toUpperCase();
@@ -71,38 +110,75 @@ function dashedVLine(
     ctx.restore();
 }
 
-function drawBarcode(
+function drawBridge(
     ctx: CanvasRenderingContext2D,
     x: number,
     y: number,
     w: number,
     h: number,
 ): void {
-    const scale = TICKET_PRINT.dpi / CSS_DPI;
-    const pattern = [
-        [1.5, true],
-        [1, false],
-        [1.5, true],
-        [2, false],
-        [1, true],
-        [2, false],
-    ] as const;
-    const period = pattern.reduce((sum, [len]) => sum + len, 0) * scale;
+    if (!bridgeImage) return;
+    const { crop } = TICKET_BRIDGE;
+    const sx = bridgeImage.naturalWidth * crop.left;
+    const sy = bridgeImage.naturalHeight * crop.top;
+    const sw =
+        bridgeImage.naturalWidth * (1 - crop.left - crop.right);
+    const sh =
+        bridgeImage.naturalHeight * (1 - crop.top - crop.bottom);
+    ctx.drawImage(bridgeImage, sx, sy, sw, sh, x, y, w, h);
+}
+
+function drawBarcode(
+    ctx: CanvasRenderingContext2D,
+    value: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+): void {
+    const barcode = document.createElement("canvas");
+    JsBarcode(barcode, value, {
+        format: "CODE128",
+        displayValue: false,
+        background: WHITE,
+        lineColor: PRIMARY,
+        margin: 8,
+        width: 3,
+        height: Math.max(1, Math.round(w)),
+    });
 
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(x, y, w, h);
-    ctx.clip();
-    ctx.fillStyle = PRIMARY;
+    ctx.imageSmoothingEnabled = false;
+    ctx.translate(x, y + h);
+    ctx.rotate(-Math.PI / 2);
+    ctx.drawImage(barcode, 0, 0, h, w);
+    ctx.restore();
+}
 
-    let cursor = y;
-    while (cursor < y + h + period) {
-        for (const [len, filled] of pattern) {
-            const slice = len * scale;
-            if (filled) ctx.fillRect(x, cursor, w, slice);
-            cursor += slice;
-        }
-    }
+/** Render a scannable QR at its native pixel size and blit it 1:1. */
+function drawQr(
+    ctx: CanvasRenderingContext2D,
+    value: string,
+    x: number,
+    y: number,
+    size: number,
+): void {
+    const holder = document.createElement("div");
+    new QRCode(holder, {
+        text: value,
+        width: Math.round(size),
+        height: Math.round(size),
+        colorDark: PRIMARY,
+        colorLight: WHITE,
+        correctLevel: QRCode.CorrectLevel.M,
+    });
+
+    const qr = holder.querySelector("canvas");
+    if (!qr) return;
+
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(qr, x, y, size, size);
     ctx.restore();
 }
 
@@ -114,70 +190,99 @@ function drawTicketFace(
     originY: number,
     width: number,
     height: number,
-    rotate180: boolean,
 ): void {
     ctx.save();
 
-    if (rotate180) {
-        ctx.translate(originX + width / 2, originY + height / 2);
-        ctx.rotate(Math.PI);
-        ctx.translate(-width / 2, -height / 2);
-    } else {
-        ctx.translate(originX, originY);
-    }
+    ctx.translate(originX, originY);
 
     ctx.fillStyle = WHITE;
     ctx.fillRect(0, 0, width, height);
 
     ctx.strokeStyle = PRIMARY;
     ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, width - 2, height - 2);
+    // ctx.strokeRect(1, 1, width - 2, height - 2);
 
-    const stubW = px(0.42);
-    const bandW = px(0.32);
-    const stubPadY = px(0.1);
-    const stubPadX = px(0.04);
-    const mainPadX = px(0.12);
-    const mainPadTop = px(0.1);
-    const mainPadBottom = px(0.08);
-    const mainX = stubW;
-    const mainW = width - stubW - bandW;
+    // Safe-area insets so print trimming can't clip important content.
+    const safeTop = px(0.1);
+    const safeRight = px(0.1);
+    const contentRight = width - safeRight;
 
-    dashedVLine(ctx, stubW, stubPadY * 0.4, height - stubPadY * 0.4);
+    const stubW = px(0.6);
+    const stubX = contentRight - stubW;
+    const railW = px(0.95);
+    const mainPadX = SPACE.sm;
+    const mainPadTop = SPACE.sm + safeTop;
+    const mainPadBottom = SPACE.sm;
+    const mainX = railW;
+    const mainW = stubX - railW;
 
-    drawBarcode(
-        ctx,
-        stubPadX + (stubW - stubPadX * 2 - px(0.28)) / 2,
-        stubPadY,
-        px(0.28),
-        px(1.28),
-    );
+    // Left rail: scannable QR to the wedding link tree plus a caption.
+    const qrSize = px(0.6);
+    const railCenterX = railW / 2;
+    const captionSize = rem(0.28);
+    const captionGap = SPACE["2xs"];
+    const captionLineH = captionSize * 1.15;
+    const railBlockH = qrSize + captionGap + captionLineH * 2;
+    const qrY = (height - railBlockH) / 2;
+    const qrX = railCenterX - qrSize / 2;
+    drawQr(ctx, TICKET_QR_URL, qrX, qrY, qrSize);
 
     ctx.save();
     ctx.fillStyle = PRIMARY;
-    setFont(ctx, 400, rem(0.38), MONO, 0.04);
     ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.translate(stubW / 2, height - stubPadY);
-    ctx.rotate(-Math.PI / 2);
-    ctx.fillText(serial, 0, 0);
+    ctx.textBaseline = "top";
+    ctx.globalAlpha = 0.7;
+    setFont(ctx, 600, captionSize, FONT, 0.1);
+    const captionY = qrY + qrSize + captionGap;
+    ctx.fillText("SCAN FOR", railCenterX, captionY);
+    ctx.fillText("PHOTOS & DETAILS", railCenterX, captionY + captionLineH);
     ctx.restore();
 
-    ctx.strokeStyle = PRIMARY;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(width - bandW, 0);
-    ctx.lineTo(width - bandW, height);
-    ctx.stroke();
+    // Right tear-off stub: one dashed line, then ADMIT ONE, barcode, serial.
+    dashedVLine(ctx, stubX, 0, height);
+
+    const stubPad = SPACE.xs;
+    const admitSize = rem(0.35);
+    const serialSize = rem(0.4);
 
     ctx.save();
     ctx.fillStyle = PRIMARY;
-    setFont(ctx, 700, rem(0.48), FONT, 0.22);
-    ctx.translate(width - bandW / 2, height / 2);
+    setFont(ctx, 700, admitSize, FONT, 0.22);
+    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.6);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(upper(TICKET_EVENT.admit), 0, 0);
+    ctx.restore();
+
+    ctx.save();
+    ctx.fillStyle = PRIMARY;
+    setFont(ctx, 700, admitSize, FONT, 0.16);
+    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.35);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(upper(`Table ${guest.table}`), 0, 0);
+    ctx.restore();
+
+
+    const barcodeX = stubX + stubPad + admitSize + SPACE["2xs"];
+    const barcodeRight = contentRight - stubPad - serialSize - SPACE["2xs"];
+    const barcodeW = barcodeRight - barcodeX + 15;
+    const barcodeH = (height - stubPad * 2) * 0.4;
+    const barcodeY = (height - barcodeH) / 2;
+    drawBarcode(ctx, serial, barcodeX, barcodeY, barcodeW, barcodeH);
+
+
+    const serialCenterX = contentRight - stubPad - serialSize / 2;
+    ctx.save();
+    ctx.fillStyle = PRIMARY;
+    setFont(ctx, 400, serialSize, MONO, 0.04);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.translate(serialCenterX, height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(serial, 0, 0);
     ctx.restore();
 
     const textX = mainX + mainPadX;
@@ -187,8 +292,8 @@ function drawTicketFace(
     const house = upper(TICKET_EVENT.house);
     const city = upper(TICKET_EVENT.city);
     const logoSize = rem(0.52);
-    const logoPadX = rem(0.22);
-    const logoPadY = rem(0.04);
+    const logoPadX = SPACE.xs;
+    const logoPadY = SPACE["2xs"];
     setFont(ctx, 700, logoSize, FONT, 0.18);
     const logoW = ctx.measureText(house).width + logoPadX * 2;
     const logoH = logoSize + logoPadY * 2;
@@ -203,16 +308,34 @@ function drawTicketFace(
 
     setFont(ctx, 500, rem(0.45), FONT, 0.14);
     ctx.textAlign = "right";
-    ctx.fillText(city, textX + textW, y + logoH / 2);
+    ctx.fillText(city, textX + textW - 148, y + logoH / 2);
     ctx.textAlign = "left";
-    y += logoH + px(0.08);
+    y += logoH + SPACE.xs;
 
-    setFont(ctx, 500, rem(0.48), FONT, 0.12);
-    ctx.globalAlpha = 0.7;
+    if (bridgeImage) {
+        const { crop, heightIn, maxTextWidth } = TICKET_BRIDGE;
+        const cropW = 1 - crop.left - crop.right;
+        const cropH = 1 - crop.top - crop.bottom;
+        const aspect =
+            (bridgeImage.naturalWidth * cropW) /
+            (bridgeImage.naturalHeight * cropH);
+        const motifH = px(heightIn);
+        const motifW = Math.min(textW * maxTextWidth, motifH * aspect);
+        drawBridge(ctx, textX + textW - motifW, y, motifW, motifH);
+    }
+
+    const headlineSize = rem(0.42);
+    setFont(ctx, 700, headlineSize, FONT, 0.08);
     ctx.textBaseline = "alphabetic";
-    ctx.fillText(upper(TICKET_EVENT.couple), textX, y + rem(0.48));
+    ctx.fillText(upper(TICKET_EVENT.headline), textX, y + headlineSize);
+    y += headlineSize + SPACE["2xs"];
+
+    const coupleSize = rem(0.36);
+    setFont(ctx, 500, coupleSize, FONT, 0.12);
+    ctx.globalAlpha = 0.7;
+    ctx.fillText(upper(TICKET_EVENT.couple), textX, y + coupleSize);
     ctx.globalAlpha = 1;
-    y += rem(0.48) + px(0.02);
+    y += coupleSize + SPACE["sm"];
 
     const nameSize = fitText(
         ctx,
@@ -224,7 +347,7 @@ function drawTicketFace(
     );
     setFont(ctx, 700, nameSize, FONT, -0.02);
     ctx.fillText(guest.name, textX, y + nameSize);
-    y += nameSize + px(0.04);
+    y += nameSize + SPACE.xs;
 
     setFont(ctx, 500, rem(0.5), FONT, 0.06);
     ctx.fillText(
@@ -233,64 +356,84 @@ function drawTicketFace(
         y + rem(0.5),
     );
 
-    const tableLabelGap = rem(0.25);
-    const metaH = rem(0.38) + tableLabelGap + rem(0.85) + rem(0.08);
+    const labelSize = rem(0.38);
+    const tableNumSize = rem(0.85);
+    const labelGap = SPACE.sm;
+    const metaH = SPACE.xs + labelSize + labelGap + tableNumSize + SPACE.xs;
     const metaY = height - mainPadBottom - metaH;
     const tableW = px(0.55);
 
-    ctx.beginPath();
-    ctx.moveTo(textX + tableW, metaY);
-    ctx.lineTo(textX + tableW, metaY + metaH);
-    ctx.stroke();
-
-    setFont(ctx, 500, rem(0.38), FONT, 0.16);
+    setFont(ctx, 500, labelSize, FONT, 0.16);
     ctx.globalAlpha = 0.65;
     ctx.textBaseline = "top";
-    ctx.fillText("TABLE", textX, metaY);
+    ctx.fillText("TABLE", textX, metaY + SPACE.xs);
     ctx.globalAlpha = 1;
-    setFont(ctx, 700, rem(0.85), MONO, 0);
+    setFont(ctx, 700, tableNumSize, MONO, 0);
     ctx.fillText(
         String(guest.table),
         textX,
-        metaY + rem(0.38) + tableLabelGap,
+        metaY + SPACE.xs + labelSize + labelGap,
     );
 
-    const dietX = textX + tableW + px(0.1);
-    const dietW = textX + textW - dietX;
-    const dietPadX = px(0.1);
-    const dietPadY = px(0.05);
-    ctx.strokeRect(dietX, metaY, dietW, metaH);
+    if (guest.dietary.length > 0) {
+        const dietX = textX + tableW + SPACE.sm;
+        const dietW = textX + textW - dietX;
+        const dietPadX = SPACE.xs;
+        const dietPadY = SPACE.xs;
+        ctx.strokeRect(dietX, metaY, dietW, metaH);
 
-    const diet = formatDietary(guest.dietary).toUpperCase();
-    setFont(ctx, 500, rem(0.38), FONT, 0.16);
-    ctx.globalAlpha = 0.65;
-    ctx.fillText("DIETARY", dietX + dietPadX, metaY + dietPadY);
-    ctx.globalAlpha = 1;
-    const dietSize = fitText(
-        ctx,
-        diet,
-        dietW - dietPadX * 2,
-        rem(0.72),
-        rem(0.42),
-        0.06,
-    );
-    setFont(ctx, 700, dietSize, FONT, 0.06);
-    ctx.fillText(
-        diet,
-        dietX + dietPadX,
-        metaY + dietPadY + rem(0.38) + rem(0.04),
-    );
+        const diet = formatDietary(guest.dietary).toUpperCase();
+        setFont(ctx, 500, labelSize, FONT, 0.16);
+        ctx.globalAlpha = 0.65;
+        ctx.fillText("DIETARY", dietX + dietPadX, metaY + dietPadY);
+        ctx.globalAlpha = 1;
+        const dietSize = fitText(
+            ctx,
+            diet,
+            dietW - dietPadX * 2,
+            rem(0.72),
+            rem(0.42),
+            0.06,
+        );
+        setFont(ctx, 700, dietSize, FONT, 0.06);
+        ctx.fillText(
+            diet,
+            dietX + dietPadX,
+            metaY + dietPadY + labelSize + labelGap,
+        );
+    }
 
     ctx.restore();
 }
 
-export function renderGuestTicketCanvas(
-    guest: Guest,
-    index: number,
+/** Hairline cut marks straddling a ticket edge inside the gutter. */
+/** Full-width hairline guide for a single straight cut shared by two tickets. */
+function drawCutLine(
+    ctx: CanvasRenderingContext2D,
+    edgeY: number,
+    x1: number,
+    x2: number,
+): void {
+    ctx.save();
+    ctx.strokeStyle = PRIMARY;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([10, 10]);
+    ctx.beginPath();
+    ctx.moveTo(x1, edgeY);
+    ctx.lineTo(x2, edgeY);
+    ctx.stroke();
+    ctx.restore();
+}
+
+export async function renderSheetCanvas(
+    sheetGuests: Guest[],
+    sheetIndex: number,
     canvas: HTMLCanvasElement = document.createElement("canvas"),
-): HTMLCanvasElement {
-    const width = px(TICKET_PRINT.widthIn);
-    const height = px(TICKET_PRINT.heightIn);
+): Promise<HTMLCanvasElement> {
+    await loadBridgeImage();
+
+    const width = px(TICKET_PRINT.sheetWidthIn);
+    const height = px(TICKET_PRINT.sheetHeightIn);
     canvas.width = width;
     canvas.height = height;
 
@@ -299,47 +442,52 @@ export function renderGuestTicketCanvas(
 
     ctx.fillStyle = WHITE;
     ctx.fillRect(0, 0, width, height);
-    ctx.strokeStyle = PRIMARY;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(1, 1, width - 2, height - 2);
 
-    const ticketH = px(TICKET_PRINT.faceHeightIn);
-    const serial = guestSerial(index);
+    const ticketW = px(TICKET_PRINT.ticketWidthIn);
+    const ticketH = px(TICKET_PRINT.ticketHeightIn);
+    const originX = (width - ticketW) / 2;
+    const globalStart = sheetIndex * TICKET_PRINT.ticketsPerSheet;
 
-    drawTicketFace(ctx, guest, serial, 0, 0, width, ticketH, true);
-    drawTicketFace(
-        ctx,
-        guest,
-        serial,
-        0,
-        height - ticketH,
-        width,
-        ticketH,
-        false,
-    );
+    // Stack from the top factory edge with no gutter so adjacent tickets
+    // share a single cut. Left/right/top are factory edges (full-width
+    // tickets); only the internal seams and the stack bottom need a cut.
+    for (let slot = 0; slot < TICKET_PRINT.ticketsPerSheet; slot++) {
+        const y = slot * ticketH;
+        const guest = sheetGuests[slot];
+        if (!guest) continue;
+        const serial = guestSerial(globalStart + slot);
+        drawTicketFace(ctx, guest, serial, originX, y, ticketW, ticketH);
+    }
 
-    ctx.save();
-    ctx.strokeStyle = PRIMARY;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([10, 10]);
-    ctx.beginPath();
-    ctx.moveTo(px(0.12), height / 2);
-    ctx.lineTo(width - px(0.12), height / 2);
-    ctx.stroke();
-    ctx.restore();
+    for (let seam = 1; seam <= TICKET_PRINT.ticketsPerSheet; seam++) {
+        drawCutLine(ctx, seam * ticketH, originX, originX + ticketW);
+    }
 
     return canvas;
 }
 
-export function renderGuestTicketPng(
-    guest: Guest,
-    index: number,
+/** Render the sheet that contains the guest at `guestIndex`. */
+export async function renderGuestSheetCanvas(
+    guests: Guest[],
+    guestIndex: number,
+    canvas: HTMLCanvasElement = document.createElement("canvas"),
+): Promise<HTMLCanvasElement> {
+    const sheets = chunkGuestsIntoSheets(guests);
+    const sheetIndex = Math.floor(guestIndex / TICKET_PRINT.ticketsPerSheet);
+    return renderSheetCanvas(sheets[sheetIndex] ?? [], sheetIndex, canvas);
+}
+
+export async function renderSheetPng(
+    sheetGuests: Guest[],
+    sheetIndex: number,
 ): Promise<Blob> {
+    const canvas = await renderSheetCanvas(sheetGuests, sheetIndex);
     return new Promise((resolve, reject) => {
-        const canvas = renderGuestTicketCanvas(guest, index);
         canvas.toBlob((blob) => {
             if (!blob) {
-                reject(new Error(`Failed to render PNG for ${guest.name}`));
+                reject(
+                    new Error(`Failed to render PNG for sheet ${sheetIndex + 1}`),
+                );
                 return;
             }
             resolve(blob);

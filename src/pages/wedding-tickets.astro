@@ -4,7 +4,12 @@ import Breadcrumbs from "@components/breadcrumbs.astro";
 import ThemeToggle from "@components/theme-toggle.astro";
 import "@styles/components.css";
 import { guests } from "../lib/wedding-tickets/guests";
-import { formatDietary, formatRsvp } from "../lib/wedding-tickets/types";
+import {
+    TICKET_PRINT,
+    chunkGuestsIntoSheets,
+    formatDietary,
+    formatRsvp,
+} from "../lib/wedding-tickets/types";
 
 const tableCounts = guests.reduce<Record<string, number>>((acc, guest) => {
     const key = String(guest.table);
@@ -12,6 +17,9 @@ const tableCounts = guests.reduce<Record<string, number>>((acc, guest) => {
     return acc;
 }, {});
 const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
+const sheetCount = chunkGuestsIntoSheets(guests).length;
+const sheetPxW = TICKET_PRINT.sheetWidthIn * TICKET_PRINT.dpi;
+const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
 ---
 
 <html lang="en">
@@ -26,7 +34,7 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                 <div>
                     <Breadcrumbs />
                     <p class="text-small text-muted">
-                        4×6 tent cards for dinner service
+                        5×7 sheets · 3 tickets per sheet for card holders
                     </p>
                 </div>
                 <ThemeToggle />
@@ -41,9 +49,10 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                     <div>
                         <h1 class="heading-3 mb-1">Wedding Tickets</h1>
                         <p class="text-body text-muted max-w-2xl m-0">
-                            Portrait <strong>4×6 in</strong> tent cards. Download a
-                            ZIP of 300 DPI PNGs, upload to Walgreens, then cut
-                            in half and fold by hand.
+                            Portrait <strong>5×7 in</strong> sheets, three
+                            tickets each for card holders. Download a ZIP of 300
+                            DPI PNGs, upload to Walgreens, then cut along the
+                            marks.
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -66,7 +75,9 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
 
                 <p class="text-small text-muted mb-4" id="zip-status">
                     {guests.length} guests · {acceptedCount} accepted · {guests.length -
-                        acceptedCount} pending · 1200×1800 px (4×6 at 300 DPI)
+                        acceptedCount} pending · {sheetCount} sheets · {sheetPxW}×{
+                        sheetPxH
+                    } px (5×7 at 300 DPI)
                 </p>
 
                 <div class="card max-w-2xl mb-4">
@@ -145,13 +156,10 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                 <canvas
                     id="ticket-preview"
                     class="sheet"
-                    width="1200"
-                    height="1800"
-                    aria-label="Printable 4 by 6 inch tent card"
+                    width={sheetPxW}
+                    height={sheetPxH}
+                    aria-label="Printable 5 by 7 inch ticket sheet"
                 ></canvas>
-                <div class="sheet-fold no-print" aria-hidden="true">
-                    <span class="sheet-fold-label">fold</span>
-                </div>
             </div>
         </div>
 
@@ -164,39 +172,17 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
 
             .sheet-wrap {
                 position: relative;
-                width: 4in;
-                height: 6in;
+                width: 5in;
+                height: 7in;
             }
 
             .sheet {
                 display: block;
-                width: 4in;
-                height: 6in;
+                width: 5in;
+                height: 7in;
                 background: #fff;
                 print-color-adjust: exact;
                 -webkit-print-color-adjust: exact;
-            }
-
-            .sheet-fold {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 50%;
-                transform: translateY(-50%);
-                pointer-events: none;
-            }
-
-            .sheet-fold-label {
-                position: absolute;
-                left: 50%;
-                top: 0;
-                transform: translate(-50%, -50%);
-                background: #fff;
-                color: #470012;
-                font-size: 0.5rem;
-                letter-spacing: 0.18em;
-                text-transform: uppercase;
-                padding: 0 0.3rem;
             }
 
             .table-counts {
@@ -262,7 +248,7 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                 .sheet-wrap {
                     transform: scale(0.72);
                     transform-origin: top center;
-                    margin-bottom: calc(6in * -0.28);
+                    margin-bottom: calc(7in * -0.28);
                 }
             }
 
@@ -285,12 +271,12 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                 .sheet {
                     transform: none;
                     margin: 0;
-                    width: 4in;
-                    height: 6in;
+                    width: 5in;
+                    height: 7in;
                 }
 
                 @page {
-                    size: 4in 6in;
+                    size: 5in 7in;
                     margin: 0;
                 }
             }
@@ -298,18 +284,18 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
 
         <script>
             import { guests } from "../lib/wedding-tickets/guests";
-            import { renderGuestTicketCanvas } from "../lib/wedding-tickets/render-ticket";
+            import { renderGuestSheetCanvas } from "../lib/wedding-tickets/render-ticket";
             import { zipGuestTickets } from "../lib/wedding-tickets/zip-tickets";
 
             const preview = document.getElementById(
                 "ticket-preview",
             ) as HTMLCanvasElement | null;
 
-            function applyGuest(index: number) {
+            async function applyGuest(index: number) {
                 const guest = guests[index];
                 if (!guest || !preview) return;
 
-                renderGuestTicketCanvas(guest, index, preview);
+                await renderGuestSheetCanvas(guests, index, preview);
 
                 document
                     .querySelectorAll<HTMLElement>("[data-guest-index]")
@@ -349,21 +335,23 @@ const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
                 downloadBtn.disabled = true;
                 try {
                     if (status) {
-                        status.textContent = "Rendering 0 of " + guests.length;
+                        status.textContent = "Rendering sheets…";
                     }
+                    let sheetTotal = 0;
                     const blob = await zipGuestTickets(guests, (done, total) => {
+                        sheetTotal = total;
                         if (status) {
-                            status.textContent = `Rendering ${done} of ${total}`;
+                            status.textContent = `Rendering sheet ${done} of ${total}`;
                         }
                     });
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
                     a.href = url;
-                    a.download = "wedding-tickets-4x6.zip";
+                    a.download = "wedding-tickets-5x7.zip";
                     a.click();
                     URL.revokeObjectURL(url);
                     if (status) {
-                        status.textContent = `Downloaded ${guests.length} PNGs · 1200×1800 px`;
+                        status.textContent = `Downloaded ${sheetTotal} sheets · 5×7 at 300 DPI`;
                     }
                 } catch (err) {
                     console.error(err);

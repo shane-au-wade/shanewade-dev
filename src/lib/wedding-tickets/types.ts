@@ -7,18 +7,43 @@ export type Guest = {
 
 export const TICKET_PRINT = {
     dpi: 300,
-    widthIn: 4,
-    heightIn: 6,
-    faceHeightIn: 1.85,
+    sheetWidthIn: 5,
+    sheetHeightIn: 7,
+    ticketWidthIn: 5,
+    ticketHeightIn: 2,
+    ticketsPerSheet: 3,
 } as const;
+
+/** Split guests into sheets of `ticketsPerSheet`, preserving list order. */
+export function chunkGuestsIntoSheets(guests: Guest[]): Guest[][] {
+    const sheets: Guest[][] = [];
+    for (let i = 0; i < guests.length; i += TICKET_PRINT.ticketsPerSheet) {
+        sheets.push(guests.slice(i, i + TICKET_PRINT.ticketsPerSheet));
+    }
+    return sheets;
+}
+
+/**
+ * URL encoded in the ticket QR. Points to the wedding link tree once it is
+ * live; for now it resolves straight to the shared Google Photos album.
+ */
+export const TICKET_QR_URL = "https://photos.app.goo.gl/tE1YKb2P5qjdtHGJ7";
 
 export const TICKET_EVENT = {
     house: "Log Cabin",
-    city: "San Francisco",
-    couple: "Shane & Aileen",
-    date: "September 2026",
+    city: "The Presidio",
+    couple: "Shane & Aileen Productions",
+    headline: "A Wedding Show",
+    date: "September 18, 2026",
     time: "Dinner",
     admit: "Admit One",
+} as const;
+
+export const TICKET_BRIDGE = {
+    src: "/golden-gate.jpg",
+    heightIn: 1,
+    maxTextWidth: 0.6,
+    crop: { top: 0.2, right: 0.0, bottom: 0.18, left: 0.0 },
 } as const;
 
 export function formatDietary(dietary: string[]): string {
@@ -32,6 +57,10 @@ export function formatRsvp(rsvp: Guest["rsvp"]): string {
 
 export function guestSerial(index: number): string {
     return `SWA-${String(index + 1).padStart(3, "0")}`;
+}
+
+export function sheetFilename(sheetIndex: number): string {
+    return `sheet-${String(sheetIndex + 1).padStart(2, "0")}.png`;
 }
 
 export function guestFilename(guest: Guest, index: number): string {

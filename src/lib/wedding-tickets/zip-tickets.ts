@@ -1,6 +1,6 @@
 import JSZip from "jszip";
-import { renderGuestTicketPng } from "./render-ticket";
-import { guestFilename, type Guest } from "./types";
+import { renderSheetPng } from "./render-ticket";
+import { chunkGuestsIntoSheets, sheetFilename, type Guest } from "./types";
 
 export async function zipGuestTickets(
     guests: Guest[],
@@ -10,13 +10,13 @@ export async function zipGuestTickets(
         throw new Error("No guests to render");
     }
 
+    const sheets = chunkGuestsIntoSheets(guests);
     const zip = new JSZip();
 
-    for (let i = 0; i < guests.length; i++) {
-        const guest = guests[i];
-        const png = await renderGuestTicketPng(guest, i);
-        zip.file(guestFilename(guest, i), png);
-        onProgress?.(i + 1, guests.length);
+    for (let i = 0; i < sheets.length; i++) {
+        const png = await renderSheetPng(sheets[i], i);
+        zip.file(sheetFilename(i), png);
+        onProgress?.(i + 1, sheets.length);
     }
 
     return zip.generateAsync({
