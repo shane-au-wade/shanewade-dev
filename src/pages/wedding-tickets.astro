@@ -1,0 +1,380 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import { guests } from "../lib/wedding-tickets/guests";
+import { formatDietary, formatRsvp } from "../lib/wedding-tickets/types";
+
+const tableCounts = guests.reduce<Record<string, number>>((acc, guest) => {
+    const key = String(guest.table);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+}, {});
+const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
+---
+
+<html lang="en">
+    <Head title="Wedding Tickets - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 no-print"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-small text-muted">
+                        4×6 tent cards for dinner service
+                    </p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <div class="container py-4 no-print">
+            <section class="section">
+                <div
+                    class="flex items-start justify-between flex-wrap gap-3 mb-2"
+                >
+                    <div>
+                        <h1 class="heading-3 mb-1">Wedding Tickets</h1>
+                        <p class="text-body text-muted max-w-2xl m-0">
+                            Portrait <strong>4×6 in</strong> tent cards. Download a
+                            ZIP of 300 DPI PNGs, upload to Walgreens, then cut
+                            in half and fold by hand.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            class="btn-outline"
+                            id="print-tickets"
+                            type="button"
+                        >
+                            Print preview
+                        </button>
+                        <button
+                            class="btn-primary"
+                            id="download-zip"
+                            type="button"
+                        >
+                            Download ZIP
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-small text-muted mb-4" id="zip-status">
+                    {guests.length} guests · {acceptedCount} accepted · {guests.length -
+                        acceptedCount} pending · 1200×1800 px (4×6 at 300 DPI)
+                </p>
+
+                <div class="card max-w-2xl mb-4">
+                    <div class="card-header">
+                        <h2 class="heading-6 m-0">Tables</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="table-counts">
+                            {
+                                Object.entries(tableCounts).map(
+                                    ([table, count]) => (
+                                        <li>
+                                            <span class="text-small text-muted">
+                                                Table {table}
+                                            </span>
+                                            <strong>{count}</strong>
+                                        </li>
+                                    ),
+                                )
+                            }
+                            <li>
+                                <span class="text-small text-muted">Total</span>
+                                <strong>{guests.length}</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card max-w-2xl mb-6">
+                    <div class="card-header">
+                        <h2 class="heading-6 m-0">Guests</h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="guest-list" id="guest-list">
+                            {
+                                guests.map((g, i) => (
+                                    <li>
+                                        <button
+                                            type="button"
+                                            class:list={[
+                                                "guest-row",
+                                                i === 0 && "is-active",
+                                            ]}
+                                            data-guest-index={i}
+                                        >
+                                            <span class="guest-row-name">
+                                                {g.name}
+                                            </span>
+                                            <span class="badge-secondary">
+                                                Table {g.table}
+                                            </span>
+                                            <span
+                                                class:list={[
+                                                    g.rsvp === "accepted"
+                                                        ? "badge-success"
+                                                        : "badge-warning",
+                                                ]}
+                                            >
+                                                {formatRsvp(g.rsvp)}
+                                            </span>
+                                            <span class="badge-info">
+                                                {formatDietary(g.dietary)}
+                                            </span>
+                                        </button>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="sheet-stage">
+            <div class="sheet-wrap">
+                <canvas
+                    id="ticket-preview"
+                    class="sheet"
+                    width="1200"
+                    height="1800"
+                    aria-label="Printable 4 by 6 inch tent card"
+                ></canvas>
+                <div class="sheet-fold no-print" aria-hidden="true">
+                    <span class="sheet-fold-label">fold</span>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .sheet-stage {
+                display: flex;
+                justify-content: center;
+                padding: 0 1rem 3rem;
+            }
+
+            .sheet-wrap {
+                position: relative;
+                width: 4in;
+                height: 6in;
+            }
+
+            .sheet {
+                display: block;
+                width: 4in;
+                height: 6in;
+                background: #fff;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .sheet-fold {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+            }
+
+            .sheet-fold-label {
+                position: absolute;
+                left: 50%;
+                top: 0;
+                transform: translate(-50%, -50%);
+                background: #fff;
+                color: #470012;
+                font-size: 0.5rem;
+                letter-spacing: 0.18em;
+                text-transform: uppercase;
+                padding: 0 0.3rem;
+            }
+
+            .table-counts {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem 1.25rem;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .table-counts li {
+                display: flex;
+                flex-direction: column;
+                gap: 0.1rem;
+            }
+
+            .guest-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .guest-row {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+                width: 100%;
+                text-align: left;
+                padding: 0.7rem 1rem;
+                background: transparent;
+                border: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+                cursor: pointer;
+                color: inherit;
+            }
+
+            :global(.dark) .guest-row {
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .guest-row:hover,
+            .guest-row.is-active {
+                background: rgba(71, 0, 18, 0.05);
+            }
+
+            .guest-list li:last-child .guest-row {
+                border-bottom: none;
+            }
+
+            .guest-row-name {
+                flex: 1;
+                min-width: 8rem;
+                font-weight: 600;
+            }
+
+            @media (max-width: 42rem) {
+                .sheet-stage {
+                    overflow: hidden;
+                }
+
+                .sheet-wrap {
+                    transform: scale(0.72);
+                    transform-origin: top center;
+                    margin-bottom: calc(6in * -0.28);
+                }
+            }
+
+            @media print {
+                :global(.no-print) {
+                    display: none !important;
+                }
+
+                :global(body) {
+                    background: white !important;
+                    margin: 0;
+                }
+
+                .sheet-stage {
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .sheet-wrap,
+                .sheet {
+                    transform: none;
+                    margin: 0;
+                    width: 4in;
+                    height: 6in;
+                }
+
+                @page {
+                    size: 4in 6in;
+                    margin: 0;
+                }
+            }
+        </style>
+
+        <script>
+            import { guests } from "../lib/wedding-tickets/guests";
+            import { renderGuestTicketCanvas } from "../lib/wedding-tickets/render-ticket";
+            import { zipGuestTickets } from "../lib/wedding-tickets/zip-tickets";
+
+            const preview = document.getElementById(
+                "ticket-preview",
+            ) as HTMLCanvasElement | null;
+
+            function applyGuest(index: number) {
+                const guest = guests[index];
+                if (!guest || !preview) return;
+
+                renderGuestTicketCanvas(guest, index, preview);
+
+                document
+                    .querySelectorAll<HTMLElement>("[data-guest-index]")
+                    .forEach((btn) => {
+                        btn.classList.toggle(
+                            "is-active",
+                            btn.dataset.guestIndex === String(index),
+                        );
+                    });
+            }
+
+            applyGuest(0);
+
+            document.getElementById("guest-list")?.addEventListener(
+                "click",
+                (event) => {
+                    const btn = (event.target as HTMLElement).closest<
+                        HTMLElement
+                    >("[data-guest-index]");
+                    if (!btn) return;
+                    applyGuest(Number(btn.dataset.guestIndex));
+                },
+            );
+
+            document
+                .getElementById("print-tickets")
+                ?.addEventListener("click", () => {
+                    window.print();
+                });
+
+            const downloadBtn = document.getElementById(
+                "download-zip",
+            ) as HTMLButtonElement | null;
+            const status = document.getElementById("zip-status");
+
+            downloadBtn?.addEventListener("click", async () => {
+                downloadBtn.disabled = true;
+                try {
+                    if (status) {
+                        status.textContent = "Rendering 0 of " + guests.length;
+                    }
+                    const blob = await zipGuestTickets(guests, (done, total) => {
+                        if (status) {
+                            status.textContent = `Rendering ${done} of ${total}`;
+                        }
+                    });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "wedding-tickets-4x6.zip";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    if (status) {
+                        status.textContent = `Downloaded ${guests.length} PNGs · 1200×1800 px`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if (status) {
+                        status.textContent =
+                            "ZIP failed — try again from this page in the browser.";
+                    }
+                } finally {
+                    downloadBtn.disabled = false;
+                }
+            });
+        </script>
+    </body>
+</html>
