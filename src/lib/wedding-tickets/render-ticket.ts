@@ -9,6 +9,7 @@ import {
     chunkGuestsIntoSheets,
     guestSerial,
     type Guest,
+    type RenderMode,
 } from "./types";
 
 const PRIMARY = "#470012";
@@ -37,6 +38,20 @@ function loadBridgeImage(): Promise<HTMLImageElement> {
         });
     }
     return bridgeImageLoad;
+}
+
+let foilBridgeImage: HTMLImageElement | null = null;
+let foilBridgeImageLoad: Promise<HTMLImageElement> | null = null;
+
+function loadFoilBridgeImage(): Promise<HTMLImageElement> {
+    if (foilBridgeImage) return Promise.resolve(foilBridgeImage);
+    if (!foilBridgeImageLoad) {
+        foilBridgeImageLoad = loadImage(TICKET_BRIDGE.foilSrc).then((img) => {
+            foilBridgeImage = img;
+            return img;
+        });
+    }
+    return foilBridgeImageLoad;
 }
 
 let glutenFreeImage: HTMLImageElement | null = null;
@@ -131,20 +146,18 @@ function dashedVLine(
 
 function drawBridge(
     ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
     x: number,
     y: number,
     w: number,
     h: number,
 ): void {
-    if (!bridgeImage) return;
     const { crop } = TICKET_BRIDGE;
-    const sx = bridgeImage.naturalWidth * crop.left;
-    const sy = bridgeImage.naturalHeight * crop.top;
-    const sw =
-        bridgeImage.naturalWidth * (1 - crop.left - crop.right);
-    const sh =
-        bridgeImage.naturalHeight * (1 - crop.top - crop.bottom);
-    ctx.drawImage(bridgeImage, sx, sy, sw, sh, x, y, w, h);
+    const sx = img.naturalWidth * crop.left;
+    const sy = img.naturalHeight * crop.top;
+    const sw = img.naturalWidth * (1 - crop.left - crop.right);
+    const sh = img.naturalHeight * (1 - crop.top - crop.bottom);
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
 }
 
 function drawBarcode(
@@ -201,6 +214,43 @@ function drawQr(
     ctx.restore();
 }
 
+/**
+ * Bridge placement rect, constant per sheet geometry. Shared so the base pass
+ * (which knocks the bridge out) and the foil pass (which stamps it) register
+ * pixel-for-pixel.
+ */
+function computeBridgeRect(
+    width: number,
+    img: HTMLImageElement,
+): { x: number; y: number; w: number; h: number } {
+    const safeTop = px(0.1);
+    const safeRight = px(0.1);
+    const contentRight = width - safeRight;
+    const stubW = px(0.6);
+    const stubX = contentRight - stubW;
+    const railW = px(0.95);
+    const mainPadX = SPACE.sm;
+    const mainPadTop = SPACE.sm + safeTop;
+    const mainX = railW;
+    const mainW = stubX - railW;
+    const textX = mainX + mainPadX;
+    const textW = mainW - mainPadX * 2;
+
+    const logoSize = rem(0.52);
+    const logoPadY = SPACE["2xs"];
+    const logoH = logoSize + logoPadY * 2;
+    const bridgeY = mainPadTop + logoH + SPACE.xs;
+
+    const { crop, heightIn, maxTextWidth } = TICKET_BRIDGE;
+    const cropW = 1 - crop.left - crop.right;
+    const cropH = 1 - crop.top - crop.bottom;
+    const aspect = (img.naturalWidth * cropW) / (img.naturalHeight * cropH);
+    const motifH = px(heightIn);
+    const motifW = Math.min(textW * maxTextWidth, motifH * aspect);
+
+    return { x: textX + textW - motifW, y: bridgeY, w: motifW, h: motifH };
+}
+
 function drawTicketFace(
     ctx: CanvasRenderingContext2D,
     guest: Guest,
@@ -209,6 +259,7 @@ function drawTicketFace(
     originY: number,
     width: number,
     height: number,
+    mode: RenderMode,
 ): void {
     ctx.save();
 
@@ -216,6 +267,17 @@ function drawTicketFace(
 
     ctx.fillStyle = WHITE;
     ctx.fillRect(0, 0, width, height);
+
+    // Foil layer: nothing but the bridge silhouette, positioned exactly where
+    // the base pass leaves a knockout. Everything else stays paper-white.
+    if (mode === "foil") {
+        if (foilBridgeImage) {
+            const r = computeBridgeRect(width, foilBridgeImage);
+            drawBridge(ctx, foilBridgeImage, r.x, r.y, r.w, r.h);
+        }
+        ctx.restore();
+        return;
+    }
 
     ctx.strokeStyle = PRIMARY;
     ctx.lineWidth = 2;
@@ -310,7 +372,7 @@ function drawTicketFace(
 
     const house = upper(TICKET_EVENT.house);
     const city = upper(TICKET_EVENT.city);
-    const logoSize = rem(0.52);
+    const logoSize = rem(0.45);
     const logoPadX = SPACE.xs;
     const logoPadY = SPACE["2xs"];
     setFont(ctx, 700, logoSize, FONT, 0.18);
@@ -331,19 +393,15 @@ function drawTicketFace(
     ctx.textAlign = "left";
     y += logoH + SPACE.xs;
 
-    if (bridgeImage) {
-        const { crop, heightIn, maxTextWidth } = TICKET_BRIDGE;
-        const cropW = 1 - crop.left - crop.right;
-        const cropH = 1 - crop.top - crop.bottom;
-        const aspect =
-            (bridgeImage.naturalWidth * cropW) /
-            (bridgeImage.naturalHeight * cropH);
-        const motifH = px(heightIn);
-        const motifW = Math.min(textW * maxTextWidth, motifH * aspect);
-        drawBridge(ctx, textX + textW - motifW, y, motifW, motifH);
+    // Standard render draws the printed red bridge here. In `base` mode the
+    // bridge is intentionally omitted — it is a knockout that gets stamped in
+    // gold via the separate foil layer (see mode === "foil").
+    if (mode === "standard" && bridgeImage) {
+        const r = computeBridgeRect(width, bridgeImage);
+        drawBridge(ctx, bridgeImage, r.x, r.y, r.w, r.h);
     }
 
-    const headlineSize = rem(0.42);
+    const headlineSize = rem(.7);
     setFont(ctx, 700, headlineSize, FONT, 0.08);
     ctx.textBaseline = "alphabetic";
     ctx.fillText(upper(TICKET_EVENT.headline), textX, y + headlineSize);
@@ -360,7 +418,7 @@ function drawTicketFace(
         ctx,
         guest.name,
         textW,
-        rem(0.92),
+        rem(1),
         rem(0.5),
         -0.02,
     );
@@ -424,9 +482,16 @@ function drawCutLine(
 export async function renderSheetCanvas(
     sheetGuests: Guest[],
     sheetIndex: number,
+    mode: RenderMode = "base",
     canvas: HTMLCanvasElement = document.createElement("canvas"),
 ): Promise<HTMLCanvasElement> {
-    await Promise.all([loadBridgeImage(), loadGlutenFreeImage()]);
+    if (mode === "foil") {
+        await loadFoilBridgeImage();
+    } else if (mode === "standard") {
+        await Promise.all([loadBridgeImage(), loadGlutenFreeImage()]);
+    } else {
+        await loadGlutenFreeImage();
+    }
 
     const width = px(TICKET_PRINT.sheetWidthIn);
     const height = px(TICKET_PRINT.sheetHeightIn);
@@ -452,11 +517,15 @@ export async function renderSheetCanvas(
         const guest = sheetGuests[slot];
         if (!guest) continue;
         const serial = guestSerial(globalStart + slot);
-        drawTicketFace(ctx, guest, serial, originX, y, ticketW, ticketH);
+        drawTicketFace(ctx, guest, serial, originX, y, ticketW, ticketH, mode);
     }
 
-    for (let seam = 1; seam <= TICKET_PRINT.ticketsPerSheet; seam++) {
-        drawCutLine(ctx, seam * ticketH, originX, originX + ticketW);
+    // Cut guides are trim marks for the printed ink sheets (standard + base);
+    // the foil layer stays clean so no stray foil is stamped along the seams.
+    if (mode !== "foil") {
+        for (let seam = 1; seam <= TICKET_PRINT.ticketsPerSheet; seam++) {
+            drawCutLine(ctx, seam * ticketH, originX, originX + ticketW);
+        }
     }
 
     return canvas;
@@ -466,18 +535,20 @@ export async function renderSheetCanvas(
 export async function renderGuestSheetCanvas(
     guests: Guest[],
     guestIndex: number,
+    mode: RenderMode = "base",
     canvas: HTMLCanvasElement = document.createElement("canvas"),
 ): Promise<HTMLCanvasElement> {
     const sheets = chunkGuestsIntoSheets(guests);
     const sheetIndex = Math.floor(guestIndex / TICKET_PRINT.ticketsPerSheet);
-    return renderSheetCanvas(sheets[sheetIndex] ?? [], sheetIndex, canvas);
+    return renderSheetCanvas(sheets[sheetIndex] ?? [], sheetIndex, mode, canvas);
 }
 
 export async function renderSheetPng(
     sheetGuests: Guest[],
     sheetIndex: number,
+    mode: RenderMode = "base",
 ): Promise<Blob> {
-    const canvas = await renderSheetCanvas(sheetGuests, sheetIndex);
+    const canvas = await renderSheetCanvas(sheetGuests, sheetIndex, mode);
     return new Promise((resolve, reject) => {
         canvas.toBlob((blob) => {
             if (!blob) {

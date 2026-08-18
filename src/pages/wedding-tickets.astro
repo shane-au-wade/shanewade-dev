@@ -49,9 +49,13 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                         <h1 class="heading-3 mb-1">Wedding Tickets</h1>
                         <p class="text-body text-muted max-w-2xl m-0">
                             Portrait <strong>5×7 in</strong> sheets, three
-                            tickets each for card holders. Download a ZIP of 300
-                            DPI PNGs, upload to Walgreens, then cut along the
-                            marks.
+                            tickets each for card holders, at 300 DPI. The
+                            <strong>standard ZIP</strong> has the printed red
+                            bridge (one PNG per sheet). The
+                            <strong>foil ZIP</strong> has the two-file setup for
+                            a foil printer — <code>tickets/</code> (ink, bridge
+                            knocked out) plus <code>foil/</code> (gold bridge
+                            layer).
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2">
@@ -63,18 +67,18 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                             Print preview
                         </button>
                         <button
-                            class="btn-outline"
-                            id="download-sample"
+                            class="btn-primary"
+                            id="download-standard"
                             type="button"
                         >
-                            Download sample
+                            Download standard ZIP
                         </button>
                         <button
-                            class="btn-primary"
-                            id="download-zip"
+                            class="btn-outline"
+                            id="download-foil"
                             type="button"
                         >
-                            Download ZIP
+                            Download foil ZIP
                         </button>
                     </div>
                 </div>
@@ -161,6 +165,47 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
             </section>
         </div>
 
+        <div class="container no-print mb-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="heading-6 m-0">Foil review</h2>
+                    <p class="text-small text-muted m-0">
+                        The two files a foil printer needs, for the selected
+                        sheet. Overlay them to confirm the gold bridges land in
+                        the ink layer's knockouts.
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="review-grid">
+                        <figure class="review-item">
+                            <canvas
+                                id="review-base"
+                                class="review-canvas"
+                                width={sheetPxW}
+                                height={sheetPxH}
+                                aria-label="Base ink layer, bridge knocked out"
+                            ></canvas>
+                            <figcaption class="text-small text-muted">
+                                <code>tickets/</code> — ink (bridge knocked out)
+                            </figcaption>
+                        </figure>
+                        <figure class="review-item">
+                            <canvas
+                                id="review-foil"
+                                class="review-canvas"
+                                width={sheetPxW}
+                                height={sheetPxH}
+                                aria-label="Foil layer, bridge silhouettes only"
+                            ></canvas>
+                            <figcaption class="text-small text-muted">
+                                <code>foil/</code> — gold bridge layer
+                            </figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="sheet-stage">
             <div class="sheet-wrap">
                 <canvas
@@ -174,6 +219,34 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
         </div>
 
         <style>
+            .review-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 240px));
+                gap: 1.25rem;
+            }
+
+            .review-item {
+                margin: 0;
+            }
+
+            .review-canvas {
+                display: block;
+                width: 100%;
+                height: auto;
+                aspect-ratio: 5 / 7;
+                background: #fff;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                border-radius: 4px;
+            }
+
+            :global(.dark) .review-canvas {
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+
+            .review-item figcaption {
+                margin-top: 0.4rem;
+            }
+
             .sheet-stage {
                 display: flex;
                 justify-content: center;
@@ -294,15 +367,11 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
 
         <script>
             import { guests } from "../lib/wedding-tickets/guests";
+            import { renderGuestSheetCanvas } from "../lib/wedding-tickets/render-ticket";
             import {
-                renderGuestSheetCanvas,
-                renderSheetPng,
-            } from "../lib/wedding-tickets/render-ticket";
-            import {
-                chunkGuestsIntoSheets,
-                sheetFilename,
-            } from "../lib/wedding-tickets/types";
-            import { zipGuestTickets } from "../lib/wedding-tickets/zip-tickets";
+                zipFoilTickets,
+                zipStandardTickets,
+            } from "../lib/wedding-tickets/zip-tickets";
 
             function downloadBlob(blob: Blob, filename: string) {
                 const url = URL.createObjectURL(blob);
@@ -316,12 +385,49 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
             const preview = document.getElementById(
                 "ticket-preview",
             ) as HTMLCanvasElement | null;
+            const reviewBase = document.getElementById(
+                "review-base",
+            ) as HTMLCanvasElement | null;
+            const reviewFoil = document.getElementById(
+                "review-foil",
+            ) as HTMLCanvasElement | null;
 
             async function applyGuest(index: number) {
                 const guest = guests[index];
-                if (!guest || !preview) return;
+                if (!guest) return;
 
-                await renderGuestSheetCanvas(guests, index, preview);
+                const renders: Promise<unknown>[] = [];
+                if (preview) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "standard",
+                            preview,
+                        ),
+                    );
+                }
+                if (reviewBase) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "base",
+                            reviewBase,
+                        ),
+                    );
+                }
+                if (reviewFoil) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "foil",
+                            reviewFoil,
+                        ),
+                    );
+                }
+                await Promise.all(renders);
 
                 document
                     .querySelectorAll<HTMLElement>("[data-guest-index]")
@@ -352,57 +458,40 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                     window.print();
                 });
 
-            const downloadBtn = document.getElementById(
-                "download-zip",
+            const standardBtn = document.getElementById(
+                "download-standard",
             ) as HTMLButtonElement | null;
-            const sampleBtn = document.getElementById(
-                "download-sample",
+            const foilBtn = document.getElementById(
+                "download-foil",
             ) as HTMLButtonElement | null;
             const status = document.getElementById("zip-status");
 
-            sampleBtn?.addEventListener("click", async () => {
-                sampleBtn.disabled = true;
-                try {
-                    if (status) {
-                        status.textContent = "Rendering sample sheet…";
-                    }
-                    const firstSheet = chunkGuestsIntoSheets(guests)[0];
-                    if (!firstSheet) {
-                        throw new Error("No guests to render");
-                    }
-                    const blob = await renderSheetPng(firstSheet, 0);
-                    downloadBlob(blob, sheetFilename(0));
-                    if (status) {
-                        status.textContent =
-                            "Downloaded sample sheet-01.png · 5×7 at 300 DPI";
-                    }
-                } catch (err) {
-                    console.error(err);
-                    if (status) {
-                        status.textContent =
-                            "Sample failed — try again from this page in the browser.";
-                    }
-                } finally {
-                    sampleBtn.disabled = false;
-                }
-            });
+            type ZipFn = (
+                guests: typeof import("../lib/wedding-tickets/guests").guests,
+                onProgress?: (done: number, total: number) => void,
+            ) => Promise<Blob>;
 
-            downloadBtn?.addEventListener("click", async () => {
-                downloadBtn.disabled = true;
+            async function runDownload(
+                btn: HTMLButtonElement,
+                zipFn: ZipFn,
+                filename: string,
+                label: string,
+            ) {
+                btn.disabled = true;
                 try {
                     if (status) {
-                        status.textContent = "Rendering sheets…";
+                        status.textContent = `Rendering ${label} sheets…`;
                     }
                     let sheetTotal = 0;
-                    const blob = await zipGuestTickets(guests, (done, total) => {
+                    const blob = await zipFn(guests, (done, total) => {
                         sheetTotal = total;
                         if (status) {
-                            status.textContent = `Rendering sheet ${done} of ${total}`;
+                            status.textContent = `Rendering ${label} sheet ${done} of ${total}`;
                         }
                     });
-                    downloadBlob(blob, "wedding-tickets-5x7.zip");
+                    downloadBlob(blob, filename);
                     if (status) {
-                        status.textContent = `Downloaded ${sheetTotal} sheets · 5×7 at 300 DPI`;
+                        status.textContent = `Downloaded ${sheetTotal} ${label} sheets · 5×7 at 300 DPI`;
                     }
                 } catch (err) {
                     console.error(err);
@@ -411,9 +500,27 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                             "ZIP failed — try again from this page in the browser.";
                     }
                 } finally {
-                    downloadBtn.disabled = false;
+                    btn.disabled = false;
                 }
-            });
+            }
+
+            standardBtn?.addEventListener("click", () =>
+                runDownload(
+                    standardBtn,
+                    zipStandardTickets,
+                    "wedding-tickets-standard-5x7.zip",
+                    "standard",
+                ),
+            );
+
+            foilBtn?.addEventListener("click", () =>
+                runDownload(
+                    foilBtn,
+                    zipFoilTickets,
+                    "wedding-tickets-foil-5x7.zip",
+                    "foil",
+                ),
+            );
         </script>
     </body>
 </html>

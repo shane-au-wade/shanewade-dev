@@ -1,0 +1,854 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import { PRESETS } from "../lib/ticket-gen/presets";
+---
+
+<html lang="en">
+    <Head title="Ticket Gen - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 no-print"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-small text-muted">
+                        Design ticket HTML · preview · export print-ready PNGs
+                    </p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <div class="container py-4 no-print">
+            <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
+                <div>
+                    <h1 class="heading-3 mb-1">Ticket Gen</h1>
+                    <p class="text-body text-muted max-w-2xl m-0">
+                        Edit ticket HTML at a physical size, merge in recipient
+                        data with <code>{"{{fields}}"}</code>, and export a ZIP
+                        of 300 DPI PNG sheets. Rendered with modern-screenshot.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button class="btn-outline" id="tg-print" type="button">
+                        Print
+                    </button>
+                    <button
+                        class="btn-outline"
+                        id="tg-download-png"
+                        type="button"
+                    >
+                        Download PNG
+                    </button>
+                    <button
+                        class="btn-primary"
+                        id="tg-download-zip"
+                        type="button"
+                    >
+                        Download ZIP
+                    </button>
+                </div>
+            </div>
+
+            <p class="text-small text-muted mb-4" id="tg-status">Ready.</p>
+
+            <div class="tg-grid">
+                <!-- Left: controls + editor -->
+                <div class="tg-col">
+                    <div class="card mb-4">
+                        <div class="card-body space-y-4">
+                            <div class="tg-row">
+                                <div class="tg-field">
+                                    <label class="label" for="tg-template"
+                                        >Template</label
+                                    >
+                                    <select class="select" id="tg-template"
+                                    ></select>
+                                </div>
+                                <div class="tg-field">
+                                    <label class="label" for="tg-preset"
+                                        >Size</label
+                                    >
+                                    <select class="select" id="tg-preset">
+                                        {
+                                            PRESETS.map((p) => (
+                                                <option value={p.id}>
+                                                    {p.label}
+                                                </option>
+                                            ))
+                                        }
+                                        <option value="custom">Custom…</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="tg-custom" id="tg-custom" hidden>
+                                <div class="tg-custom-grid">
+                                    <label class="tg-mini"
+                                        >Ticket W (in)
+                                        <input
+                                            class="input"
+                                            id="tg-c-w"
+                                            type="number"
+                                            step="0.1"
+                                            min="0.5"
+                                        /></label
+                                    >
+                                    <label class="tg-mini"
+                                        >Ticket H (in)
+                                        <input
+                                            class="input"
+                                            id="tg-c-h"
+                                            type="number"
+                                            step="0.1"
+                                            min="0.5"
+                                        /></label
+                                    >
+                                    <label class="tg-mini"
+                                        >DPI
+                                        <input
+                                            class="input"
+                                            id="tg-c-dpi"
+                                            type="number"
+                                            step="1"
+                                            min="72"
+                                        /></label
+                                    >
+                                    <label class="tg-mini"
+                                        >Sheet W (in)
+                                        <input
+                                            class="input"
+                                            id="tg-c-sw"
+                                            type="number"
+                                            step="0.1"
+                                            min="1"
+                                        /></label
+                                    >
+                                    <label class="tg-mini"
+                                        >Sheet H (in)
+                                        <input
+                                            class="input"
+                                            id="tg-c-sh"
+                                            type="number"
+                                            step="0.1"
+                                            min="1"
+                                        /></label
+                                    >
+                                    <label class="tg-mini"
+                                        >Per sheet
+                                        <input
+                                            class="input"
+                                            id="tg-c-per"
+                                            type="number"
+                                            step="1"
+                                            min="1"
+                                        /></label
+                                    >
+                                </div>
+                            </div>
+
+                            <div class="tg-row">
+                                <div class="tg-field">
+                                    <label class="label" for="tg-recipient"
+                                        >Preview recipient</label
+                                    >
+                                    <select class="select" id="tg-recipient"
+                                    ></select>
+                                </div>
+                                <div class="tg-field tg-data-actions">
+                                    <label class="label">Data</label>
+                                    <div class="flex flex-wrap gap-2">
+                                        <button
+                                            class="btn-outline btn-sm"
+                                            id="tg-load-wedding"
+                                            type="button"
+                                            >Wedding sample</button
+                                        >
+                                        <label
+                                            class="btn-outline btn-sm tg-file-btn"
+                                        >
+                                            Upload CSV
+                                            <input
+                                                type="file"
+                                                id="tg-csv"
+                                                accept=".csv,text/csv"
+                                                hidden
+                                            />
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tg-row">
+                                <div class="tg-field">
+                                    <label class="label" for="tg-template-name"
+                                        >Save as</label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            class="input"
+                                            id="tg-template-name"
+                                            type="text"
+                                            placeholder="Template name"
+                                        />
+                                        <button
+                                            class="btn-outline"
+                                            id="tg-save-template"
+                                            type="button">Save</button
+                                        >
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div
+                            class="card-header flex items-center justify-between"
+                        >
+                            <h2 class="heading-6 m-0">HTML</h2>
+                            <div class="tg-fields" id="tg-fields"></div>
+                        </div>
+                        <div class="card-body p-0">
+                            <textarea
+                                id="tg-editor"
+                                class="tg-editor"
+                                spellcheck="false"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: preview -->
+                <div class="tg-col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="heading-6 m-0">Preview</h2>
+                        </div>
+                        <div class="card-body">
+                            <div class="tg-preview-wrap" id="tg-preview-wrap">
+                                <iframe
+                                    id="tg-preview"
+                                    class="tg-preview"
+                                    title="Ticket preview"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .tg-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+                gap: 1.5rem;
+                align-items: start;
+            }
+
+            @media (max-width: 60rem) {
+                .tg-grid {
+                    grid-template-columns: minmax(0, 1fr);
+                }
+            }
+
+            .tg-row {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+
+            .tg-field {
+                flex: 1;
+                min-width: 12rem;
+            }
+
+            .tg-custom-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.6rem;
+            }
+
+            .tg-mini {
+                display: flex;
+                flex-direction: column;
+                gap: 0.2rem;
+                font-size: 0.75rem;
+                color: var(--color-text-muted, #666);
+            }
+
+            .btn-sm {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.8rem;
+            }
+
+            .tg-file-btn {
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+            }
+
+            .tg-editor {
+                width: 100%;
+                min-height: 26rem;
+                border: none;
+                border-radius: 0 0 0.5rem 0.5rem;
+                padding: 1rem;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 0.8rem;
+                line-height: 1.5;
+                resize: vertical;
+                background: #0f1115;
+                color: #e6e6e6;
+                tab-size: 2;
+            }
+
+            .tg-editor:focus {
+                outline: 2px solid var(--color-brand-primary, #89181e);
+                outline-offset: -2px;
+            }
+
+            .tg-fields {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.3rem;
+                max-width: 60%;
+                justify-content: flex-end;
+            }
+
+            .tg-chip {
+                font-family: ui-monospace, Menlo, monospace;
+                font-size: 0.7rem;
+                padding: 0.1rem 0.4rem;
+                border-radius: 0.3rem;
+                border: 1px solid rgba(0, 0, 0, 0.15);
+                background: transparent;
+                color: inherit;
+                cursor: pointer;
+            }
+
+            :global(.dark) .tg-chip {
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+
+            .tg-chip:hover {
+                background: rgba(137, 24, 30, 0.08);
+            }
+
+            .tg-preview-wrap {
+                display: flex;
+                justify-content: center;
+                align-items: flex-start;
+                overflow: auto;
+                padding: 1rem;
+                background: repeating-conic-gradient(
+                        #f4f4f4 0% 25%,
+                        #fff 0% 50%
+                    )
+                    50% / 20px 20px;
+                border-radius: 0.5rem;
+                min-height: 16rem;
+            }
+
+            :global(.dark) .tg-preview-wrap {
+                background: repeating-conic-gradient(
+                        #262a30 0% 25%,
+                        #1b1e23 0% 50%
+                    )
+                    50% / 20px 20px;
+            }
+
+            .tg-preview {
+                border: 0;
+                background: #fff;
+                box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+                transform-origin: top left;
+            }
+
+            @media print {
+                :global(.no-print) {
+                    display: none !important;
+                }
+            }
+        </style>
+
+        <script>
+            import { PRESETS, getPreset } from "../lib/ticket-gen/presets";
+            import { DEFAULT_TEMPLATES } from "../lib/ticket-gen/templates";
+            import {
+                extractFields,
+                renderTemplate,
+                withSerial,
+            } from "../lib/ticket-gen/merge";
+            import { mountPreview, ticketCssPx } from "../lib/ticket-gen/iframe-stage";
+            import {
+                canvasToBlob,
+                renderTicketCanvas,
+            } from "../lib/ticket-gen/render-html";
+            import { renderSheetBlob, zipTickets } from "../lib/ticket-gen/zip-tickets";
+            import {
+                loadSavedTemplates,
+                loadState,
+                saveState,
+                saveTemplate,
+            } from "../lib/ticket-gen/storage";
+            import {
+                parseCsv,
+                sampleRecipient,
+                weddingRecipients,
+            } from "../lib/ticket-gen/recipients";
+            import {
+                chunkRecipients,
+                type PrintPreset,
+                type Recipient,
+                type TemplateDef,
+                type TicketSpec,
+            } from "../lib/ticket-gen/types";
+
+            const $ = <T extends HTMLElement>(id: string) =>
+                document.getElementById(id) as T | null;
+
+            const editor = $<HTMLTextAreaElement>("tg-editor")!;
+            const preview = $<HTMLIFrameElement>("tg-preview")!;
+            const previewWrap = $<HTMLElement>("tg-preview-wrap")!;
+            const presetSel = $<HTMLSelectElement>("tg-preset")!;
+            const templateSel = $<HTMLSelectElement>("tg-template")!;
+            const recipientSel = $<HTMLSelectElement>("tg-recipient")!;
+            const custom = $<HTMLElement>("tg-custom")!;
+            const fieldsPanel = $<HTMLElement>("tg-fields")!;
+            const status = $<HTMLElement>("tg-status")!;
+            const nameInput = $<HTMLInputElement>("tg-template-name")!;
+
+            const cW = $<HTMLInputElement>("tg-c-w")!;
+            const cH = $<HTMLInputElement>("tg-c-h")!;
+            const cDpi = $<HTMLInputElement>("tg-c-dpi")!;
+            const cSw = $<HTMLInputElement>("tg-c-sw")!;
+            const cSh = $<HTMLInputElement>("tg-c-sh")!;
+            const cPer = $<HTMLInputElement>("tg-c-per")!;
+
+            let recipients: Recipient[] = weddingRecipients();
+            let allTemplates: TemplateDef[] = [
+                ...DEFAULT_TEMPLATES,
+                ...loadSavedTemplates(),
+            ];
+
+            function setStatus(msg: string) {
+                status.textContent = msg;
+            }
+
+            function currentPreset(): PrintPreset {
+                if (presetSel.value === "custom") {
+                    return {
+                        id: "custom",
+                        label: "Custom",
+                        ticket: {
+                            widthIn: Number(cW.value) || 5,
+                            heightIn: Number(cH.value) || 2,
+                            dpi: Number(cDpi.value) || 300,
+                        },
+                        sheetWidthIn: Number(cSw.value) || 5,
+                        sheetHeightIn: Number(cSh.value) || 7,
+                        ticketsPerSheet: Math.max(1, Number(cPer.value) || 1),
+                    };
+                }
+                return getPreset(presetSel.value);
+            }
+
+            function currentSpec(): TicketSpec {
+                return currentPreset().ticket;
+            }
+
+            function currentRecipient(): Recipient {
+                const idx = Number(recipientSel.value) || 0;
+                return recipients[idx] ?? sampleRecipient();
+            }
+
+            function fitPreview() {
+                const spec = currentSpec();
+                const { w, h } = ticketCssPx(spec);
+                const avail = previewWrap.clientWidth - 32;
+                const scale = Math.min(1.6, Math.max(0.2, avail / w));
+                preview.style.transform = `scale(${scale})`;
+                preview.style.width = `${w}px`;
+                preview.style.height = `${h}px`;
+                previewWrap.style.height = `${h * scale + 32}px`;
+            }
+
+            async function renderPreview() {
+                const spec = currentSpec();
+                const idx = Number(recipientSel.value) || 0;
+                const merged = renderTemplate(
+                    editor.value,
+                    withSerial(currentRecipient(), idx),
+                );
+                try {
+                    await mountPreview(preview, merged, spec);
+                    fitPreview();
+                } catch (err) {
+                    console.error(err);
+                    setStatus("Preview error — check the console.");
+                }
+            }
+
+            function refreshFieldsPanel() {
+                const fromTemplate = extractFields(editor.value);
+                const fromData = Object.keys(recipients[0] ?? sampleRecipient());
+                const all = Array.from(
+                    new Set([...fromData, ...fromTemplate]),
+                ).sort();
+                fieldsPanel.innerHTML = "";
+                for (const field of all) {
+                    const chip = document.createElement("button");
+                    chip.type = "button";
+                    chip.className = "tg-chip";
+                    chip.textContent = `{{${field}}}`;
+                    chip.addEventListener("click", () =>
+                        insertAtCursor(`{{${field}}}`),
+                    );
+                    fieldsPanel.appendChild(chip);
+                }
+            }
+
+            function insertAtCursor(text: string) {
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                editor.value =
+                    editor.value.slice(0, start) +
+                    text +
+                    editor.value.slice(end);
+                editor.selectionStart = editor.selectionEnd = start + text.length;
+                editor.focus();
+                onEditorChange();
+            }
+
+            function populateRecipientSelect() {
+                recipientSel.innerHTML = "";
+                recipients.forEach((r, i) => {
+                    const opt = document.createElement("option");
+                    opt.value = String(i);
+                    opt.textContent =
+                        r.name || r.title || `Recipient ${i + 1}`;
+                    recipientSel.appendChild(opt);
+                });
+                if (recipients.length === 0) {
+                    const opt = document.createElement("option");
+                    opt.value = "0";
+                    opt.textContent = "Sample";
+                    recipientSel.appendChild(opt);
+                }
+            }
+
+            function populateTemplateSelect(selectedId?: string) {
+                templateSel.innerHTML = "";
+                for (const t of allTemplates) {
+                    const opt = document.createElement("option");
+                    opt.value = t.id;
+                    opt.textContent = t.name;
+                    templateSel.appendChild(opt);
+                }
+                if (selectedId) templateSel.value = selectedId;
+            }
+
+            function applyPreset(preset: PrintPreset) {
+                if (preset.id === "custom") {
+                    presetSel.value = "custom";
+                } else if (PRESETS.some((p) => p.id === preset.id)) {
+                    presetSel.value = preset.id;
+                } else {
+                    presetSel.value = "custom";
+                }
+                cW.value = String(preset.ticket.widthIn);
+                cH.value = String(preset.ticket.heightIn);
+                cDpi.value = String(preset.ticket.dpi);
+                cSw.value = String(preset.sheetWidthIn);
+                cSh.value = String(preset.sheetHeightIn);
+                cPer.value = String(preset.ticketsPerSheet);
+                custom.hidden = presetSel.value !== "custom";
+            }
+
+            function loadTemplate(id: string) {
+                const tpl = allTemplates.find((t) => t.id === id);
+                if (!tpl) return;
+                editor.value = tpl.html;
+                nameInput.value = tpl.name;
+                applyPreset(getPreset(tpl.presetId));
+                if (tpl.presetId === "custom") {
+                    applyPreset({
+                        id: "custom",
+                        label: "Custom",
+                        ticket: tpl.spec,
+                        sheetWidthIn: 5,
+                        sheetHeightIn: 7,
+                        ticketsPerSheet: 3,
+                    });
+                }
+                refreshFieldsPanel();
+                renderPreview();
+            }
+
+            function persist() {
+                saveState({
+                    templateId: templateSel.value,
+                    presetId: presetSel.value,
+                    spec: currentSpec(),
+                    html: editor.value,
+                });
+            }
+
+            let debounce: number | undefined;
+            function onEditorChange() {
+                refreshFieldsPanel();
+                window.clearTimeout(debounce);
+                debounce = window.setTimeout(() => {
+                    renderPreview();
+                    persist();
+                }, 250);
+            }
+
+            function download(blob: Blob, filename: string) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            function slug(s: string) {
+                return (
+                    s
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-|-$/g, "") || "ticket"
+                );
+            }
+
+            // --- events -----------------------------------------------------
+            editor.addEventListener("input", onEditorChange);
+
+            presetSel.addEventListener("change", () => {
+                custom.hidden = presetSel.value !== "custom";
+                if (presetSel.value !== "custom") {
+                    applyPreset(getPreset(presetSel.value));
+                }
+                renderPreview();
+                persist();
+            });
+
+            [cW, cH, cDpi, cSw, cSh, cPer].forEach((el) =>
+                el.addEventListener("input", () => {
+                    renderPreview();
+                    persist();
+                }),
+            );
+
+            templateSel.addEventListener("change", () =>
+                loadTemplate(templateSel.value),
+            );
+
+            recipientSel.addEventListener("change", renderPreview);
+
+            $<HTMLButtonElement>("tg-load-wedding")?.addEventListener(
+                "click",
+                () => {
+                    recipients = weddingRecipients();
+                    populateRecipientSelect();
+                    refreshFieldsPanel();
+                    renderPreview();
+                    setStatus(`Loaded ${recipients.length} wedding guests.`);
+                },
+            );
+
+            $<HTMLInputElement>("tg-csv")?.addEventListener("change", (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                    recipients = parseCsv(String(reader.result ?? ""));
+                    populateRecipientSelect();
+                    refreshFieldsPanel();
+                    renderPreview();
+                    setStatus(
+                        `Loaded ${recipients.length} recipients from CSV.`,
+                    );
+                };
+                reader.readAsText(file);
+            });
+
+            $<HTMLButtonElement>("tg-save-template")?.addEventListener(
+                "click",
+                () => {
+                    const name = nameInput.value.trim() || "Untitled";
+                    const id = `saved-${slug(name)}`;
+                    const tpl: TemplateDef = {
+                        id,
+                        name,
+                        html: editor.value,
+                        presetId: presetSel.value,
+                        spec: currentSpec(),
+                    };
+                    saveTemplate(tpl);
+                    allTemplates = [
+                        ...DEFAULT_TEMPLATES,
+                        ...loadSavedTemplates(),
+                    ];
+                    populateTemplateSelect(id);
+                    setStatus(`Saved template "${name}".`);
+                },
+            );
+
+            $<HTMLButtonElement>("tg-download-png")?.addEventListener(
+                "click",
+                async () => {
+                    setStatus("Rendering PNG…");
+                    try {
+                        const idx = Number(recipientSel.value) || 0;
+                        const canvas = await renderTicketCanvas(
+                            editor.value,
+                            currentRecipient(),
+                            idx,
+                            currentSpec(),
+                        );
+                        const blob = await canvasToBlob(canvas);
+                        const r = currentRecipient();
+                        download(
+                            blob,
+                            `${slug(r.name || r.title || "ticket")}.png`,
+                        );
+                        setStatus("Downloaded PNG.");
+                    } catch (err) {
+                        console.error(err);
+                        setStatus("PNG failed — check the console.");
+                    }
+                },
+            );
+
+            $<HTMLButtonElement>("tg-download-zip")?.addEventListener(
+                "click",
+                async () => {
+                    const btn = $<HTMLButtonElement>("tg-download-zip")!;
+                    btn.disabled = true;
+                    try {
+                        if (recipients.length === 0) {
+                            setStatus("No recipients — load data first.");
+                            return;
+                        }
+                        const preset = currentPreset();
+                        const blob = await zipTickets(
+                            editor.value,
+                            recipients,
+                            preset,
+                            (done, total) =>
+                                setStatus(`Rendering sheet ${done} of ${total}…`),
+                        );
+                        download(blob, `${slug(nameInput.value)}-tickets.zip`);
+                        setStatus("Downloaded ZIP.");
+                    } catch (err) {
+                        console.error(err);
+                        setStatus("ZIP failed — check the console.");
+                    } finally {
+                        btn.disabled = false;
+                    }
+                },
+            );
+
+            $<HTMLButtonElement>("tg-print")?.addEventListener(
+                "click",
+                async () => {
+                    if (recipients.length === 0) {
+                        setStatus("No recipients — load data first.");
+                        return;
+                    }
+                    setStatus("Preparing print sheets…");
+                    try {
+                        const preset = currentPreset();
+                        const sheets = chunkRecipients(
+                            recipients,
+                            preset.ticketsPerSheet,
+                        );
+                        const urls: string[] = [];
+                        for (let i = 0; i < sheets.length; i++) {
+                            const blob = await renderSheetBlob(
+                                editor.value,
+                                sheets[i],
+                                i * preset.ticketsPerSheet,
+                                preset,
+                            );
+                            urls.push(URL.createObjectURL(blob));
+                            setStatus(
+                                `Rendering sheet ${i + 1} of ${sheets.length}…`,
+                            );
+                        }
+                        openPrintWindow(urls, preset);
+                        setStatus(`Prepared ${sheets.length} sheets to print.`);
+                    } catch (err) {
+                        console.error(err);
+                        setStatus("Print failed — check the console.");
+                    }
+                },
+            );
+
+            function openPrintWindow(urls: string[], preset: PrintPreset) {
+                const w = window.open("", "_blank");
+                if (!w) {
+                    setStatus("Popup blocked — allow popups to print.");
+                    return;
+                }
+                const imgs = urls
+                    .map(
+                        (u) =>
+                            `<img src="${u}" style="width:${preset.sheetWidthIn}in;height:${preset.sheetHeightIn}in;display:block;page-break-after:always" />`,
+                    )
+                    .join("");
+                w.document.write(
+                    `<!doctype html><html><head><meta charset="utf-8"><title>Print</title><style>@page{size:${preset.sheetWidthIn}in ${preset.sheetHeightIn}in;margin:0}html,body{margin:0;padding:0}</style></head><body onload="window.focus();window.print()">${imgs}</body></html>`,
+                );
+                w.document.close();
+            }
+
+            // --- init -------------------------------------------------------
+            function init() {
+                populateTemplateSelect();
+                const saved = loadState();
+                if (saved) {
+                    populateTemplateSelect(saved.templateId);
+                    editor.value = saved.html;
+                    const preset =
+                        saved.presetId === "custom"
+                            ? {
+                                  id: "custom",
+                                  label: "Custom",
+                                  ticket: saved.spec,
+                                  sheetWidthIn: 5,
+                                  sheetHeightIn: 7,
+                                  ticketsPerSheet: 3,
+                              }
+                            : getPreset(saved.presetId);
+                    applyPreset(preset);
+                    const tpl = allTemplates.find(
+                        (t) => t.id === saved.templateId,
+                    );
+                    nameInput.value = tpl?.name ?? "Untitled";
+                } else {
+                    const first = DEFAULT_TEMPLATES[0];
+                    templateSel.value = first.id;
+                    editor.value = first.html;
+                    nameInput.value = first.name;
+                    applyPreset(getPreset(first.presetId));
+                }
+                populateRecipientSelect();
+                refreshFieldsPanel();
+                renderPreview();
+            }
+
+            preview.addEventListener("load", () => {}, { once: true });
+            window.addEventListener("resize", fitPreview);
+            init();
+        </script>
+    </body>
+</html>

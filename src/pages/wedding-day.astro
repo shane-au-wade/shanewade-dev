@@ -1,0 +1,139 @@
+---
+import Head from "@components/head.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import { WEDDING_PHOTOS_URL } from "../lib/wedding-tickets/types";
+
+const COUPLE = "Shane & Aileen";
+
+// Curated favorites to feature once the day is over. Drop image paths in here
+// (e.g. "/wedding/first-dance.jpg") and they'll render in the gallery below.
+const featuredPhotos: { src: string; alt: string }[] = [];
+---
+
+<html lang="en">
+    <Head title={`${COUPLE} — Wedding Day`} description="Wedding day photos." />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <p class="text-small text-muted m-0">{COUPLE}</p>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <main class="stage container">
+            <img
+                class="bridge"
+                src="/golden-gate.png"
+                alt="Golden Gate Bridge"
+                width="320"
+                height="200"
+            />
+
+            <div class="card photos-card">
+                <div class="card-body">
+                    <h2 class="heading-5 mb-1">Share the photos</h2>
+                    <p class="text-body text-muted mb-4">
+                        Add your snapshots from the day and browse everyone
+                        else's in our shared album. The more the merrier.
+                    </p>
+                    <a
+                        class="btn-primary"
+                        href={WEDDING_PHOTOS_URL}
+                        target="_blank"
+                        rel="noopener"
+                    >
+                        Open photo album
+                    </a>
+                </div>
+            </div>
+
+            {
+                featuredPhotos.length > 0 && (
+                    <section class="gallery-section">
+                        <h2 class="heading-5 text-center mb-4">A few favorites</h2>
+                        <div class="gallery">
+                            {featuredPhotos.map((photo) => (
+                                <img
+                                    class="gallery-img"
+                                    src={photo.src}
+                                    alt={photo.alt}
+                                    loading="lazy"
+                                />
+                            ))}
+                        </div>
+                    </section>
+                )
+            }
+        </main>
+
+        <style>
+            .stage {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 2.5rem;
+                min-height: calc(100vh - 3.5rem);
+                padding-block: 2rem;
+            }
+
+            .bridge {
+                display: block;
+                width: min(300px, 70%);
+                height: auto;
+                /* The source PNG has a solid white box; blend it into the page. */
+                mix-blend-mode: multiply;
+            }
+
+            :global(.dark) .bridge {
+                mix-blend-mode: normal;
+                border-radius: 12px;
+            }
+
+            .photos-card {
+                width: 100%;
+                max-width: 28rem;
+                text-align: center;
+                border: 2px solid #470012;
+                background: linear-gradient(
+                    180deg,
+                    rgba(243, 238, 217, 0.35),
+                    rgba(255, 245, 244, 0.35)
+                );
+            }
+
+            :global(.dark) .photos-card {
+                border-color: #bd8180;
+                background: linear-gradient(
+                    180deg,
+                    rgba(71, 0, 18, 0.25),
+                    rgba(47, 72, 88, 0.25)
+                );
+            }
+
+            .gallery-section {
+                width: 100%;
+                max-width: 56rem;
+            }
+
+            .gallery {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                gap: 0.75rem;
+            }
+
+            .gallery-img {
+                width: 100%;
+                height: 100%;
+                aspect-ratio: 4 / 5;
+                object-fit: cover;
+                border-radius: 10px;
+            }
+        </style>
+    </body>
+</html>

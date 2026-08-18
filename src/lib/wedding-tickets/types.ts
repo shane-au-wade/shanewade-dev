@@ -23,11 +23,14 @@ export function chunkGuestsIntoSheets(guests: Guest[]): Guest[][] {
     return sheets;
 }
 
+/** Shared Google Photos album guests can add to and browse. */
+export const WEDDING_PHOTOS_URL = "https://photos.app.goo.gl/tE1YKb2P5qjdtHGJ7";
+
 /**
- * URL encoded in the ticket QR. Points to the wedding link tree once it is
- * live; for now it resolves straight to the shared Google Photos album.
+ * URL encoded in the ticket QR. Points to the guest-facing wedding day page,
+ * which links out to the shared photo album (and later, featured photos).
  */
-export const TICKET_QR_URL = "https://photos.app.goo.gl/tE1YKb2P5qjdtHGJ7";
+export const TICKET_QR_URL = "https://www.shanewade.dev/wedding-day";
 
 export const TICKET_EVENT = {
     house: "Log Cabin",
@@ -40,11 +43,19 @@ export const TICKET_EVENT = {
 } as const;
 
 export const TICKET_BRIDGE = {
-    src: "/golden-gate.jpg",
+    src: "/golden-gate.png",
+    foilSrc: "/golden-gate-foil.png",
     heightIn: 1,
     maxTextWidth: 0.6,
     crop: { top: 0.2, right: 0.0, bottom: 0.18, left: 0.0 },
 } as const;
+
+/**
+ * - `standard`: full ticket with the printed red bridge photo (single-file zip).
+ * - `base`: full ticket with the bridge knocked out (ink layer of the foil set).
+ * - `foil`: only the bridge silhouettes (gold stamping layer of the foil set).
+ */
+export type RenderMode = "standard" | "base" | "foil";
 
 export const TICKET_GLUTEN_FREE = {
     src: "/gluten-free.jpg",
