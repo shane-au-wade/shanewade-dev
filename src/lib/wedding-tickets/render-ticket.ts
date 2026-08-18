@@ -3,16 +3,27 @@ import QRCode from "../qrcodejs/qrcode";
 import {
     TICKET_BRIDGE,
     TICKET_EVENT,
+    TICKET_GLUTEN_FREE,
     TICKET_PRINT,
     TICKET_QR_URL,
     chunkGuestsIntoSheets,
-    formatDietary,
     guestSerial,
     type Guest,
 } from "./types";
 
 const PRIMARY = "#470012";
 const WHITE = "#ffffff";
+const BLACK = "#000000"
+const DARK_OLIVE= "#212200"
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load ${src}`));
+        img.src = src;
+    });
+}
 
 let bridgeImage: HTMLImageElement | null = null;
 let bridgeImageLoad: Promise<HTMLImageElement> | null = null;
@@ -20,18 +31,26 @@ let bridgeImageLoad: Promise<HTMLImageElement> | null = null;
 function loadBridgeImage(): Promise<HTMLImageElement> {
     if (bridgeImage) return Promise.resolve(bridgeImage);
     if (!bridgeImageLoad) {
-        bridgeImageLoad = new Promise((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => {
-                bridgeImage = img;
-                resolve(img);
-            };
-            img.onerror = () =>
-                reject(new Error(`Failed to load ${TICKET_BRIDGE.src}`));
-            img.src = TICKET_BRIDGE.src;
+        bridgeImageLoad = loadImage(TICKET_BRIDGE.src).then((img) => {
+            bridgeImage = img;
+            return img;
         });
     }
     return bridgeImageLoad;
+}
+
+let glutenFreeImage: HTMLImageElement | null = null;
+let glutenFreeImageLoad: Promise<HTMLImageElement> | null = null;
+
+function loadGlutenFreeImage(): Promise<HTMLImageElement> {
+    if (glutenFreeImage) return Promise.resolve(glutenFreeImage);
+    if (!glutenFreeImageLoad) {
+        glutenFreeImageLoad = loadImage(TICKET_GLUTEN_FREE.src).then((img) => {
+            glutenFreeImage = img;
+            return img;
+        });
+    }
+    return glutenFreeImageLoad;
 }
 
 const FONT =
@@ -141,7 +160,7 @@ function drawBarcode(
         format: "CODE128",
         displayValue: false,
         background: WHITE,
-        lineColor: PRIMARY,
+        lineColor: BLACK,
         margin: 8,
         width: 3,
         height: Math.max(1, Math.round(w)),
@@ -168,7 +187,7 @@ function drawQr(
         text: value,
         width: Math.round(size),
         height: Math.round(size),
-        colorDark: PRIMARY,
+        colorDark: BLACK,
         colorLight: WHITE,
         correctLevel: QRCode.CorrectLevel.M,
     });
@@ -246,7 +265,7 @@ function drawTicketFace(
     const serialSize = rem(0.4);
 
     ctx.save();
-    ctx.fillStyle = PRIMARY;
+    ctx.fillStyle = BLACK;
     setFont(ctx, 700, admitSize, FONT, 0.22);
     ctx.translate(stubX + stubPad + admitSize / 2, height * 0.6);
     ctx.rotate(-Math.PI / 2);
@@ -256,7 +275,7 @@ function drawTicketFace(
     ctx.restore();
 
     ctx.save();
-    ctx.fillStyle = PRIMARY;
+    ctx.fillStyle = BLACK;
     setFont(ctx, 700, admitSize, FONT, 0.16);
     ctx.translate(stubX + stubPad + admitSize / 2, height * 0.35);
     ctx.rotate(-Math.PI / 2);
@@ -269,14 +288,14 @@ function drawTicketFace(
     const barcodeX = stubX + stubPad + admitSize + SPACE["2xs"];
     const barcodeRight = contentRight - stubPad - serialSize - SPACE["2xs"];
     const barcodeW = barcodeRight - barcodeX + 15;
-    const barcodeH = (height - stubPad * 2) * 0.4;
+    const barcodeH = (height - stubPad * 2) * 0.35;
     const barcodeY = (height - barcodeH) / 2;
     drawBarcode(ctx, serial, barcodeX, barcodeY, barcodeW, barcodeH);
 
 
     const serialCenterX = contentRight - stubPad - serialSize / 2;
     ctx.save();
-    ctx.fillStyle = PRIMARY;
+    ctx.fillStyle = BLACK;
     setFont(ctx, 400, serialSize, MONO, 0.04);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -346,6 +365,7 @@ function drawTicketFace(
         -0.02,
     );
     setFont(ctx, 700, nameSize, FONT, -0.02);
+    ctx.fillStyle = BLACK;
     ctx.fillText(guest.name, textX, y + nameSize);
     y += nameSize + SPACE.xs;
 
@@ -361,7 +381,6 @@ function drawTicketFace(
     const labelGap = SPACE.sm;
     const metaH = SPACE.xs + labelSize + labelGap + tableNumSize + SPACE.xs;
     const metaY = height - mainPadBottom - metaH;
-    const tableW = px(0.55);
 
     setFont(ctx, 500, labelSize, FONT, 0.16);
     ctx.globalAlpha = 0.65;
@@ -369,38 +388,15 @@ function drawTicketFace(
     ctx.fillText("TABLE", textX, metaY + SPACE.xs);
     ctx.globalAlpha = 1;
     setFont(ctx, 700, tableNumSize, MONO, 0);
-    ctx.fillText(
-        String(guest.table),
-        textX,
-        metaY + SPACE.xs + labelSize + labelGap,
-    );
+    const tableNumY = metaY + SPACE.xs + labelSize + labelGap;
+    const tableNum = String(guest.table);
+    ctx.fillText(tableNum, textX, tableNumY);
 
-    if (guest.dietary.length > 0) {
-        const dietX = textX + tableW + SPACE.sm;
-        const dietW = textX + textW - dietX;
-        const dietPadX = SPACE.xs;
-        const dietPadY = SPACE.xs;
-        ctx.strokeRect(dietX, metaY, dietW, metaH);
-
-        const diet = formatDietary(guest.dietary).toUpperCase();
-        setFont(ctx, 500, labelSize, FONT, 0.16);
-        ctx.globalAlpha = 0.65;
-        ctx.fillText("DIETARY", dietX + dietPadX, metaY + dietPadY);
-        ctx.globalAlpha = 1;
-        const dietSize = fitText(
-            ctx,
-            diet,
-            dietW - dietPadX * 2,
-            rem(0.72),
-            rem(0.42),
-            0.06,
-        );
-        setFont(ctx, 700, dietSize, FONT, 0.06);
-        ctx.fillText(
-            diet,
-            dietX + dietPadX,
-            metaY + dietPadY + labelSize + labelGap,
-        );
+    if (guest.glutenFree && glutenFreeImage) {
+        const gfSize = px(TICKET_GLUTEN_FREE.sizeIn);
+        const gfX = textX + ctx.measureText(tableNum).width + SPACE.md;
+        const gfY = tableNumY + tableNumSize / 2 - gfSize / 2 - 28;
+        ctx.drawImage(glutenFreeImage, gfX, gfY, gfSize, gfSize);
     }
 
     ctx.restore();
@@ -430,7 +426,7 @@ export async function renderSheetCanvas(
     sheetIndex: number,
     canvas: HTMLCanvasElement = document.createElement("canvas"),
 ): Promise<HTMLCanvasElement> {
-    await loadBridgeImage();
+    await Promise.all([loadBridgeImage(), loadGlutenFreeImage()]);
 
     const width = px(TICKET_PRINT.sheetWidthIn);
     const height = px(TICKET_PRINT.sheetHeightIn);

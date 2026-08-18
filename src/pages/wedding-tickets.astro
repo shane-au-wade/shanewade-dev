@@ -7,7 +7,6 @@ import { guests } from "../lib/wedding-tickets/guests";
 import {
     TICKET_PRINT,
     chunkGuestsIntoSheets,
-    formatDietary,
     formatRsvp,
 } from "../lib/wedding-tickets/types";
 
@@ -62,6 +61,13 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                             type="button"
                         >
                             Print preview
+                        </button>
+                        <button
+                            class="btn-outline"
+                            id="download-sample"
+                            type="button"
+                        >
+                            Download sample
                         </button>
                         <button
                             class="btn-primary"
@@ -138,9 +144,13 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                                             >
                                                 {formatRsvp(g.rsvp)}
                                             </span>
-                                            <span class="badge-info">
-                                                {formatDietary(g.dietary)}
-                                            </span>
+                                            {
+                                                g.glutenFree && (
+                                                    <span class="badge-info">
+                                                        Gluten-free
+                                                    </span>
+                                                )
+                                            }
                                         </button>
                                     </li>
                                 ))
@@ -284,8 +294,24 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
 
         <script>
             import { guests } from "../lib/wedding-tickets/guests";
-            import { renderGuestSheetCanvas } from "../lib/wedding-tickets/render-ticket";
+            import {
+                renderGuestSheetCanvas,
+                renderSheetPng,
+            } from "../lib/wedding-tickets/render-ticket";
+            import {
+                chunkGuestsIntoSheets,
+                sheetFilename,
+            } from "../lib/wedding-tickets/types";
             import { zipGuestTickets } from "../lib/wedding-tickets/zip-tickets";
+
+            function downloadBlob(blob: Blob, filename: string) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
 
             const preview = document.getElementById(
                 "ticket-preview",
@@ -329,7 +355,37 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
             const downloadBtn = document.getElementById(
                 "download-zip",
             ) as HTMLButtonElement | null;
+            const sampleBtn = document.getElementById(
+                "download-sample",
+            ) as HTMLButtonElement | null;
             const status = document.getElementById("zip-status");
+
+            sampleBtn?.addEventListener("click", async () => {
+                sampleBtn.disabled = true;
+                try {
+                    if (status) {
+                        status.textContent = "Rendering sample sheet…";
+                    }
+                    const firstSheet = chunkGuestsIntoSheets(guests)[0];
+                    if (!firstSheet) {
+                        throw new Error("No guests to render");
+                    }
+                    const blob = await renderSheetPng(firstSheet, 0);
+                    downloadBlob(blob, sheetFilename(0));
+                    if (status) {
+                        status.textContent =
+                            "Downloaded sample sheet-01.png · 5×7 at 300 DPI";
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if (status) {
+                        status.textContent =
+                            "Sample failed — try again from this page in the browser.";
+                    }
+                } finally {
+                    sampleBtn.disabled = false;
+                }
+            });
 
             downloadBtn?.addEventListener("click", async () => {
                 downloadBtn.disabled = true;
@@ -344,12 +400,7 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                             status.textContent = `Rendering sheet ${done} of ${total}`;
                         }
                     });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = "wedding-tickets-5x7.zip";
-                    a.click();
-                    URL.revokeObjectURL(url);
+                    downloadBlob(blob, "wedding-tickets-5x7.zip");
                     if (status) {
                         status.textContent = `Downloaded ${sheetTotal} sheets · 5×7 at 300 DPI`;
                     }

@@ -1,6 +1,6 @@
 export type Guest = {
     name: string;
-    dietary: string[];
+    glutenFree?: boolean;
     table: number | string;
     rsvp: "accepted" | "pending";
 };
@@ -32,8 +32,8 @@ export const TICKET_QR_URL = "https://photos.app.goo.gl/tE1YKb2P5qjdtHGJ7";
 export const TICKET_EVENT = {
     house: "Log Cabin",
     city: "The Presidio",
-    couple: "Shane & Aileen Productions",
-    headline: "A Wedding Show",
+    couple: "Shane & Aileen Productions LTD",
+    headline: "The Wedding Show",
     date: "September 18, 2026",
     time: "Dinner",
     admit: "Admit One",
@@ -46,10 +46,10 @@ export const TICKET_BRIDGE = {
     crop: { top: 0.2, right: 0.0, bottom: 0.18, left: 0.0 },
 } as const;
 
-export function formatDietary(dietary: string[]): string {
-    if (dietary.length === 0) return "None";
-    return dietary.join(" · ");
-}
+export const TICKET_GLUTEN_FREE = {
+    src: "/gluten-free.jpg",
+    sizeIn: 0.6,
+} as const;
 
 export function formatRsvp(rsvp: Guest["rsvp"]): string {
     return rsvp === "accepted" ? "Accepted" : "Pending";
