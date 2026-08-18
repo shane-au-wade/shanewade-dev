@@ -15,7 +15,6 @@ import {
 const PRIMARY = "#470012";
 const WHITE = "#ffffff";
 const BLACK = "#000000"
-const DARK_OLIVE= "#212200"
 
 function loadImage(src: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
