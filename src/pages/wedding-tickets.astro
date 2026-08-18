@@ -201,6 +201,27 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                                 <code>foil/</code> — gold bridge layer
                             </figcaption>
                         </figure>
+                        <figure class="review-item">
+                            <div class="review-stack">
+                                <canvas
+                                    id="review-overlay-base"
+                                    class="review-canvas"
+                                    width={sheetPxW}
+                                    height={sheetPxH}
+                                    aria-label="Base ink layer, bridge knocked out"
+                                ></canvas>
+                                <canvas
+                                    id="review-overlay-foil"
+                                    class="review-canvas review-canvas-overlay"
+                                    width={sheetPxW}
+                                    height={sheetPxH}
+                                    aria-label="Foil layer overlaid on base layer"
+                                ></canvas>
+                            </div>
+                            <figcaption class="text-small text-muted">
+                                overlay — foil on base (70% opacity)
+                            </figcaption>
+                        </figure>
                     </div>
                 </div>
             </div>
@@ -221,7 +242,7 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
         <style>
             .review-grid {
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 240px));
+                grid-template-columns: repeat(3, minmax(0, 240px));
                 gap: 1.25rem;
             }
 
@@ -241,6 +262,19 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
 
             :global(.dark) .review-canvas {
                 border-color: rgba(255, 255, 255, 0.15);
+            }
+
+            .review-stack {
+                position: relative;
+            }
+
+            .review-canvas-overlay {
+                position: absolute;
+                inset: 0;
+                background: transparent;
+                border-color: transparent;
+                opacity: 0.7;
+                mix-blend-mode: multiply;
             }
 
             .review-item figcaption {
@@ -391,6 +425,12 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
             const reviewFoil = document.getElementById(
                 "review-foil",
             ) as HTMLCanvasElement | null;
+            const reviewOverlayBase = document.getElementById(
+                "review-overlay-base",
+            ) as HTMLCanvasElement | null;
+            const reviewOverlayFoil = document.getElementById(
+                "review-overlay-foil",
+            ) as HTMLCanvasElement | null;
 
             async function applyGuest(index: number) {
                 const guest = guests[index];
@@ -424,6 +464,26 @@ const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
                             index,
                             "foil",
                             reviewFoil,
+                        ),
+                    );
+                }
+                if (reviewOverlayBase) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "base",
+                            reviewOverlayBase,
+                        ),
+                    );
+                }
+                if (reviewOverlayFoil) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "foil",
+                            reviewOverlayFoil,
                         ),
                     );
                 }

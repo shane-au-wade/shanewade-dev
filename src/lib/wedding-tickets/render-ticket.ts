@@ -298,7 +298,7 @@ function drawTicketFace(
 
     // Left rail: scannable QR to the wedding link tree plus a caption.
     const qrSize = px(0.6);
-    const railCenterX = railW / 2;
+    const railCenterX = railW / 2 + 35;
     const captionSize = rem(0.28);
     const captionGap = SPACE["2xs"];
     const captionLineH = captionSize * 1.15;
@@ -328,7 +328,7 @@ function drawTicketFace(
     ctx.save();
     ctx.fillStyle = BLACK;
     setFont(ctx, 700, admitSize, FONT, 0.22);
-    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.6);
+    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.7);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -338,7 +338,7 @@ function drawTicketFace(
     ctx.save();
     ctx.fillStyle = BLACK;
     setFont(ctx, 700, admitSize, FONT, 0.16);
-    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.35);
+    ctx.translate(stubX + stubPad + admitSize / 2, height * 0.3);
     ctx.rotate(-Math.PI / 2);
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
