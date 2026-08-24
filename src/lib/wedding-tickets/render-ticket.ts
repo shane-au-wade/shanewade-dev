@@ -456,6 +456,16 @@ function drawTicketFace(
         ctx.drawImage(glutenFreeImage, gfX, gfY, gfSize, gfSize);
     }
 
+    // Subtle "no refunds" flair, tucked into the bottom-right of the main face.
+    ctx.save();
+    ctx.fillStyle = BLACK;
+    ctx.globalAlpha = 1;
+    setFont(ctx, 500, rem(0.35), FONT, 0.16);
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText("NO REFUNDS", textX + textW, height - mainPadBottom);
+    ctx.restore();
+
     ctx.restore();
 }
 
