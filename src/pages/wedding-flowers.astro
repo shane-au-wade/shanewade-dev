@@ -1,0 +1,718 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+
+type Match = "focal" | "supporting" | "texture" | "foliage";
+
+type Flower = {
+    name: string;
+    availability: string;
+    notes: string;
+    palette: boolean; // pairs well with our burgundy / rose / slate palette
+    match: Match;
+};
+
+// September in the Bay Area (NorCal) — late-summer blooms overlap with early
+// fall. Dahlias peak at local farms; garden roses have their last strong month.
+const flowers: Flower[] = [
+    {
+        name: "Dahlias",
+        availability: "Peak",
+        notes: "The star of a Bay Area September. Every size/shape/color, incl. deep burgundy ('Rip City', 'Karma Choc') and dusty blush ('Café au Lait').",
+        palette: true,
+        match: "focal",
+    },
+    {
+        name: "Garden Roses",
+        availability: "Ending (strong early Sept)",
+        notes: "Last excellent month. Antique/burgundy tones fit the palette beautifully.",
+        palette: true,
+        match: "focal",
+    },
+    {
+        name: "Standard Roses",
+        availability: "Year-round",
+        notes: "Locally grown, high quality, starting to show richer fall tones.",
+        palette: true,
+        match: "focal",
+    },
+    {
+        name: "Lisianthus",
+        availability: "Strong",
+        notes: "Rose-like elegance in mauve/plum; great blush-to-burgundy bridge.",
+        palette: true,
+        match: "supporting",
+    },
+    {
+        name: "Chrysanthemums (mums)",
+        availability: "Beginning",
+        notes: "First fall mums arriving — jewel and antique tones, budget-friendly volume.",
+        palette: true,
+        match: "supporting",
+    },
+    {
+        name: "Zinnias",
+        availability: "Strong",
+        notes: "Summer production continues; vibrant. Choose deep reds to stay on palette.",
+        palette: true,
+        match: "supporting",
+    },
+    {
+        name: "Celosia",
+        availability: "Strong",
+        notes: "Velvet cockscomb + plume varieties add unmistakable fall texture; deep burgundy available.",
+        palette: true,
+        match: "texture",
+    },
+    {
+        name: "Carnations",
+        availability: "Strong",
+        notes: "Underrated, long-lasting, rich jewel tones — great for burgundy density.",
+        palette: true,
+        match: "supporting",
+    },
+    {
+        name: "Scabiosa",
+        availability: "Strong",
+        notes: "Dusty, romantic blooms + pods; slate/mauve tones tie into the accent color.",
+        palette: true,
+        match: "texture",
+    },
+    {
+        name: "Hydrangeas",
+        availability: "Transitioning",
+        notes: "Developing antique green/mauve/rust coloring — soft, voluminous filler.",
+        palette: true,
+        match: "supporting",
+    },
+    {
+        name: "Cosmos",
+        availability: "Strong",
+        notes: "Airy and delicate; adds movement to loose, garden-style arrangements.",
+        palette: false,
+        match: "texture",
+    },
+    {
+        name: "Asters",
+        availability: "Strong",
+        notes: "Soften edges and add natural movement; purples read well against slate blue.",
+        palette: true,
+        match: "texture",
+    },
+    {
+        name: "Amaranthus",
+        availability: "Strong",
+        notes: "Trailing burgundy stems — dramatic, cascading, perfectly on-palette.",
+        palette: true,
+        match: "foliage",
+    },
+    {
+        name: "Sunflowers",
+        availability: "Strong",
+        notes: "Coastal (Half Moon Bay) late-season crop. Warm/gold — off-palette but very local.",
+        palette: false,
+        match: "focal",
+    },
+    {
+        name: "Marigolds",
+        availability: "Strong",
+        notes: "Warm golds/oranges. Off-palette but budget-friendly and seasonal.",
+        palette: false,
+        match: "supporting",
+    },
+    {
+        name: "Ornamental grasses",
+        availability: "Plentiful",
+        notes: "Airy movement and neutral texture; pairs with the cream in your palette.",
+        palette: true,
+        match: "foliage",
+    },
+    {
+        name: "Eucalyptus",
+        availability: "Year-round",
+        notes: "Reliable slate-green foliage; echoes the #2F4858 accent.",
+        palette: true,
+        match: "foliage",
+    },
+];
+
+const matchLabels: Record<Match, string> = {
+    focal: "Focal",
+    supporting: "Supporting",
+    texture: "Texture / accent",
+    foliage: "Foliage / greenery",
+};
+
+type Farm = {
+    name: string;
+    location: string;
+    season: string;
+    note: string;
+};
+
+const farms: Farm[] = [
+    {
+        name: "The Happy Dahlia Farm",
+        location: "Petaluma",
+        season: "July–Oct (peak Aug)",
+        note: "~10,000 dahlia plants, 100+ varieties in rainbow rows. Free to walk, build-your-own bouquet, does weddings & events.",
+    },
+    {
+        name: "Dynomite Farm",
+        location: "Santa Cruz",
+        season: "July–mid Oct (peak late Jul–Sept)",
+        note: "Private, appointment-only U-Cut. Florist-quality, exhibition-winning dahlias, 100+ varieties.",
+    },
+    {
+        name: "Beeline Blooms",
+        location: "Ben Lomond",
+        season: "Early Aug–mid Oct",
+        note: "Dahlia U-Pick 'safari'. Check IG/FB for current bloom-based openings.",
+    },
+    {
+        name: "Blue Dot Blossoms",
+        location: "Nicasio (Marin)",
+        season: "March–Oct",
+        note: "Sustainable Marin-grown dahlias, zinnias, cosmos, garden roses; sold via local designers.",
+    },
+    {
+        name: "Bush Poppy Farm",
+        location: "Orinda",
+        season: "Early-fall CSA (Aug–Sept)",
+        note: "Organic/regenerative; sunflowers, dahlias, celosia, cosmos, zinnias. Does weddings.",
+    },
+    {
+        name: "Andreotti Family Farms",
+        location: "Half Moon Bay",
+        season: "Sept–Oct",
+        note: "Coastal late-season sunflower U-pick thanks to the foggy microclimate.",
+    },
+];
+
+// Our palette (from wedding-colors.astro)
+const palette = [
+    { hex: "#470012", label: "Burgundy" },
+    { hex: "#BD8180", label: "Dusty rose" },
+    { hex: "#FFF5F4", label: "Blush" },
+    { hex: "#F3EED9", label: "Cream" },
+    { hex: "#2F4858", label: "Slate (accent)" },
+];
+
+// Ready-to-paste answers for Angella's online questionnaire, grouped to match
+// her form's sections. `todo` flags answers that still need a detail from us.
+type QA = { q: string; a: string; todo?: boolean };
+type QASection = { title: string; items: QA[] };
+
+const questionnaire: QASection[] = [
+    {
+        title: "Personal flower needs",
+        items: [
+            {
+                q: "Bridal Bouquet(s)?",
+                a: "1 bridal bouquet — a simple, petite bouquet.",
+            },
+            {
+                q: "# of Bridesmaids and color of dresses?",
+                a: "None — no bridesmaids.",
+            },
+            {
+                q: "# of Groom(s) & Groomsmen and color of suits?",
+                a: "1 groom, 0 groomsmen. 1 boutonnière for the groom. Suit color: [FILL IN].",
+                todo: true,
+            },
+            {
+                q: "# Flower Girl and/or Ring Bearer?",
+                a: "None.",
+            },
+            {
+                q: "# of flowers for Moms?",
+                a: "2 — one for each of our two moms.",
+            },
+            {
+                q: "# of flowers for Dads?",
+                a: "2 — one for each of our two dads; we'd like them to feel included.",
+            },
+            {
+                q: "Flower for the officiant? Female or Male?",
+                a: "None — we're not doing officiant flowers. (Officiant's gender is TBD.)",
+            },
+        ],
+    },
+    {
+        title: "Ceremony flowers",
+        items: [
+            {
+                q: "Any Florals for Ceremony? Is there a structure onsite (what type)? Are you interested in renting one of my structures?",
+                a: "Yes, we'd love florals for our ceremony arch. We're renting a circular arch directly from the venue, so we don't need to rent a structure from you — just floral design created for that circular arch.",
+            },
+            {
+                q: "Would you like to incorporate fabric?",
+                a: "No fabric.",
+            },
+            {
+                q: "Flower details or arrangements on the chairs in the aisle?",
+                a: "No.",
+            },
+            {
+                q: "Large end cap arrangements placed at the start of the aisle?",
+                a: "No.",
+            },
+            {
+                q: "Rose petals scattered in the aisle?",
+                a: "No.",
+            },
+        ],
+    },
+    {
+        title: "Reception flowers",
+        items: [
+            {
+                q: "Linen and Napkins Color(s)? Chargers?",
+                a: "Linens: ivory. Napkins: burgundy. Chargers: none.",
+            },
+            {
+                q: "Centerpiece Style? and Type?",
+                a: "We'd like to discuss centerpiece style with you in person — the reference links weren't working, so we'd rather choose together.",
+            },
+            {
+                q: "Vessel type",
+                a: "We'd like to discuss vessels in person — the linked board wasn't loading for us.",
+                todo: true,
+            },
+            {
+                q: "Interested in Lighting?",
+                a: "We'd like to discuss lighting in person — the linked board wasn't loading for us.",
+                todo: true,
+            },
+            {
+                q: "Cake flowers?",
+                a: "None.",
+            },
+            {
+                q: "Welcome sign or seating assignment sign flowers?",
+                a: "None.",
+            },
+            {
+                q: "Accent arrangements for Welcome table or Entry table?",
+                a: "None.",
+            },
+            {
+                q: "Cocktail table arrangements?",
+                a: "None.",
+            },
+        ],
+    },
+    {
+        title: "Floral installations",
+        items: [
+            {
+                q: "Sweetheart table backdrop?",
+                a: "None.",
+            },
+            {
+                q: "Floral chandelier? (Venue specific)",
+                a: "None.",
+            },
+        ],
+    },
+];
+---
+
+<html lang="en">
+    <Head title="Wedding Flowers - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-small text-muted">
+                        September flowers &amp; florist consultation
+                    </p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <div class="container py-4">
+            <!-- Intro -->
+            <section class="section">
+                <h1 class="heading-3 mb-1">Wedding Flowers</h1>
+                <p class="text-body text-muted max-w-2xl mb-4">
+                    Seasonal blooms for a <strong>September wedding in the Bay
+                    Area</strong>, plus ready-to-paste answers for Angella's
+                    online questionnaire. September is ideal here: late-summer
+                    blooms overlap with the first fall flowers, and dahlias are
+                    at their peak at local farms.
+                </p>
+
+                <!-- Palette reference -->
+                <div class="card max-w-2xl mb-2">
+                    <div class="card-body">
+                        <h2 class="heading-6 mb-2">Our palette</h2>
+                        <div class="palette-chips">
+                            {
+                                palette.map((c) => (
+                                    <div class="chip">
+                                        <span
+                                            class="chip-dot"
+                                            style={`background:${c.hex};`}
+                                        />
+                                        <span class="chip-label">
+                                            {c.label}
+                                        </span>
+                                        <code class="chip-hex">{c.hex}</code>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    </div>
+                </div>
+                <p class="text-small text-muted">
+                    <span class="badge-primary">On palette</span> markers below flag
+                    blooms that suit the burgundy / dusty-rose / slate look.
+                </p>
+            </section>
+
+            <div class="divider my-8"></div>
+
+            <!-- Seasonal flowers -->
+            <section class="section">
+                <h2 class="heading-4 mb-2">In season — September, Bay Area</h2>
+                <p class="text-small text-muted mb-4 max-w-2xl">
+                    Availability reflects Northern California. Always ask the
+                    florist to confirm week-of, since blooms shift with weather.
+                </p>
+
+                <div class="flower-grid">
+                    {
+                        flowers.map((f) => (
+                            <div class="card-hover flower-card">
+                                <div class="card-body">
+                                    <div class="flower-head">
+                                        <h3 class="heading-6 m-0">{f.name}</h3>
+                                        {f.palette && (
+                                            <span class="badge-primary">
+                                                On palette
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div class="flower-tags">
+                                        <span class="badge-secondary">
+                                            {matchLabels[f.match]}
+                                        </span>
+                                        <span class="badge-info">
+                                            {f.availability}
+                                        </span>
+                                    </div>
+                                    <p class="text-small text-muted mt-2 mb-0">
+                                        {f.notes}
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+
+            <div class="divider my-8"></div>
+
+            <!-- Local farms -->
+            <section class="section">
+                <h2 class="heading-4 mb-2">Local Bay Area flower farms</h2>
+                <p class="text-small text-muted mb-4 max-w-2xl">
+                    Sourcing locally-grown, in-season stems keeps quality high
+                    and costs down. Great for DIY accents or asking your florist
+                    to source from.
+                </p>
+
+                <div class="farm-grid">
+                    {
+                        farms.map((farm) => (
+                            <div class="card farm-card">
+                                <div class="card-body">
+                                    <div class="flower-head">
+                                        <h3 class="heading-6 m-0">
+                                            {farm.name}
+                                        </h3>
+                                        <span class="badge-secondary">
+                                            {farm.location}
+                                        </span>
+                                    </div>
+                                    <p class="text-small mt-1 mb-1">
+                                        <strong>Season:</strong> {farm.season}
+                                    </p>
+                                    <p class="text-small text-muted m-0">
+                                        {farm.note}
+                                    </p>
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+
+            <div class="divider my-8"></div>
+
+            <!-- Questionnaire answers (copy & paste) -->
+            <section class="section">
+                <div
+                    class="flex items-center justify-between flex-wrap gap-2 mb-2"
+                >
+                    <h2 class="heading-4 m-0">
+                        Questionnaire answers — copy &amp; paste
+                    </h2>
+                    <button class="btn-outline btn-sm" id="copy-all"
+                        >Copy all</button
+                    >
+                </div>
+                <p class="text-small text-muted mb-4 max-w-2xl">
+                    Ready-to-paste answers for Angella's <a
+                        class="link"
+                        href="https://angellafloralarts.com/wedgewood-questionnaire-l-2024"
+                        target="_blank"
+                        rel="noopener">online questionnaire</a
+                    >. Click <strong>Copy</strong> on any answer, then paste it
+                    into the matching field. Answers marked
+                    <span class="badge-warning">Needs input</span> still need a detail
+                    from us.
+                </p>
+
+                <div class="alert-warning max-w-2xl mb-6">
+                    <strong class="font-semibold">Still to draft:</strong> the contact
+                    &amp; event basics (name, email, date, ceremony/reception location
+                    &amp; time, guest count), the color-theme description, and the
+                    inspiration/Pinterest link.
+                </div>
+
+                <div class="qa-stack">
+                    {
+                        questionnaire.map((sec) => (
+                            <div class="card qa-section">
+                                <div class="card-header">
+                                    <h3 class="heading-6 m-0">{sec.title}</h3>
+                                </div>
+                                <div class="card-body space-y-3">
+                                    {sec.items.map((item) => (
+                                        <div class="qa-item">
+                                            <div class="qa-q">
+                                                <span>{item.q}</span>
+                                                {item.todo && (
+                                                    <span class="badge-warning">
+                                                        Needs input
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div class="qa-a-row">
+                                                <p class="qa-a">{item.a}</p>
+                                                <button
+                                                    class="btn-outline btn-sm qa-copy"
+                                                    data-copy={item.a}
+                                                >
+                                                    Copy
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))
+                    }
+                </div>
+            </section>
+        </div>
+
+        <div
+            id="copy-toast"
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-brand-primary text-white px-4 py-2 rounded-lg shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 z-50"
+        >
+            Copied!
+        </div>
+
+        <style>
+            .palette-chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .chip {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.25rem 0.6rem;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                border-radius: 999px;
+                background: white;
+            }
+
+            :global(.dark) .chip {
+                background: var(--color-dark-bg-elevated, #1f2937);
+                border-color: rgba(255, 255, 255, 0.12);
+            }
+
+            .chip-dot {
+                width: 0.9rem;
+                height: 0.9rem;
+                border-radius: 999px;
+                box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1) inset;
+            }
+
+            .chip-label {
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+
+            .chip-hex {
+                font-size: 0.65rem;
+                color: #6b7280;
+            }
+
+            :global(.dark) .chip-hex {
+                color: #9ca3af;
+            }
+
+            .flower-grid,
+            .farm-grid {
+                display: grid;
+                grid-template-columns: repeat(
+                    auto-fill,
+                    minmax(240px, 1fr)
+                );
+                gap: 0.75rem;
+            }
+
+            .flower-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+            }
+
+            .flower-tags {
+                display: flex;
+                gap: 0.35rem;
+                flex-wrap: wrap;
+                margin-top: 0.4rem;
+            }
+
+            .qa-stack {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+                max-width: 42rem;
+            }
+
+            .qa-item {
+                padding-bottom: 0.75rem;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+            }
+
+            :global(.dark) .qa-item {
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .qa-item:last-child {
+                padding-bottom: 0;
+                border-bottom: none;
+            }
+
+            .qa-q {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: #6b7280;
+                margin-bottom: 0.35rem;
+            }
+
+            :global(.dark) .qa-q {
+                color: #9ca3af;
+            }
+
+            .qa-a-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .qa-a {
+                flex: 1;
+                margin: 0;
+                font-size: 0.9rem;
+                line-height: 1.4;
+            }
+
+            .qa-copy {
+                flex-shrink: 0;
+            }
+        </style>
+
+        <script>
+            const toast = document.getElementById("copy-toast");
+            let toastTimer: number | undefined;
+
+            function showToast(message: string) {
+                if (!toast) return;
+                toast.textContent = message;
+                toast.classList.add("show");
+                if (toastTimer) window.clearTimeout(toastTimer);
+                toastTimer = window.setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 1500);
+            }
+
+            async function copyText(value: string, message: string) {
+                try {
+                    await navigator.clipboard.writeText(value);
+                    showToast(message);
+                } catch {
+                    showToast("Copy failed");
+                }
+            }
+
+            document
+                .querySelectorAll<HTMLElement>(".qa-copy")
+                .forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const value = btn.dataset.copy;
+                        if (!value) return;
+                        copyText(value, "Copied answer");
+                    });
+                });
+
+            document
+                .getElementById("copy-all")
+                ?.addEventListener("click", () => {
+                    const all = Array.from(
+                        document.querySelectorAll<HTMLElement>(".qa-item"),
+                    )
+                        .map((item) => {
+                            const q =
+                                item.querySelector(".qa-q span")?.textContent ??
+                                "";
+                            const a =
+                                item.querySelector<HTMLElement>(".qa-copy")
+                                    ?.dataset.copy ?? "";
+                            return `${q}\n${a}`;
+                        })
+                        .join("\n\n");
+                    copyText(all, "Copied all answers");
+                });
+        </script>
+
+        <style is:global>
+            #copy-toast.show {
+                opacity: 1;
+            }
+        </style>
+    </body>
+</html>

@@ -1,0 +1,586 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import "@styles/components.css";
+import { guests } from "../lib/wedding-tickets/guests";
+import {
+    TICKET_PRINT,
+    chunkGuestsIntoSheets,
+    formatRsvp,
+} from "../lib/wedding-tickets/types";
+
+const tableCounts = guests.reduce<Record<string, number>>((acc, guest) => {
+    const key = String(guest.table);
+    acc[key] = (acc[key] ?? 0) + 1;
+    return acc;
+}, {});
+const acceptedCount = guests.filter((g) => g.rsvp === "accepted").length;
+const sheetCount = chunkGuestsIntoSheets(guests).length;
+const sheetPxW = TICKET_PRINT.sheetWidthIn * TICKET_PRINT.dpi;
+const sheetPxH = TICKET_PRINT.sheetHeightIn * TICKET_PRINT.dpi;
+---
+
+<html lang="en">
+    <Head title="Wedding Tickets - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90 no-print"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-small text-muted">
+                        5×7 sheets · 3 tickets per sheet for card holders
+                    </p>
+                </div>
+                <ThemeToggle />
+            </div>
+        </header>
+
+        <div class="container py-4 no-print">
+            <section class="section">
+                <div
+                    class="flex items-start justify-between flex-wrap gap-3 mb-2"
+                >
+                    <div>
+                        <h1 class="heading-3 mb-1">Wedding Tickets</h1>
+                        <p class="text-body text-muted max-w-2xl m-0">
+                            Portrait <strong>5×7 in</strong> sheets, three
+                            tickets each for card holders, at 300 DPI. The
+                            <strong>standard ZIP</strong> has the printed red
+                            bridge (one PNG per sheet). The
+                            <strong>foil ZIP</strong> has the two-file setup for
+                            a foil printer — <code>tickets/</code> (ink, bridge
+                            knocked out) plus <code>foil/</code> (gold bridge
+                            layer).
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button
+                            class="btn-outline"
+                            id="print-tickets"
+                            type="button"
+                        >
+                            Print preview
+                        </button>
+                        <button
+                            class="btn-primary"
+                            id="download-standard"
+                            type="button"
+                        >
+                            Download standard ZIP
+                        </button>
+                        <button
+                            class="btn-outline"
+                            id="download-foil"
+                            type="button"
+                        >
+                            Download foil ZIP
+                        </button>
+                    </div>
+                </div>
+
+                <p class="text-small text-muted mb-4" id="zip-status">
+                    {guests.length} guests · {acceptedCount} accepted · {guests.length -
+                        acceptedCount} pending · {sheetCount} sheets · {sheetPxW}×{
+                        sheetPxH
+                    } px (5×7 at 300 DPI)
+                </p>
+
+                <div class="card max-w-2xl mb-4">
+                    <div class="card-header">
+                        <h2 class="heading-6 m-0">Tables</h2>
+                    </div>
+                    <div class="card-body">
+                        <ul class="table-counts">
+                            {
+                                Object.entries(tableCounts).map(
+                                    ([table, count]) => (
+                                        <li>
+                                            <span class="text-small text-muted">
+                                                Table {table}
+                                            </span>
+                                            <strong>{count}</strong>
+                                        </li>
+                                    ),
+                                )
+                            }
+                            <li>
+                                <span class="text-small text-muted">Total</span>
+                                <strong>{guests.length}</strong>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card max-w-2xl mb-6">
+                    <div class="card-header">
+                        <h2 class="heading-6 m-0">Guests</h2>
+                    </div>
+                    <div class="card-body p-0">
+                        <ul class="guest-list" id="guest-list">
+                            {
+                                guests.map((g, i) => (
+                                    <li>
+                                        <button
+                                            type="button"
+                                            class:list={[
+                                                "guest-row",
+                                                i === 0 && "is-active",
+                                            ]}
+                                            data-guest-index={i}
+                                        >
+                                            <span class="guest-row-name">
+                                                {g.name}
+                                            </span>
+                                            <span class="badge-secondary">
+                                                Table {g.table}
+                                            </span>
+                                            <span
+                                                class:list={[
+                                                    g.rsvp === "accepted"
+                                                        ? "badge-success"
+                                                        : "badge-warning",
+                                                ]}
+                                            >
+                                                {formatRsvp(g.rsvp)}
+                                            </span>
+                                            {
+                                                g.glutenFree && (
+                                                    <span class="badge-info">
+                                                        Gluten-free
+                                                    </span>
+                                                )
+                                            }
+                                        </button>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="container no-print mb-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="heading-6 m-0">Foil review</h2>
+                    <p class="text-small text-muted m-0">
+                        The two files a foil printer needs, for the selected
+                        sheet. Overlay them to confirm the gold bridges land in
+                        the ink layer's knockouts.
+                    </p>
+                </div>
+                <div class="card-body">
+                    <div class="review-grid">
+                        <figure class="review-item">
+                            <canvas
+                                id="review-base"
+                                class="review-canvas"
+                                width={sheetPxW}
+                                height={sheetPxH}
+                                aria-label="Base ink layer, bridge knocked out"
+                            ></canvas>
+                            <figcaption class="text-small text-muted">
+                                <code>tickets/</code> — ink (bridge knocked out)
+                            </figcaption>
+                        </figure>
+                        <figure class="review-item">
+                            <canvas
+                                id="review-foil"
+                                class="review-canvas"
+                                width={sheetPxW}
+                                height={sheetPxH}
+                                aria-label="Foil layer, bridge silhouettes only"
+                            ></canvas>
+                            <figcaption class="text-small text-muted">
+                                <code>foil/</code> — gold bridge layer
+                            </figcaption>
+                        </figure>
+                        <figure class="review-item">
+                            <div class="review-stack">
+                                <canvas
+                                    id="review-overlay-base"
+                                    class="review-canvas"
+                                    width={sheetPxW}
+                                    height={sheetPxH}
+                                    aria-label="Base ink layer, bridge knocked out"
+                                ></canvas>
+                                <canvas
+                                    id="review-overlay-foil"
+                                    class="review-canvas review-canvas-overlay"
+                                    width={sheetPxW}
+                                    height={sheetPxH}
+                                    aria-label="Foil layer overlaid on base layer"
+                                ></canvas>
+                            </div>
+                            <figcaption class="text-small text-muted">
+                                overlay — foil on base (70% opacity)
+                            </figcaption>
+                        </figure>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sheet-stage">
+            <div class="sheet-wrap">
+                <canvas
+                    id="ticket-preview"
+                    class="sheet"
+                    width={sheetPxW}
+                    height={sheetPxH}
+                    aria-label="Printable 5 by 7 inch ticket sheet"
+                ></canvas>
+            </div>
+        </div>
+
+        <style>
+            .review-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 240px));
+                gap: 1.25rem;
+            }
+
+            .review-item {
+                margin: 0;
+            }
+
+            .review-canvas {
+                display: block;
+                width: 100%;
+                height: auto;
+                aspect-ratio: 5 / 7;
+                background: #fff;
+                border: 1px solid rgba(0, 0, 0, 0.12);
+                border-radius: 4px;
+            }
+
+            :global(.dark) .review-canvas {
+                border-color: rgba(255, 255, 255, 0.15);
+            }
+
+            .review-stack {
+                position: relative;
+            }
+
+            .review-canvas-overlay {
+                position: absolute;
+                inset: 0;
+                background: transparent;
+                border-color: transparent;
+                opacity: 0.7;
+                mix-blend-mode: multiply;
+            }
+
+            .review-item figcaption {
+                margin-top: 0.4rem;
+            }
+
+            .sheet-stage {
+                display: flex;
+                justify-content: center;
+                padding: 0 1rem 3rem;
+            }
+
+            .sheet-wrap {
+                position: relative;
+                width: 5in;
+                height: 7in;
+            }
+
+            .sheet {
+                display: block;
+                width: 5in;
+                height: 7in;
+                background: #fff;
+                print-color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+            }
+
+            .table-counts {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem 1.25rem;
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .table-counts li {
+                display: flex;
+                flex-direction: column;
+                gap: 0.1rem;
+            }
+
+            .guest-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .guest-row {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+                width: 100%;
+                text-align: left;
+                padding: 0.7rem 1rem;
+                background: transparent;
+                border: none;
+                border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+                cursor: pointer;
+                color: inherit;
+            }
+
+            :global(.dark) .guest-row {
+                border-color: rgba(255, 255, 255, 0.08);
+            }
+
+            .guest-row:hover,
+            .guest-row.is-active {
+                background: rgba(71, 0, 18, 0.05);
+            }
+
+            .guest-list li:last-child .guest-row {
+                border-bottom: none;
+            }
+
+            .guest-row-name {
+                flex: 1;
+                min-width: 8rem;
+                font-weight: 600;
+            }
+
+            @media (max-width: 42rem) {
+                .sheet-stage {
+                    overflow: hidden;
+                }
+
+                .sheet-wrap {
+                    transform: scale(0.72);
+                    transform-origin: top center;
+                    margin-bottom: calc(7in * -0.28);
+                }
+            }
+
+            @media print {
+                :global(.no-print) {
+                    display: none !important;
+                }
+
+                :global(body) {
+                    background: white !important;
+                    margin: 0;
+                }
+
+                .sheet-stage {
+                    padding: 0;
+                    margin: 0;
+                }
+
+                .sheet-wrap,
+                .sheet {
+                    transform: none;
+                    margin: 0;
+                    width: 5in;
+                    height: 7in;
+                }
+
+                @page {
+                    size: 5in 7in;
+                    margin: 0;
+                }
+            }
+        </style>
+
+        <script>
+            import { guests } from "../lib/wedding-tickets/guests";
+            import { renderGuestSheetCanvas } from "../lib/wedding-tickets/render-ticket";
+            import {
+                zipFoilTickets,
+                zipStandardTickets,
+            } from "../lib/wedding-tickets/zip-tickets";
+
+            function downloadBlob(blob: Blob, filename: string) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            const preview = document.getElementById(
+                "ticket-preview",
+            ) as HTMLCanvasElement | null;
+            const reviewBase = document.getElementById(
+                "review-base",
+            ) as HTMLCanvasElement | null;
+            const reviewFoil = document.getElementById(
+                "review-foil",
+            ) as HTMLCanvasElement | null;
+            const reviewOverlayBase = document.getElementById(
+                "review-overlay-base",
+            ) as HTMLCanvasElement | null;
+            const reviewOverlayFoil = document.getElementById(
+                "review-overlay-foil",
+            ) as HTMLCanvasElement | null;
+
+            async function applyGuest(index: number) {
+                const guest = guests[index];
+                if (!guest) return;
+
+                const renders: Promise<unknown>[] = [];
+                if (preview) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "standard",
+                            preview,
+                        ),
+                    );
+                }
+                if (reviewBase) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "base",
+                            reviewBase,
+                        ),
+                    );
+                }
+                if (reviewFoil) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "foil",
+                            reviewFoil,
+                        ),
+                    );
+                }
+                if (reviewOverlayBase) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "base",
+                            reviewOverlayBase,
+                        ),
+                    );
+                }
+                if (reviewOverlayFoil) {
+                    renders.push(
+                        renderGuestSheetCanvas(
+                            guests,
+                            index,
+                            "foil",
+                            reviewOverlayFoil,
+                        ),
+                    );
+                }
+                await Promise.all(renders);
+
+                document
+                    .querySelectorAll<HTMLElement>("[data-guest-index]")
+                    .forEach((btn) => {
+                        btn.classList.toggle(
+                            "is-active",
+                            btn.dataset.guestIndex === String(index),
+                        );
+                    });
+            }
+
+            applyGuest(0);
+
+            document.getElementById("guest-list")?.addEventListener(
+                "click",
+                (event) => {
+                    const btn = (event.target as HTMLElement).closest<
+                        HTMLElement
+                    >("[data-guest-index]");
+                    if (!btn) return;
+                    applyGuest(Number(btn.dataset.guestIndex));
+                },
+            );
+
+            document
+                .getElementById("print-tickets")
+                ?.addEventListener("click", () => {
+                    window.print();
+                });
+
+            const standardBtn = document.getElementById(
+                "download-standard",
+            ) as HTMLButtonElement | null;
+            const foilBtn = document.getElementById(
+                "download-foil",
+            ) as HTMLButtonElement | null;
+            const status = document.getElementById("zip-status");
+
+            type ZipFn = (
+                guests: typeof import("../lib/wedding-tickets/guests").guests,
+                onProgress?: (done: number, total: number) => void,
+            ) => Promise<Blob>;
+
+            async function runDownload(
+                btn: HTMLButtonElement,
+                zipFn: ZipFn,
+                filename: string,
+                label: string,
+            ) {
+                btn.disabled = true;
+                try {
+                    if (status) {
+                        status.textContent = `Rendering ${label} sheets…`;
+                    }
+                    let sheetTotal = 0;
+                    const blob = await zipFn(guests, (done, total) => {
+                        sheetTotal = total;
+                        if (status) {
+                            status.textContent = `Rendering ${label} sheet ${done} of ${total}`;
+                        }
+                    });
+                    downloadBlob(blob, filename);
+                    if (status) {
+                        status.textContent = `Downloaded ${sheetTotal} ${label} sheets · 5×7 at 300 DPI`;
+                    }
+                } catch (err) {
+                    console.error(err);
+                    if (status) {
+                        status.textContent =
+                            "ZIP failed — try again from this page in the browser.";
+                    }
+                } finally {
+                    btn.disabled = false;
+                }
+            }
+
+            standardBtn?.addEventListener("click", () =>
+                runDownload(
+                    standardBtn,
+                    zipStandardTickets,
+                    "wedding-tickets-standard-5x7.zip",
+                    "standard",
+                ),
+            );
+
+            foilBtn?.addEventListener("click", () =>
+                runDownload(
+                    foilBtn,
+                    zipFoilTickets,
+                    "wedding-tickets-foil-5x7.zip",
+                    "foil",
+                ),
+            );
+        </script>
+    </body>
+</html>
