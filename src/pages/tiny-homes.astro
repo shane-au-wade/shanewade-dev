@@ -1,0 +1,457 @@
+---
+import Head from "@components/head.astro";
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import Modal from "@components/modal.astro";
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+
+const tools = [
+    { tool: "select", icon: "ri-cursor-line", label: "Select", key: "V" },
+    { tool: "wall", icon: "ri-shape-line", label: "Wall", key: "W" },
+    { tool: "floor", icon: "ri-square-line", label: "Floor", key: "G" },
+    { tool: "door", icon: "ri-door-open-line", label: "Door", key: "D" },
+    { tool: "window", icon: "ri-window-line", label: "Window", key: "N" },
+    { tool: "furniture", icon: "ri-sofa-line", label: "Furnish", key: "F" },
+    { tool: "erase", icon: "ri-eraser-line", label: "Erase", key: "E" },
+];
+
+const sectionLabel =
+    "text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider";
+---
+
+<html lang="en">
+    <Head title="Tiny Home Builder - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen overflow-hidden font-sans select-none"
+    >
+        <div id="th-canvas" class="fixed inset-0 z-0"></div>
+
+        <!-- ── Left control panel ─────────────────────────────────────── -->
+        <aside
+            class="fixed top-4 left-4 z-40 flex flex-col gap-3 p-4 bg-white/92 dark:bg-dark-bg-elevated/92 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border w-64 max-h-[calc(100vh-2rem)] overflow-y-auto"
+        >
+            <div class="flex items-center justify-between gap-2">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-xs text-muted mt-0.5">Design a tiny home</p>
+                </div>
+                <ThemeToggle />
+            </div>
+
+            <!-- Command palette trigger -->
+            <button
+                id="th-palette-open"
+                class="flex items-center gap-2 w-full px-2.5 py-1.5 rounded-lg border border-gray-300 dark:border-dark-border bg-gray-50 dark:bg-dark-bg text-muted hover:border-brand-primary transition-colors cursor-pointer"
+                title="Search items, tools and actions (Cmd/Ctrl+P)"
+            >
+                <i class="ri-search-line text-sm"></i>
+                <span class="text-xs flex-1 text-left">Search anything...</span>
+                <kbd>⌘P</kbd>
+            </button>
+
+            <!-- Tools -->
+            <div>
+                <p class={`${sectionLabel} mb-1.5`}>Tools</p>
+                <div class="grid grid-cols-4 gap-1.5">
+                    {
+                        tools.map((t) => (
+                            <button
+                                data-th-tool={t.tool}
+                                class="btn-default btn-sm flex flex-col items-center gap-0.5 px-0 py-2"
+                                title={`${t.label} (${t.key})`}
+                            >
+                                <i class={`${t.icon} text-base`} />
+                                <span class="text-[10px] leading-none">
+                                    {t.label}
+                                </span>
+                            </button>
+                        ))
+                    }
+                </div>
+
+                <!-- Selection bar (Select tool) -->
+                <div
+                    id="th-select-bar"
+                    class="hidden mt-2 flex items-center justify-between gap-2 rounded-lg bg-gray-100 dark:bg-dark-bg px-2.5 py-1.5"
+                >
+                    <span class="text-xs"
+                        >Selected: <span id="th-selection" class="font-medium"
+                            >Nothing</span
+                        ></span
+                    >
+                    <button id="th-delete" class="btn-error btn-sm" disabled>
+                        <i class="ri-delete-bin-line"></i> Delete
+                    </button>
+                </div>
+
+                <!-- Floor tool options -->
+                <div
+                    id="th-floor-bar"
+                    class="hidden mt-2 rounded-lg bg-gray-100 dark:bg-dark-bg px-2.5 py-2 space-y-2"
+                >
+                    <div class="flex gap-1.5">
+                        <button
+                            data-th-floor-mode="add"
+                            class="btn-primary btn-sm flex-1"
+                            title="Drag a rectangle to lay floor"
+                        >
+                            <i class="ri-add-line"></i> Add
+                        </button>
+                        <button
+                            data-th-floor-mode="remove"
+                            class="btn-default btn-sm flex-1"
+                            title="Drag a rectangle to cut an open-to-below void"
+                        >
+                            <i class="ri-scissors-cut-line"></i> Cut
+                        </button>
+                    </div>
+                    <div class="flex gap-1.5">
+                        <button id="th-fill-floor" class="btn-outline btn-sm flex-1"
+                            >Fill level</button
+                        >
+                        <button
+                            id="th-clear-floor"
+                            class="btn-outline btn-sm flex-1">Clear</button
+                        >
+                    </div>
+                    <p class="text-[11px] text-muted leading-snug">
+                        Cut a void in an upper floor to open it up to the room
+                        below — that's how you make a loft.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stories -->
+            <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-baseline justify-between mb-1.5">
+                    <p class={sectionLabel}>Stories</p>
+                    <p class="text-xs text-muted">
+                        <kbd>1</kbd>–<kbd>9</kbd>
+                    </p>
+                </div>
+                <div id="th-level-tabs" class="flex gap-1"></div>
+                <p id="th-level-name" class="text-xs text-muted mt-1"></p>
+                <div class="flex gap-1.5 mt-1.5">
+                    <button id="th-add-story" class="btn-outline btn-sm flex-1">
+                        <i class="ri-add-line"></i> Add
+                    </button>
+                    <button
+                        id="th-remove-story"
+                        class="btn-outline btn-sm flex-1"
+                        title="Remove the top story"
+                    >
+                        <i class="ri-subtract-line"></i> Remove
+                    </button>
+                </div>
+                <button
+                    id="th-show-above"
+                    class="btn-default btn-sm w-full mt-1.5"
+                    title="Outline the floor above, so stairs can line up with its stairwell"
+                    >Floor above: On</button
+                >
+            </div>
+
+            <!-- Build options -->
+            <div
+                class="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2.5"
+            >
+                <div>
+                    <label class={`${sectionLabel} mb-1 block`} for="th-lot"
+                        >Lot size</label
+                    >
+                    <select id="th-lot" class="select input-sm w-full"></select>
+                    <div class="flex items-center gap-1.5 mt-1.5">
+                        <input
+                            id="th-lot-w"
+                            type="number"
+                            min="6"
+                            max="48"
+                            step="1"
+                            class="input input-sm w-full text-center"
+                            aria-label="Lot width in feet"
+                        />
+                        <span class="text-xs text-muted">×</span>
+                        <input
+                            id="th-lot-d"
+                            type="number"
+                            min="6"
+                            max="64"
+                            step="1"
+                            class="input input-sm w-full text-center"
+                            aria-label="Lot length in feet"
+                        />
+                        <button
+                            id="th-lot-apply"
+                            class="btn-default btn-sm shrink-0"
+                            title="Apply custom lot size (feet)">ft</button
+                        >
+                    </div>
+                </div>
+                <div>
+                    <label class={`${sectionLabel} mb-1 block`} for="th-roof"
+                        >Roof</label
+                    >
+                    <select id="th-roof" class="select text-sm w-full">
+                        <option value="gable">Gable</option>
+                        <option value="flat">Flat</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <div class="flex gap-1.5">
+                    <button
+                        id="th-walls"
+                        class="btn-default btn-sm flex-1"
+                        title="Cycle wall visibility"
+                    >
+                        <span id="th-walls-label">Walls: Full</span>
+                    </button>
+                    <button
+                        id="th-plan"
+                        class="btn-default btn-sm"
+                        title="Top-down plan view"
+                    >
+                        <i class="ri-grid-line"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div
+                class="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2"
+            >
+                <div>
+                    <p class="text-xs text-muted mb-1">Floor</p>
+                    <div id="th-floor-colors" class="flex flex-wrap gap-1.5">
+                    </div>
+                </div>
+                <div>
+                    <p class="text-xs text-muted mb-1">Walls</p>
+                    <div id="th-wall-colors" class="flex flex-wrap gap-1.5"></div>
+                </div>
+                <div>
+                    <p class="text-xs text-muted mb-1">Roof</p>
+                    <div id="th-roof-colors" class="flex flex-wrap gap-1.5"></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div
+                class="pt-2 border-t border-gray-200 dark:border-gray-700 space-y-2"
+            >
+                <div class="flex gap-1.5">
+                    <button
+                        id="th-undo"
+                        class="btn-default btn-sm flex-1"
+                        title="Undo (Ctrl+Z)"
+                    >
+                        <i class="ri-arrow-go-back-line"></i> Undo
+                    </button>
+                    <button
+                        id="th-redo"
+                        class="btn-default btn-sm flex-1"
+                        title="Redo (Ctrl+Y)"
+                    >
+                        <i class="ri-arrow-go-forward-line"></i> Redo
+                    </button>
+                </div>
+                <div class="flex gap-1.5">
+                    <button id="th-new" class="btn-outline btn-sm flex-1">
+                        <i class="ri-add-box-line"></i> New
+                    </button>
+                    <button id="th-open-saves" class="btn-outline btn-sm flex-1">
+                        <i class="ri-folder-open-line"></i> Saves
+                    </button>
+                </div>
+                <button
+                    id="th-capture"
+                    class="btn-primary btn-sm w-full flex items-center justify-center gap-1.5"
+                >
+                    <i class="ri-camera-line"></i> Capture views
+                </button>
+            </div>
+        </aside>
+
+        <!-- ── Right HUD ──────────────────────────────────────────────── -->
+        <aside
+            class="fixed top-4 right-4 z-40 flex flex-col gap-2 p-4 bg-white/92 dark:bg-dark-bg-elevated/92 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border w-56"
+        >
+            <div>
+                <p class="text-xs text-muted uppercase tracking-wider">
+                    Floor area
+                </p>
+                <p class="flex items-baseline gap-1">
+                    <span id="th-sqft" class="text-3xl font-bold">0</span>
+                    <span class="text-sm text-muted">sq ft</span>
+                </p>
+                <p id="th-dims" class="text-xs text-muted"></p>
+                <p id="th-enclosed" class="text-xs text-muted"></p>
+                <p id="th-lotsqft" class="text-xs text-muted"></p>
+                <p id="th-per-level" class="text-xs text-muted"></p>
+            </div>
+            <span id="th-badge" class="badge-secondary self-start"
+                >No enclosed space</span
+            >
+            <div
+                class="grid grid-cols-3 gap-2 pt-2 border-t border-gray-200 dark:border-gray-700 text-center"
+            >
+                <div>
+                    <div id="th-walls-count" class="text-lg font-semibold">
+                        0
+                    </div>
+                    <div class="text-xs text-muted">walls</div>
+                </div>
+                <div>
+                    <div id="th-open-count" class="text-lg font-semibold">0</div>
+                    <div class="text-xs text-muted">openings</div>
+                </div>
+                <div>
+                    <div id="th-furni-count" class="text-lg font-semibold">
+                        0
+                    </div>
+                    <div class="text-xs text-muted">items</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ── Bottom furniture panel ─────────────────────────────────── -->
+        <div
+            id="th-furniture-panel"
+            class="hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 p-3 bg-white/92 dark:bg-dark-bg-elevated/92 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 dark:border-dark-border max-w-[calc(100vw-2rem)]"
+        >
+            <div class="flex items-center justify-between gap-4 mb-2 px-1">
+                <p class={sectionLabel}>Furniture</p>
+                <p class="text-xs text-muted">
+                    Selected: <span id="th-selected" class="font-medium"
+                        >None</span
+                    > · <kbd>R</kbd> to rotate
+                </p>
+                <a
+                    href="/tiny-home-showroom"
+                    class="text-xs link-subtle shrink-0 inline-flex items-center gap-1"
+                    title="Browse every asset in the showroom"
+                >
+                    <i class="ri-building-line"></i> Showroom
+                </a>
+            </div>
+            <div
+                id="th-furniture"
+                class="flex gap-1.5 overflow-x-auto pb-1 max-w-full"
+            >
+            </div>
+        </div>
+
+        <!-- Hint bar -->
+        <div
+            class="fixed bottom-4 right-4 z-30 text-xs text-muted bg-white/80 dark:bg-dark-bg-elevated/80 backdrop-blur-sm rounded-lg px-3 py-1.5 border border-gray-200 dark:border-dark-border"
+        >
+            Left-drag: build · Right-drag: orbit · Scroll: zoom · <kbd>1</kbd>–<kbd
+                >9</kbd
+            > floor · <kbd>R</kbd> rotate · <kbd>Del</kbd> remove · <kbd>⌘P</kbd
+            > search
+        </div>
+
+        <!-- ── Command palette ───────────────────────────────────────── -->
+        <div id="th-palette" class="hidden fixed inset-0 z-[60]">
+            <div
+                id="th-palette-backdrop"
+                class="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            >
+            </div>
+            <div
+                class="relative mx-auto mt-[12vh] w-[min(92vw,34rem)] bg-white dark:bg-dark-bg-elevated rounded-xl shadow-2xl border border-gray-200 dark:border-dark-border overflow-hidden"
+            >
+                <div
+                    class="flex items-center gap-2 px-3 py-2.5 border-b border-gray-200 dark:border-dark-border"
+                >
+                    <i class="ri-search-line text-muted"></i>
+                    <input
+                        id="th-palette-input"
+                        type="text"
+                        autocomplete="off"
+                        spellcheck="false"
+                        class="flex-1 select-text bg-transparent border-none outline-none text-body placeholder:text-gray-400 dark:placeholder:text-dark-text-muted"
+                        placeholder="Search items, tools, floors, actions..."
+                    />
+                    <kbd>Esc</kbd>
+                </div>
+                <div id="th-palette-list" class="max-h-[22rem] overflow-y-auto py-1">
+                </div>
+                <div
+                    class="px-3 py-1.5 border-t border-gray-200 dark:border-dark-border text-xs text-muted flex gap-3"
+                >
+                    <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+                    <span><kbd>↵</kbd> select</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Flash toast -->
+        <div
+            id="th-flash"
+            class="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 badge-success opacity-0 transition-opacity duration-300 pointer-events-none"
+        >
+        </div>
+
+        <!-- ── Capture modal ─────────────────────────────────────────── -->
+        <Modal id="th-capture-modal" title="Captured views" size="xl">
+            <p class="text-small text-muted mb-4">
+                Rendered from six angles. These images plus the house layout are
+                what a grading agent would review.
+            </p>
+            <div
+                id="th-gallery"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+            >
+            </div>
+            <div slot="footer">
+                <button data-modal-close="th-capture-modal" class="btn-default"
+                    >Close</button
+                >
+                <button id="th-download-all" class="btn-primary">
+                    <i class="ri-download-2-line"></i> Download all + JSON
+                </button>
+            </div>
+        </Modal>
+
+        <!-- ── Saves modal ───────────────────────────────────────────── -->
+        <Modal id="th-saves-modal" title="Saved builds" size="lg">
+            <div class="input-group mb-4">
+                <input
+                    id="th-save-name"
+                    type="text"
+                    class="input"
+                    placeholder="Name this build..."
+                />
+                <button id="th-save" class="btn-primary">
+                    <i class="ri-save-line"></i> Save current
+                </button>
+            </div>
+            <div id="th-saves-list" class="max-h-96 overflow-y-auto"></div>
+        </Modal>
+
+        <style>
+            body {
+                overscroll-behavior: none;
+            }
+            #th-canvas canvas {
+                display: block;
+                touch-action: none;
+            }
+            kbd {
+                padding: 0 0.3rem;
+                border-radius: 0.25rem;
+                background: rgba(0, 0, 0, 0.08);
+                font-family: ui-monospace, monospace;
+                font-size: 0.9em;
+            }
+        </style>
+
+        <script>
+            import "../lib/modal-data-attrs";
+            import { initTinyHome } from "../lib/tinyhome/game";
+
+            initTinyHome();
+        </script>
+    </body>
+</html>
