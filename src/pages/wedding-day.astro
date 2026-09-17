@@ -1,8 +1,12 @@
 ---
+import { Picture } from "astro:assets";
 import Head from "@components/head.astro";
 import ThemeToggle from "@components/theme-toggle.astro";
+import goldenGate from "@images/golden-gate.png";
 import "@styles/components.css";
 import { WEDDING_PHOTOS_URL } from "../lib/wedding-tickets/types";
+
+export const prerender = true;
 
 const COUPLE = "Shane & Aileen";
 
@@ -26,13 +30,17 @@ const featuredPhotos: { src: string; alt: string }[] = [];
         </header>
 
         <main class="stage container">
-            <img
-                class="bridge"
-                src="/golden-gate.png"
-                alt="Golden Gate Bridge"
-                width="320"
-                height="200"
-            />
+            <div class="bridge-wrap">
+                <Picture
+                    class="bridge"
+                    src={goldenGate}
+                    formats={["avif", "webp"]}
+                    width={300}
+                    densities={[1, 2]}
+                    alt="Golden Gate Bridge"
+                    priority
+                />
+            </div>
 
             <div class="card photos-card">
                 <div class="card-body">
@@ -82,9 +90,13 @@ const featuredPhotos: { src: string; alt: string }[] = [];
                 padding-block: 2rem;
             }
 
+            .bridge-wrap {
+                width: min(300px, 70%);
+            }
+
             .bridge {
                 display: block;
-                width: min(300px, 70%);
+                width: 100%;
                 height: auto;
                 /* The source PNG has a solid white box; blend it into the page. */
                 mix-blend-mode: multiply;
