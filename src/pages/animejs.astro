@@ -1,0 +1,595 @@
+---
+import Breadcrumbs from "@components/breadcrumbs.astro";
+import Head from "@components/head.astro";
+import ThemeToggle from "@components/theme-toggle.astro";
+import Code from "@components/code.astro";
+import AsciiStyleNav from "@components/ascii-style-nav.astro";
+import MobileFloatingCollapse from "@components/mobile-floating-collapse.astro";
+
+import "@styles/components.css";
+import "remixicon/fonts/remixicon.css";
+---
+
+<html lang="en">
+    <Head title="Anime.js Lab - Shane Wade" />
+    <body
+        class="bg-page dark:bg-dark-bg min-h-screen transition-colors duration-300"
+    >
+        <header
+            class="sticky top-0 z-50 bg-white dark:bg-dark-bg-elevated border-b border-gray-200 dark:border-dark-border backdrop-blur-sm bg-opacity-90 dark:bg-opacity-90"
+        >
+            <div class="container py-2 flex items-center justify-between">
+                <div>
+                    <Breadcrumbs />
+                    <p class="text-lead">Animation primitives, live</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="container" id="anime-lab">
+            <MobileFloatingCollapse>
+                <AsciiStyleNav
+                    items={[
+                        { label: "Quick start", href: "#quick-start" },
+                        { label: "Keyframes", href: "#keyframes" },
+                        { label: "Stagger", href: "#stagger" },
+                        { label: "Timeline", href: "#timeline" },
+                        { label: "Easings", href: "#easings" },
+                        { label: "Playback", href: "#playback" },
+                        { label: "Draggable", href: "#draggable" },
+                        { label: "Text", href: "#text" },
+                        { label: "SVG", href: "#svg" },
+                        { label: "Scroll", href: "#scroll" },
+                    ]}
+                />
+                <ThemeToggle />
+            </MobileFloatingCollapse>
+
+            <section id="quick-start" class="anime-section">
+                <h1 class="heading-2 mb-3">Anime.js</h1>
+                <div
+                    id="reduced-motion-notice"
+                    class="alert-info max-w-2xl mb-6"
+                    hidden
+                >
+                    This browser has reduced motion enabled. Looping demos stay
+                    still until you press a control.
+                </div>
+                <p class="text-lead max-w-2xl mb-4">
+                    A first-pass design system for motion. Each block is a
+                    primitive we can reuse: animate, sequence, stagger, spring,
+                    drag, split text, draw SVG, and sync to scroll.
+                </p>
+                <p class="text-body max-w-2xl mb-8">
+                    Built against the v4 modules API from the
+                    <a
+                        class="link"
+                        href="https://animejs.com/documentation/getting-started/using-with-vanilla-js"
+                        >vanilla JS quick start</a
+                    >
+                    and the
+                    <a
+                        class="link"
+                        href="https://animejs.com/documentation"
+                        >full documentation</a
+                    >. Import only what you need.
+                </p>
+
+                <div class="card max-w-3xl mb-8">
+                    <div class="card-body p-0">
+                        <Code
+                            code={`import { animate, utils, createDraggable, spring } from 'animejs';`}
+                            lang="javascript"
+                            wrap
+                        />
+                    </div>
+                </div>
+
+                <h2 class="heading-5 mb-4">Quick start: bounce, drag, rotate</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    The official vanilla example: a looping scale bounce, a
+                    springy drag, and a click that accumulates rotation.
+                </p>
+
+                <div class="card max-w-3xl">
+                    <div class="card-body">
+                        <div class="anime-stage mb-6">
+                            <div id="qs-token" class="anime-token"></div>
+                        </div>
+                        <button id="qs-rotate-btn" class="btn-primary"
+                            >rotations: 0</button
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="keyframes" class="anime-section">
+                <h2 class="heading-2 mb-3">Keyframes</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    Pass an array of tween objects to sequence values on one
+                    target. Each step can own its own duration and ease.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="anime-stage mb-4">
+                                <div id="kf-token" class="anime-token"></div>
+                            </div>
+                            <button id="kf-replay" class="btn-secondary"
+                                >Replay</button
+                            >
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <Code
+                                code={`animate('#kf-token', {
+  x: [
+    { to: 80, duration: 400, ease: 'out(3)' },
+    { to: -40, duration: 500, ease: 'inOut(2)' },
+    { to: 0, duration: 450, ease: 'out(4)' },
+  ],
+  rotate: [
+    { to: 20, duration: 400 },
+    { to: -12, duration: 500 },
+    { to: 0, duration: 450 },
+  ],
+});`}
+                                lang="javascript"
+                                wrap
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="stagger" class="anime-section">
+                <h2 class="heading-2 mb-3">Stagger</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    <code>stagger()</code> offsets delay (or values) across a
+                    set of targets. Grid + <code>from: 'center'</code> is the
+                    classic ripple.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div
+                                id="stagger-grid"
+                                class="anime-grid mb-4"
+                                aria-hidden="true"
+                            >
+                            </div>
+                            <button id="stagger-replay" class="btn-secondary"
+                                >Replay</button
+                            >
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <Code
+                                code={`animate('.anime-dot', {
+  scale: [
+    { to: 1.35, ease: 'inOut(3)', duration: 180 },
+    { to: 1, ease: spring({ bounce: 0.45 }) },
+  ],
+  delay: stagger(28, {
+    grid: [8, 5],
+    from: 'center',
+  }),
+});`}
+                                lang="javascript"
+                                wrap
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="timeline" class="anime-section">
+                <h2 class="heading-2 mb-3">Timeline</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    Orchestrate several animations as one clock.
+                    <code>'-=180'</code> overlaps the next add by 180ms.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="space-y-3 mb-4">
+                                <div id="tl-a" class="anime-bar"></div>
+                                <div id="tl-b" class="anime-bar"></div>
+                                <div id="tl-c" class="anime-bar"></div>
+                            </div>
+                            <button id="tl-replay" class="btn-secondary"
+                                >Replay</button
+                            >
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <Code
+                                code={`createTimeline({ defaults: { ease: 'out(3)' } })
+  .add('#tl-a', { width: '100%', duration: 450 })
+  .add('#tl-b', { width: '100%', duration: 450 }, '-=180')
+  .add('#tl-c', { width: '100%', duration: 450 }, '-=180');`}
+                                lang="javascript"
+                                wrap
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="easings" class="anime-section">
+                <h2 class="heading-2 mb-3">Easings & springs</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    Built-in eases use the <code>inOut(3)</code> style
+                    intensity helpers. Springs are objects from
+                    <code>spring()</code>, not CSS strings.
+                </p>
+
+                <div class="card max-w-3xl mb-6">
+                    <div class="card-body space-y-4">
+                        <div class="anime-ease-row">
+                            <code class="text-small">linear</code>
+                            <div class="anime-ease-track">
+                                <div id="ease-linear" class="anime-ease-token"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="anime-ease-row">
+                            <code class="text-small">out(4)</code>
+                            <div class="anime-ease-track">
+                                <div id="ease-out" class="anime-ease-token"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="anime-ease-row">
+                            <code class="text-small">inOut(3)</code>
+                            <div class="anime-ease-track">
+                                <div id="ease-in-out" class="anime-ease-token"
+                                ></div>
+                            </div>
+                        </div>
+                        <div class="anime-ease-row">
+                            <code class="text-small">spring bounce .65</code>
+                            <div class="anime-ease-track">
+                                <div id="ease-spring" class="anime-ease-token"
+                                ></div>
+                            </div>
+                        </div>
+                        <button id="ease-replay" class="btn-secondary"
+                            >Replay</button
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="playback" class="anime-section">
+                <h2 class="heading-2 mb-3">Playback</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    <code>animate()</code> returns an instance.
+                    <code>play</code>, <code>pause</code>, <code>restart</code>,
+                    and <code>reverse</code> are the controls we will reuse for
+                    UI motion.
+                </p>
+
+                <div class="card max-w-3xl">
+                    <div class="card-body">
+                        <div class="anime-stage mb-4">
+                            <div id="play-token" class="anime-token"></div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button id="play-play" class="btn-primary"
+                                >Play</button
+                            >
+                            <button id="play-pause" class="btn-outline"
+                                >Pause</button
+                            >
+                            <button id="play-restart" class="btn-secondary"
+                                >Restart</button
+                            >
+                            <button id="play-reverse" class="btn-ghost-primary"
+                                >Reverse</button
+                            >
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="draggable" class="anime-section">
+                <h2 class="heading-2 mb-3">Draggable</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    <code>createDraggable</code> adds pointer tracking and a
+                    spring release. The token is constrained to its stage.
+                    Flick it.
+                </p>
+
+                <div class="card max-w-3xl">
+                    <div class="card-body">
+                        <div id="drag-stage" class="anime-stage anime-stage-tall">
+                            <div id="drag-token" class="anime-token">
+                                drag
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="text" class="anime-section">
+                <h2 class="heading-2 mb-3">Text</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    <code>splitText</code> wraps characters so they can be
+                    staggered. <code>scrambleText</code> is a function-based
+                    tween value, usually applied to <code>innerHTML</code>.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="heading-6">splitText + stagger</h3>
+                        </div>
+                        <div class="card-body">
+                            <p id="split-target" class="anime-display mb-4">
+                                motion as a system
+                            </p>
+                            <button id="split-replay" class="btn-secondary"
+                                >Replay</button
+                            >
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="heading-6">scrambleText</h3>
+                        </div>
+                        <div class="card-body">
+                            <p id="scramble-target" class="anime-display mb-4">
+                                animate anything
+                            </p>
+                            <button id="scramble-replay" class="btn-secondary"
+                                >Scramble next</button
+                            >
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="svg" class="anime-section">
+                <h2 class="heading-2 mb-3">SVG</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    <code>createDrawable</code> exposes a <code>draw</code>
+                    property: <code>'0 0'</code> hidden, <code>'0 1'</code>
+                    fully stroked. Pair with <code>stagger</code> for sequential
+                    line reveal.
+                </p>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="anime-stage mb-4">
+                                <svg
+                                    id="svg-stage"
+                                    viewBox="0 0 200 80"
+                                    class="w-full max-w-md h-auto text-brand-primary"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="3"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                >
+                                    <path d="M12 58 C 36 12, 64 12, 88 58"></path>
+                                    <path d="M88 58 C 112 12, 140 12, 164 58"
+                                    ></path>
+                                    <circle
+                                        id="svg-orb"
+                                        cx="28"
+                                        cy="22"
+                                        r="5"
+                                        fill="currentColor"
+                                        stroke="none"></circle>
+                                </svg>
+                            </div>
+                            <button id="svg-replay" class="btn-secondary"
+                                >Replay draw</button
+                            >
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-body p-0">
+                            <Code
+                                code={`animate(createDrawable('#svg-stage path'), {
+  draw: ['0 0', '0 1'],
+  ease: 'inOut(3)',
+  duration: 1600,
+  delay: stagger(180),
+});`}
+                                lang="javascript"
+                                wrap
+                            />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider my-4"></div>
+
+            <section id="scroll" class="anime-section">
+                <h2 class="heading-2 mb-3">Scroll</h2>
+                <p class="text-body max-w-2xl mb-6">
+                    Pass <code>onScroll()</code> as <code>autoplay</code>.
+                    <code>sync: true</code> ties progress to scroll position.
+                    The card below fades in when it enters the viewport.
+                </p>
+
+                <div
+                    id="scroll-track"
+                    class="relative h-[42vh] max-w-3xl rounded-lg border border-gray-200 dark:border-dark-border overflow-hidden mb-6"
+                >
+                    <div
+                        class="absolute inset-x-0 top-1/2 h-1 bg-gray-200 dark:bg-dark-border"
+                    >
+                    </div>
+                    <div
+                        id="scroll-bar"
+                        class="absolute inset-x-0 top-1/2 h-1 bg-brand-primary origin-left scale-x-0"
+                    >
+                    </div>
+                    <p
+                        class="absolute top-4 left-4 text-small text-muted m-0"
+                    >
+                        Scroll the page — this bar maps to this block
+                    </p>
+                </div>
+
+                <div id="scroll-card" class="card max-w-3xl">
+                    <div class="card-body">
+                        <h3 class="heading-5 mb-2">Enter callback</h3>
+                        <p class="text-body">
+                            This card uses enter/leave thresholds instead of
+                            synced progress. Useful for one-shot reveals.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </body>
+</html>
+
+<script>
+    import { initAnimeLab } from "../lib/animejs-lab";
+
+    initAnimeLab();
+</script>
+
+<style>
+    .anime-section {
+        max-width: 92vw;
+        padding-top: 3.5rem;
+        padding-bottom: 2.5rem;
+        margin: 0 auto;
+        scroll-margin-top: 5.5rem;
+    }
+
+    .anime-stage {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 9rem;
+        border-radius: 0.75rem;
+        background: color-mix(in srgb, var(--color-brand-primary, #89181e) 6%, transparent);
+        border: 1px dashed color-mix(in srgb, var(--color-brand-primary, #89181e) 28%, transparent);
+    }
+
+    .anime-stage-tall {
+        min-height: 14rem;
+        position: relative;
+    }
+
+    .anime-token {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 0.85rem;
+        background: #89181e;
+        color: white;
+        display: grid;
+        place-items: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        box-shadow: 0 8px 20px color-mix(in srgb, #89181e 28%, transparent);
+        will-change: transform;
+        cursor: grab;
+        user-select: none;
+    }
+
+    .anime-token:active {
+        cursor: grabbing;
+    }
+
+    .anime-grid {
+        display: grid;
+        grid-template-columns: repeat(8, 1fr);
+        gap: 0.45rem;
+        max-width: 18rem;
+        margin-inline: auto;
+    }
+
+    .anime-dot {
+        aspect-ratio: 1;
+        border-radius: 999px;
+        background: #89181e;
+        display: block;
+    }
+
+    .anime-bar {
+        height: 0.85rem;
+        width: 12%;
+        border-radius: 999px;
+        background: #89181e;
+    }
+
+    .anime-ease-row {
+        display: grid;
+        grid-template-columns: minmax(7rem, 11rem) 1fr;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .anime-ease-track {
+        height: 2.75rem;
+        border-radius: 0.6rem;
+        background: color-mix(in srgb, var(--color-brand-primary, #89181e) 6%, transparent);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .anime-ease-token {
+        width: 1.4rem;
+        height: 1.4rem;
+        border-radius: 0.35rem;
+        background: #89181e;
+        position: absolute;
+        top: 50%;
+        left: 0.75rem;
+        transform: translateY(-50%);
+    }
+
+    .anime-display {
+        font-size: 1.35rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+        min-height: 2.2rem;
+    }
+
+    .anime-display span {
+        display: inline-block;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anime-token,
+        .anime-dot,
+        .anime-bar,
+        .anime-ease-token {
+            transition: none;
+        }
+    }
+</style>

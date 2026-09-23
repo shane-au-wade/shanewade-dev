@@ -19,6 +19,7 @@
     "@types/three": "^0.185.0",
     "@unocss/preset-wind4": "^66.5.5",
     "@unocss/reset": "^66.5.5",
+    "animejs": "^4.5.0",
     "astro": "^7.2.2",
     "jsbarcode": "^3.12.3",
     "jszip": "^3.10.1",
